@@ -45,7 +45,7 @@ jobs:
             --non-interactive
 
       - name: 📤 Upload APK Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cyclotron-apk
           path: cyclotron.apk
