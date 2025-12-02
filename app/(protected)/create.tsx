@@ -1,14 +1,15 @@
-import { YStack, Text, Button, Input, Spinner, XStack, Image, Label, Switch } from 'tamagui';
+import { YStack, Text, Button, Input, Spinner, XStack, Image } from 'tamagui';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { HolographicBackground } from '../../components/ui/HolographicBackground';
-import { GlassPanel } from '../../components/ui/GlassPanel';
 import { MediaService } from '../../services/mediaService';
 import { AuthService } from '../../services/authService';
 import { auth, db } from '../../constants/firebaseConfig';
 import { collection, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Video, ResizeMode } from 'expo-av';
 import { User } from '../../types';
+import { NeonButton } from '../../components/ui/NeonButton';
+import { CyberpunkInput } from '../../components/ui/CyberpunkInput';
 
 export default function CreatePostScreen() {
   const router = useRouter();
@@ -18,8 +19,6 @@ export default function CreatePostScreen() {
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
   const [ttl, setTtl] = useState<number>(3600); 
   const [userProfile, setUserProfile] = useState<User | null>(null);
-  
-  // Professional Features
   const [blockedCountries, setBlockedCountries] = useState<string[]>([]);
 
   useEffect(() => {
@@ -46,19 +45,16 @@ export default function CreatePostScreen() {
 
   const handleUpload = async () => {
     if (!media || !auth.currentUser) return;
-
     setUploading(true);
     try {
       const filename = `posts/${auth.currentUser.uid}/${Date.now()}.${mediaType === 'video' ? 'mp4' : 'jpg'}`;
       const downloadUrl = await MediaService.uploadFile(media.uri, filename);
-
       const expirationDate = new Date();
       expirationDate.setSeconds(expirationDate.getSeconds() + ttl);
 
       await addDoc(collection(db, 'content'), {
         creatorId: auth.currentUser.uid,
         drmUrl: downloadUrl,
-        // Automatically elevate to Professional if advanced features are used
         tierLevelRequired: blockedCountries.length > 0 ? 'Professional' : 'Shield', 
         bioSteganographyEnabled: userProfile?.tier === 'Professional' || userProfile?.tier === 'Elite',
         createdAt: serverTimestamp(),
@@ -67,7 +63,6 @@ export default function CreatePostScreen() {
         caption: caption,
         geoBlockList: blockedCountries
       });
-
       router.back();
     } catch (e) {
       console.error(e);
@@ -83,103 +78,79 @@ export default function CreatePostScreen() {
     <>
       <HolographicBackground />
       <YStack f={1} pt="$8" px="$4" space>
-        <Text fontSize="$6" color="$white" fontFamily="$heading" mb="$4">NEW TRANSMISSION</Text>
+        <Text fontSize="$6" color="$cyan10" fontFamily="$heading" mb="$4">NEW TRANSMISSION</Text>
 
-        <GlassPanel 
-          h={250} 
-          ai="center" 
-          jc="center" 
-          overflow="hidden" 
-          borderColor={media ? "$green10" : "$gray6"}
-        >
+        {/* Media Preview Area - Minimalist */}
+        <YStack h={300} bg="rgba(0,0,0,0.3)" borderWidth={1} borderColor="$gray8" jc="center" ai="center" overflow="hidden">
           {media ? (
             mediaType === 'video' ? (
-              <Video
-                source={{ uri: media.uri }}
-                style={{ width: '100%', height: '100%' }}
-                resizeMode={ResizeMode.COVER}
-                shouldPlay
-                isLooping
-              />
+              <Video source={{ uri: media.uri }} style={{ width: '100%', height: '100%' }} resizeMode={ResizeMode.COVER} shouldPlay isLooping />
             ) : (
               <Image source={{ uri: media.uri }} w="100%" h="100%" objectFit="cover" />
             )
           ) : (
-            <YStack ai="center" space>
-              <Text color="$gray10">SELECT_MEDIA_SOURCE</Text>
-              <XStack space>
-                <Button size="$3" icon="image" onPress={() => handlePick('image')}>IMG</Button>
-                <Button size="$3" icon="video" onPress={() => handlePick('video')}>VID</Button>
-              </XStack>
-            </YStack>
+            <XStack space>
+               <Button chromeless onPress={() => handlePick('image')} icon="image">
+                 <Text color="$cyan10">SELECT IMG</Text>
+               </Button>
+               <Button chromeless onPress={() => handlePick('video')} icon="video">
+                 <Text color="$cyan10">SELECT VID</Text>
+               </Button>
+            </XStack>
           )}
-        </GlassPanel>
+        </YStack>
 
-        <GlassPanel p="$4" space>
-           <Input 
-             placeholder="ADD_ENCRYPTED_CAPTION..." 
+        <CyberpunkInput 
+             placeholder="ENCRYPTED_CAPTION..." 
              value={caption} 
              onChangeText={setCaption}
-             bg="transparent"
-             borderWidth={0}
-             color="$white"
-           />
-           
-           <Text color="$gray10" fontSize="$2" mb="$2">SELF_DESTRUCT_TIMER</Text>
+        />
+
+        {/* TTL Select */}
+        <YStack space="$2" mb="$4">
+           <Text color="$gray10" fontSize="$2" fontFamily="$mono">SELF_DESTRUCT_TIMER</Text>
            <XStack space>
               {[{ label: '1H', value: 3600 }, { label: '24H', value: 86400 }, { label: '7D', value: 604800 }].map(opt => (
                 <Button 
                   key={opt.label} 
                   size="$2" 
-                  bg={ttl === opt.value ? '$red10' : 'transparent'}
-                  borderColor="$red10"
+                  chromeless
+                  borderColor={ttl === opt.value ? '$red10' : '$gray8'}
                   borderWidth={1}
                   onPress={() => setTtl(opt.value)}
                 >
-                  {opt.label}
+                  <Text color={ttl === opt.value ? '$red10' : '$gray10'}>{opt.label}</Text>
                 </Button>
               ))}
            </XStack>
-        </GlassPanel>
+        </YStack>
 
-        {/* PROFESSIONAL TOOLS */}
+        {/* Pro Tools */}
         {isPro && (
-            <GlassPanel p="$4" borderColor="$blue10" space>
-                <Text color="$blue10" fontSize="$3" fontWeight="bold">PROFESSIONAL TOOLS</Text>
-                
-                <Text color="$gray10" fontSize="$2">GEO-BLOCKING (REGIONAL FENCE)</Text>
+            <YStack space="$2" mb="$4" opacity={0.8}>
+                <Text color="$blue10" fontSize="$2" fontFamily="$mono">GEO-BLOCKING ACTIVE</Text>
                 <XStack space flexWrap="wrap">
                     {['US', 'CN', 'RU', 'IN', 'EU'].map(code => (
                         <Button
-                           key={code}
-                           size="$2"
-                           chromeless
-                           bg={blockedCountries.includes(code) ? '$blue10' : 'rgba(0,0,0,0.5)'}
+                           key={code} size="$2" chromeless
+                           bg={blockedCountries.includes(code) ? '$blue10' : 'transparent'}
+                           borderColor="$blue10" borderWidth={1}
                            onPress={() => toggleCountry(code)}
-                           color="white"
                         >
-                            {code}
+                           <Text color={blockedCountries.includes(code) ? 'black' : '$blue10'}>{code}</Text>
                         </Button>
                     ))}
                 </XStack>
-                
-                <XStack ai="center" space mt="$2">
-                    <Text color="$gray10" fontSize="$2">FORENSIC BIO-STEGANOGRAPHY</Text>
-                    <Text color="$green10" fontSize="$2">ACTIVE</Text>
-                </XStack>
-            </GlassPanel>
+            </YStack>
         )}
 
-        <Button 
-          mt="auto" 
-          mb="$6" 
-          themeInverse 
-          onPress={handleUpload}
-          disabled={uploading || !media}
-          bg={isPro ? '$blue10' : '$red10'}
-        >
-          {uploading ? <Spinner color="$white" /> : (isPro ? 'INITIATE PRO UPLOAD' : 'INITIATE UPLOAD')}
-        </Button>
+        <NeonButton 
+           mt="auto" mb="$6"
+           label={uploading ? 'UPLOADING...' : 'INITIATE UPLOAD'}
+           variant={isPro ? 'cyan' : 'red'}
+           onPress={handleUpload}
+           disabled={uploading || !media}
+        />
       </YStack>
     </>
   );
