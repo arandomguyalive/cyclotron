@@ -1,0 +1,48 @@
+name: Android APK Build
+
+on:
+  workflow_dispatch: # Manual trigger (to save minutes)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Setup Repo
+        uses: actions/checkout@v3
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: 🏗 Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 🏗 Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 📦 Install Dependencies
+        run: npm install
+
+      - name: 🔧 Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: 🚀 Build Android APK (Local Mode)
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          eas build --local \
+            --platform android \
+            --profile preview \
+            --output cyclotron.apk \
+            --non-interactive
+
+      - name: 📤 Upload APK Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: cyclotron-apk
+          path: cyclotron.apk
