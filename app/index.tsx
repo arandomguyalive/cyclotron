@@ -135,8 +135,9 @@ export default function LobbyScreen() {
         />
       )}
 
-      {/* Bottom Floating Button */}
+      {/* Bottom Floating Button with Gradient Shadow */}
       <YStack position="absolute" bottom="$8" left={0} right={0} ai="center">
+         <YStack position="absolute" w={300} h={80} bg="$red10" opacity={0.3} borderRadius={100} style={{ filter: 'blur(40px)' }} />
          <NeonButton 
             label="AUTHENTICATE" 
             variant="red"
@@ -145,24 +146,42 @@ export default function LobbyScreen() {
          />
       </YStack>
 
-      {/* Nag Modal */}
-      <Modal visible={showNag} transparent animationType="fade">
-         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center' }}>
-            <YStack p="$6" w="90%" ai="center" space>
-               <Text fontSize="$9" color="$red10" fontWeight="bold" ta="center" fontFamily="$heading">BANDWIDTH LIMIT</Text>
-               <Text color="$gray10" ta="center" fontSize="$4" fontFamily="$mono" mt="$4">
-                 You are in the queue position #48,291.
+      {/* Nag Modal (System Failure Glitch) */}
+      <Modal visible={showNag} transparent animationType="none">
+         <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
+            <YStack p="$6" w="100%" h="100%" ai="center" jc="center" space bg="black">
+               {/* Glitch Effect Text */}
+               <Text 
+                 fontSize={60} 
+                 color="$red10" 
+                 fontWeight="bold" 
+                 ta="center" 
+                 fontFamily="$heading"
+                 style={{ 
+                    textShadowColor: 'red', 
+                    textShadowRadius: 10,
+                    transform: [{ skewX: '-10deg' }] 
+                 }}
+               >
+                 SYSTEM FAILURE
                </Text>
                
-               <YStack w="100%" mt="$8" space>
+               <Text color="white" ta="center" fontSize="$6" fontFamily="$mono" mt="$4" opacity={0.8}>
+                 [ERROR 503]: LOBBY CAPACITY EXCEEDED
+               </Text>
+               <Text color="$gray8" ta="center" fontSize="$2" fontFamily="$mono" mb="$8">
+                 Queue Position: #48,291
+               </Text>
+               
+               <YStack w="100%" px="$8" space>
                    <NeonButton 
-                      label="PRIORITY ACCESS (UPGRADE)" 
+                      label="BYPASS QUEUE (UPGRADE)" 
                       variant="cyan" 
                       onPress={() => { setShowNag(false); router.push('/(auth)/subscribe'); }}
                    />
                    
                    <Button chromeless mt="$4" onPress={() => setShowNag(false)}>
-                     <Text color="$gray10">Wait (Slow)</Text>
+                     <Text color="$gray10" fontSize="$3" style={{ textDecorationLine: 'underline' }}>Wait in Lobby (Slow)</Text>
                    </Button>
                </YStack>
             </YStack>

@@ -1,7 +1,10 @@
 name: Android APK Build
 
 on:
-  workflow_dispatch: # Manual trigger (to save minutes)
+  push:
+    branches:
+      - master
+  workflow_dispatch:
 
 jobs:
   build:
