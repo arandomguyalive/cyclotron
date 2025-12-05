@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, useMotionValue, useTransform, useSpring, PanInfo } from "framer-motion";
 import { VortexItem } from "@/components/feed/VortexItem";
+import { ChevronUp } from "lucide-react";
 
 const ITEMS_COUNT = 10;
 const GAP = 1200; // Distance between items on Z axis
@@ -10,6 +11,7 @@ const GAP = 1200; // Distance between items on Z axis
 export default function VortexPage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const zPosition = useMotionValue(0);
+  const lastWheelTime = useRef(0);
   
   // Spring physics for smooth movement through the void
   const smoothZ = useSpring(zPosition, {
@@ -36,13 +38,33 @@ export default function VortexPage() {
     setActiveIndex(newIndex);
   };
 
+  const handleWheel = (e: React.WheelEvent) => {
+      const now = Date.now();
+      // Throttling wheel events to prevent skipping too many items at once
+      if (now - lastWheelTime.current < 500) return;
+      
+      if (Math.abs(e.deltaY) > 30) {
+          if (e.deltaY > 0) {
+               // Scroll Down -> Next Item
+               setActiveIndex(prev => Math.min(prev + 1, ITEMS_COUNT - 1));
+          } else {
+               // Scroll Up -> Prev Item
+               setActiveIndex(prev => Math.max(prev - 1, 0));
+          }
+          lastWheelTime.current = now;
+      }
+  };
+
   // Sync zPosition when activeIndex changes
   useEffect(() => {
       zPosition.set(-activeIndex * GAP);
   }, [activeIndex, GAP, zPosition]);
 
   return (
-    <div className="h-[100dvh] w-full bg-black overflow-hidden flex items-center justify-center perspective-container">
+    <div 
+        className="h-[100dvh] w-full bg-black overflow-hidden flex items-center justify-center perspective-container"
+        onWheel={handleWheel}
+    >
       <style jsx global>{`
         .perspective-container {
             perspective: 1000px;
@@ -61,6 +83,19 @@ export default function VortexPage() {
         onDragEnd={handleDragEnd}
         style={{ touchAction: "none" }}
       />
+
+      {/* Navigation Hint (Only visible on start) */}
+      {activeIndex === 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="absolute bottom-24 z-40 text-white/50 flex flex-col items-center pointer-events-none animate-pulse"
+          >
+              <ChevronUp className="w-6 h-6 animate-bounce" />
+              <span className="text-xs tracking-widest uppercase">Swipe / Scroll to Enter</span>
+          </motion.div>
+      )}
 
       {/* The 3D Tunnel World */}
       <div className="relative w-full h-full md:max-w-md md:aspect-[9/16] preserve-3d flex items-center justify-center">

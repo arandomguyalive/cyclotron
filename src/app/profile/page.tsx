@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Settings, Grid, Film, Heart, MessageCircle } from "lucide-react";
+import { SettingsModal } from "@/components/profile/SettingsModal";
 
 export default function ProfilePage() {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-cyber-black text-white pb-24">
       {/* Header / Cover */}
@@ -26,7 +30,10 @@ export default function ProfilePage() {
             <Link href="/chat" className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10">
               <MessageCircle className="w-6 h-6 text-white" />
             </Link>
-            <button className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10">
+            <button 
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10 hover:bg-white/20 transition-colors"
+            >
               <Settings className="w-6 h-6 text-white" />
             </button>
           </div>
@@ -70,6 +77,9 @@ export default function ProfilePage() {
           ))}
         </div>
       </div>
+
+      {/* Settings Modal */}
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );
 }
