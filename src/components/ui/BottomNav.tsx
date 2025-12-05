@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Home, Film, MessageCircle, User, Settings } from "lucide-react";
+import { Home, Aperture, MessageCircle, User, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { name: "Home", href: "/", icon: Home },
-  { name: "Reels", href: "/reels", icon: Film },
+  { name: "Vortex", href: "/vortex", icon: Aperture },
   { name: "Profile", href: "/profile", icon: User },
 ];
 

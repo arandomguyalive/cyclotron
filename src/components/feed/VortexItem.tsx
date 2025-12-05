@@ -5,11 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Heart, MessageCircle, Share2, Disc, Music, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface ReelProps {
+interface VortexProps {
   index: number;
 }
 
-export function ReelItem({ index }: ReelProps) {
+export function VortexItem({ index }: VortexProps) {
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(1200 + index * 53);
 
@@ -27,7 +27,7 @@ export function ReelItem({ index }: ReelProps) {
   const bgGradient = gradients[index % gradients.length];
 
   return (
-    <div className={cn("relative h-screen w-full snap-center overflow-hidden bg-cyber-black")}>
+    <div className={cn("relative h-full w-full overflow-hidden bg-cyber-black rounded-xl border border-white/10 shadow-2xl")}>
       {/* Video Placeholder / Background */}
       <motion.div 
         className={cn("absolute inset-0 opacity-60", bgGradient)}
