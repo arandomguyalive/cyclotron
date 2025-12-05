@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Lock, RefreshCw } from "lucide-react";
+import { Send, Lock, RefreshCw, ChevronLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 import AES from "crypto-js/aes";
 import encUtf8 from "crypto-js/enc-utf8";
 
@@ -20,6 +21,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // Initial welcome message
   useEffect(() => {
@@ -54,9 +56,16 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-4rem)] bg-cyber-black pt-4">
+    <div className="flex flex-col h-[100dvh] bg-cyber-black">
       {/* Header */}
-      <div className="px-4 pb-4 border-b border-white/10 flex items-center gap-3 bg-cyber-black/50 backdrop-blur-md sticky top-0 z-10">
+      <div className="px-4 py-3 border-b border-white/10 flex items-center gap-3 bg-cyber-black/80 backdrop-blur-md sticky top-0 z-50 safe-area-top">
+        <button 
+            onClick={() => router.back()} 
+            className="p-2 -ml-2 text-gray-400 hover:text-white transition-colors"
+        >
+            <ChevronLeft className="w-6 h-6" />
+        </button>
+
         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyber-blue to-cyber-purple p-[2px]">
           <img 
             src="https://api.dicebear.com/7.x/avataaars/svg?seed=Agent" 
@@ -82,7 +91,7 @@ export default function ChatPage() {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 pb-6 bg-cyber-black border-t border-white/10">
+      <div className="p-4 bg-cyber-black border-t border-white/10 sticky bottom-0 z-50 pb-safe-area-inset-bottom">
         <div className="flex items-center gap-2 relative">
           <input
             type="text"
@@ -94,7 +103,7 @@ export default function ChatPage() {
           />
           <button 
             onClick={handleSend}
-            className="w-10 h-10 rounded-full bg-cyber-blue flex items-center justify-center text-black hover:bg-cyber-blue/80 transition-colors"
+            className="w-10 h-10 rounded-full bg-cyber-blue flex items-center justify-center text-black hover:bg-cyber-blue/80 transition-colors shrink-0"
           >
             <Send className="w-5 h-5" />
           </button>
