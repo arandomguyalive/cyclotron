@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Settings, Grid, Film, Heart } from "lucide-react";
+import { Settings, Grid, Film, Heart, MessageCircle } from "lucide-react";
 
 export default function ProfilePage() {
   return (
@@ -21,9 +22,14 @@ export default function ProfilePage() {
           >
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User123" alt="Profile" className="w-full h-full" />
           </motion.div>
-          <button className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10">
-            <Settings className="w-6 h-6 text-white" />
-          </button>
+          <div className="flex gap-2">
+            <Link href="/chat" className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10">
+              <MessageCircle className="w-6 h-6 text-white" />
+            </Link>
+            <button className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10">
+              <Settings className="w-6 h-6 text-white" />
+            </button>
+          </div>
         </div>
 
         <div className="mt-4">
