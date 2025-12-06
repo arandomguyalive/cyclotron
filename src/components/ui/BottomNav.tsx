@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Home, Aperture, MessageCircle, User, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSonic } from "@/lib/SonicContext";
 
 const navItems = [
   { name: "Home", href: "/", icon: Home },
@@ -14,6 +15,14 @@ const navItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { playClick } = useSonic();
+
+  const handleClick = () => {
+    playClick(440, 0.05, 'triangle'); // Play a click sound
+    if (navigator.vibrate) {
+      navigator.vibrate(30); // Short vibration
+    }
+  };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 h-16 pb-safe-area-inset-bottom">
@@ -29,6 +38,7 @@ export function BottomNav() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={handleClick}
               className="relative flex flex-col items-center justify-center w-14 h-full group"
             >
               {isActive && (

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Moon, Shield, Database, LogOut, ChevronRight, User } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useSonic } from "@/lib/SonicContext";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -11,6 +12,20 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+  const { playClick } = useSonic();
+
+  const handleButtonClick = () => {
+    playClick(350, 0.05, 'square');
+    if (navigator.vibrate) {
+      navigator.vibrate(25);
+    }
+  };
+
+  const handleClose = () => {
+    handleButtonClick();
+    onClose();
+  }
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -20,7 +35,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={handleClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
           />
           
@@ -33,14 +48,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             className="fixed bottom-0 left-0 right-0 z-[70] bg-cyber-black border-t border-white/10 rounded-t-3xl h-[85vh] overflow-hidden flex flex-col"
           >
             {/* Drag Handle */}
-            <div className="w-full flex justify-center pt-4 pb-2" onClick={onClose}>
+            <div className="w-full flex justify-center pt-4 pb-2" onClick={handleClose}>
                 <div className="w-16 h-1.5 bg-white/20 rounded-full" />
             </div>
 
             {/* Header */}
             <div className="px-6 py-4 flex items-center justify-between border-b border-white/5">
                 <h2 className="text-xl font-bold text-white">Settings</h2>
-                <button onClick={onClose} className="p-2 bg-white/5 rounded-full">
+                <button onClick={handleClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
                     <X className="w-5 h-5 text-gray-400" />
                 </button>
             </div>
@@ -50,19 +65,22 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 
                 {/* Section: Account */}
                 <Section title="Account">
-                    <SettingItem icon={User} label="Edit Profile" value="neon_genesis" />
-                    <SettingItem icon={Shield} label="Privacy & Security" />
+                    <SettingItem icon={User} label="Edit Profile" value="neon_genesis" onClick={handleButtonClick} />
+                    <SettingItem icon={Shield} label="Privacy & Security" onClick={handleButtonClick} />
                 </Section>
 
                 {/* Section: Appearance */}
                 <Section title="Appearance">
-                    <SettingItem icon={Moon} label="Theme" value="Cyber Dark" />
-                    <SettingItem icon={Database} label="Data Saver" toggle />
+                    <SettingItem icon={Moon} label="Theme" value="Cyber Dark" onClick={handleButtonClick} />
+                    <SettingItem icon={Database} label="Data Saver" toggle onClick={handleButtonClick} />
                 </Section>
 
                 {/* Section: Danger Zone */}
                 <div className="pt-4">
-                     <button className="w-full py-4 flex items-center justify-center gap-2 text-red-500 bg-red-500/10 rounded-xl border border-red-500/20 hover:bg-red-500/20 transition-colors">
+                     <button 
+                        onClick={handleButtonClick}
+                        className="w-full py-4 flex items-center justify-center gap-2 text-red-500 bg-red-500/10 rounded-xl border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                     >
                         <LogOut className="w-5 h-5" />
                         <span className="font-bold">Log Out</span>
                      </button>
@@ -90,12 +108,19 @@ function Section({ title, children }: { title: string, children: React.ReactNode
     )
 }
 
-function SettingItem({ icon: Icon, label, value, toggle }: { icon: any, label: string, value?: string, toggle?: boolean }) {
+function SettingItem({ icon: Icon, label, value, toggle, onClick }: { icon: any, label: string, value?: string, toggle?: boolean, onClick: () => void }) {
     const [isEnabled, setIsEnabled] = useState(false);
+
+    const handleClick = () => {
+        onClick(); // Play sound and vibrate
+        if (toggle) {
+            setIsEnabled(!isEnabled);
+        }
+    };
 
     return (
         <button 
-            onClick={() => toggle && setIsEnabled(!isEnabled)}
+            onClick={handleClick}
             className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
         >
             <div className="flex items-center gap-3">

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, useMotionValue, useTransform, useSpring, PanInfo } from "framer-motion";
 import { VortexItem } from "@/components/feed/VortexItem";
 import { ChevronUp } from "lucide-react";
+import { useSonic } from "@/lib/SonicContext";
 
 const ITEMS_COUNT = 10;
 const GAP = 1200; // Distance between items on Z axis
@@ -12,6 +13,7 @@ export default function VortexPage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const zPosition = useMotionValue(0);
   const lastWheelTime = useRef(0);
+  const { playClick, playHum } = useSonic();
   
   // Spring physics for smooth movement through the void
   const smoothZ = useSpring(zPosition, {
@@ -19,6 +21,34 @@ export default function VortexPage() {
       damping: 20,
       mass: 1.2
   });
+
+  // Manage background hum
+  useEffect(() => {
+    playHum('start', 70, 0.05); // Start initial hum
+    return () => {
+      playHum('stop'); // Stop hum on unmount
+    };
+  }, [playHum]);
+
+  // Adjust hum frequency/gain based on activeIndex
+  useEffect(() => {
+    // Basic mapping: higher index -> slightly higher frequency
+    const humFreq = 70 + activeIndex * 5;
+    const humGain = 0.05 + activeIndex * 0.005; // Slightly increase gain
+    playHum('adjust', humFreq, humGain);
+  }, [activeIndex, playHum]);
+
+
+  const handleNavigation = (newIndex: number) => {
+    if (newIndex !== activeIndex) {
+      setActiveIndex(newIndex);
+      playClick(newIndex > activeIndex ? 220 : 180, 0.08, 'sine'); // Higher freq for forward, lower for backward
+      // Haptic feedback
+      if (navigator.vibrate) {
+        navigator.vibrate(50); 
+      }
+    }
+  }
 
   const handleDragEnd = (event: any, info: PanInfo) => {
     const threshold = 50;
@@ -35,7 +65,7 @@ export default function VortexPage() {
        newIndex = Math.max(activeIndex - 1, 0);
     }
 
-    setActiveIndex(newIndex);
+    handleNavigation(newIndex);
   };
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -43,16 +73,18 @@ export default function VortexPage() {
       // Throttling wheel events to prevent skipping too many items at once
       if (now - lastWheelTime.current < 500) return;
       
+      let newIndex = activeIndex;
       if (Math.abs(e.deltaY) > 30) {
           if (e.deltaY > 0) {
                // Scroll Down -> Next Item
-               setActiveIndex(prev => Math.min(prev + 1, ITEMS_COUNT - 1));
+               newIndex = Math.min(activeIndex + 1, ITEMS_COUNT - 1);
           } else {
                // Scroll Up -> Prev Item
-               setActiveIndex(prev => Math.max(prev - 1, 0));
+               newIndex = Math.max(activeIndex - 1, 0);
           }
           lastWheelTime.current = now;
       }
+      handleNavigation(newIndex);
   };
 
   // Sync zPosition when activeIndex changes
