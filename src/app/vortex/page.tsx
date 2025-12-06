@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, useMotionValue, useTransform, useSpring, PanInfo } from "framer-motion";
+import { motion, useMotionValue, useTransform, useSpring, PanInfo, AnimatePresence } from "framer-motion";
 import { VortexItem } from "@/components/feed/VortexItem";
-import { ChevronUp } from "lucide-react";
+import { ChevronUp, Box } from "lucide-react";
 import { useSonic } from "@/lib/SonicContext";
 
 const ITEMS_COUNT = 10;
@@ -11,6 +11,7 @@ const GAP = 1200; // Distance between items on Z axis
 
 export default function VortexPage() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [cycles, setCycles] = useState(0); // Score for collecting artifacts
   const zPosition = useMotionValue(0);
   const lastWheelTime = useRef(0);
   const { playClick, playHum } = useSonic();
@@ -116,6 +117,12 @@ export default function VortexPage() {
         style={{ touchAction: "none" }}
       />
 
+      {/* Score / Cycles Display */}
+      <div className="absolute top-4 right-4 z-[60] flex items-center gap-2 bg-black/50 backdrop-blur-md border border-cyber-blue/30 px-3 py-1 rounded-full">
+          <Box className="w-4 h-4 text-cyber-blue animate-pulse" />
+          <span className="font-mono text-cyber-blue font-bold">{cycles} Cycles</span>
+      </div>
+
       {/* Navigation Hint (Only visible on start) */}
       {activeIndex === 0 && (
           <motion.div 
@@ -132,7 +139,13 @@ export default function VortexPage() {
       {/* The 3D Tunnel World */}
       <div className="relative w-full h-full md:max-w-md md:aspect-[9/16] preserve-3d flex items-center justify-center">
         {Array.from({ length: ITEMS_COUNT }).map((_, i) => (
-            <TunnelItem key={i} index={i} parentZ={smoothZ} activeIndex={activeIndex} />
+            <TunnelItem 
+                key={i} 
+                index={i} 
+                parentZ={smoothZ} 
+                activeIndex={activeIndex}
+                onCollect={() => setCycles(prev => prev + 100)} 
+            />
         ))}
       </div>
       
@@ -142,7 +155,7 @@ export default function VortexPage() {
   );
 }
 
-function TunnelItem({ index, parentZ, activeIndex }: { index: number, parentZ: any, activeIndex: number }) {
+function TunnelItem({ index, parentZ, activeIndex, onCollect }: { index: number, parentZ: any, activeIndex: number, onCollect: () => void }) {
     // Base Z position for this item
     const baseZ = index * GAP;
     
@@ -165,7 +178,10 @@ function TunnelItem({ index, parentZ, activeIndex }: { index: number, parentZ: a
     // Optimization: Hide items far off-screen
     const display = useTransform(z, (currentZ) => (currentZ < -GAP*2 || currentZ > GAP*5) ? "none" : "flex");
 
-    const isCurrent = index === activeIndex;
+    // Random Artifact Spawning Logic (Deterministic based on index)
+    const hasArtifact = index % 3 === 0; // Every 3rd item has an artifact
+    const artifactX = (index % 2 === 0 ? 1 : -1) * 150; // Alternate left/right
+    const artifactY = -200; // Float above
 
     return (
         <motion.div
@@ -187,6 +203,51 @@ function TunnelItem({ index, parentZ, activeIndex }: { index: number, parentZ: a
         >
              {/* The Card Content */}
              <VortexItem index={index} />
+
+             {/* Scavenger Hunt Artifact */}
+             {hasArtifact && (
+                 <div style={{ transform: `translate3d(${artifactX}px, ${artifactY}px, 100px)` }} className="absolute z-[70]">
+                     <Artifact onCollect={onCollect} />
+                 </div>
+             )}
         </motion.div>
+    )
+}
+
+function Artifact({ onCollect }: { onCollect: () => void }) {
+    const [collected, setCollected] = useState(false);
+    const { playClick } = useSonic();
+
+    const handleClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent drag logic interference if possible
+        if (!collected) {
+            setCollected(true);
+            playClick(880, 0.1, 'sawtooth'); // High pitched 'ching'
+            if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+            onCollect();
+        }
+    };
+
+    return (
+        <AnimatePresence>
+            {!collected && (
+                <motion.div
+                    initial={{ rotate: 0, scale: 1 }}
+                    animate={{ rotate: 360, scale: [1, 1.2, 1] }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ 
+                        rotate: { duration: 4, repeat: Infinity, ease: "linear" },
+                        scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                    }}
+                    onClick={handleClick}
+                    className="w-16 h-16 cursor-pointer group"
+                >
+                    {/* Glowing Cube Artifact */}
+                    <div className="w-full h-full bg-cyber-blue/20 border-2 border-cyber-blue backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.6)] flex items-center justify-center transform hover:scale-110 transition-transform">
+                        <div className="w-8 h-8 bg-cyber-blue/50 rotate-45" />
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
     )
 }

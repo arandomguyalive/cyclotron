@@ -6,6 +6,7 @@ import { Send, Lock, RefreshCw, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AES from "crypto-js/aes";
 import encUtf8 from "crypto-js/enc-utf8";
+import { useSonic } from "@/lib/SonicContext";
 
 interface Message {
   id: string;
@@ -114,13 +115,28 @@ export default function ChatPage() {
 }
 
 function MessageBubble({ message }: { message: Message }) {
-  const [decrypted, setDecrypted] = useState(false);
-  
-  // Simulate decryption delay for effect
-  useEffect(() => {
-    const timer = setTimeout(() => setDecrypted(true), 600);
-    return () => clearTimeout(timer);
-  }, []);
+  const [isRevealed, setIsRevealed] = useState(message.sender === "me"); // Sent messages are always revealed
+  const [scratchProgress, setScratchProgress] = useState(0);
+  const { playClick } = useSonic();
+
+  const handleScratch = (e: React.PointerEvent) => {
+    if (isRevealed) return;
+    
+    // Increment progress on movement
+    setScratchProgress(prev => {
+        const newProgress = prev + 2;
+        if (newProgress >= 100) {
+            setIsRevealed(true);
+            playClick(800, 0.1, 'sine'); // Unlock sound
+            if (navigator.vibrate) navigator.vibrate(50);
+            return 100;
+        }
+        if (newProgress % 10 === 0) {
+             playClick(100 + newProgress * 2, 0.02, 'sawtooth'); // Scratching sound
+        }
+        return newProgress;
+    });
+  };
 
   return (
     <motion.div 
@@ -128,20 +144,35 @@ function MessageBubble({ message }: { message: Message }) {
       animate={{ opacity: 1, y: 0 }}
       className={`flex ${message.sender === "me" ? "justify-end" : "justify-start"}`}
     >
-      <div className={`max-w-[80%] rounded-2xl p-3 relative overflow-hidden ${
+      <div 
+        className={`max-w-[80%] rounded-2xl p-3 relative overflow-hidden cursor-crosshair touch-none select-none ${
         message.sender === "me" 
           ? "bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 rounded-tr-none" 
           : "bg-white/10 text-white border border-white/10 rounded-tl-none"
-      }`}>
-        {!decrypted ? (
-           <div className="flex items-center gap-2 text-xs font-mono opacity-70">
-             <RefreshCw className="w-3 h-3 animate-spin" />
-             <span className="truncate max-w-[150px]">{message.encrypted.substring(0, 20)}...</span>
+      }`}
+        onPointerMove={handleScratch}
+      >
+        {!isRevealed ? (
+           <div className="flex flex-col gap-1">
+             <div className="flex items-center gap-2 text-xs font-mono opacity-70 text-cyber-pink">
+                <Lock className="w-3 h-3" />
+                <span>SCRUB TO DECRYPT</span>
+             </div>
+             <p className="font-mono text-sm break-all opacity-50 blur-[1px]">
+                {message.encrypted.substring(0, Math.min(message.encrypted.length, 50))}
+             </p>
+             {/* Progress Bar */}
+             <div className="h-1 w-full bg-white/10 rounded-full mt-1 overflow-hidden">
+                 <motion.div 
+                    className="h-full bg-cyber-pink"
+                    style={{ width: `${scratchProgress}%` }}
+                 />
+             </div>
            </div>
         ) : (
           <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, filter: "blur(5px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
             className="text-sm"
           >
             {message.text}
