@@ -1,10 +1,13 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Moon, Shield, Database, LogOut, ChevronRight, User } from "lucide-react";
-import { useState } from "react";
+import { X, Moon, Shield, Database, LogOut, ChevronRight, User, EyeOff, Clock, Fingerprint, CameraOff } from "lucide-react";
+import { useState, useEffect } from "react"; // Added useEffect
 import { cn } from "@/lib/utils";
 import { useSonic } from "@/lib/SonicContext";
+import { EditProfileModal } from "./EditProfileModal";
+import { ThemeSelectorModal } from "./ThemeSelectorModal";
+import { useUser } from "@/lib/UserContext";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -13,6 +16,37 @@ interface SettingsModalProps {
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { playClick } = useSonic();
+  const { user } = useUser();
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
+
+  // Privacy Settings States
+  const [ghostMode, setGhostMode] = useState(false);
+  const [bioLock, setBioLock] = useState(false);
+  const [screenshotAlert, setScreenshotAlert] = useState(false);
+  const [selfDestructTimer, setSelfDestructTimer] = useState("24h"); // Default
+
+  // Load privacy settings from localStorage
+  useEffect(() => {
+    setGhostMode(localStorage.getItem('oblivion_ghostMode') === 'true');
+    setBioLock(localStorage.getItem('oblivion_bioLock') === 'true');
+    setScreenshotAlert(localStorage.getItem('oblivion_screenshotAlert') === 'true');
+    const savedTimer = localStorage.getItem('oblivion_selfDestructTimer');
+    if (savedTimer) setSelfDestructTimer(savedTimer);
+  }, []);
+
+  // Handlers to update state and localStorage
+  const handleToggle = (key: string, currentState: boolean, setter: React.Dispatch<React.SetStateAction<boolean>>) => {
+    const newState = !currentState;
+    setter(newState);
+    localStorage.setItem(key, String(newState));
+  };
+
+  const handleSelfDestructChange = (value: string) => {
+    setSelfDestructTimer(value);
+    localStorage.setItem('oblivion_selfDestructTimer', value);
+  };
+
 
   const handleButtonClick = () => {
     playClick(350, 0.05, 'square');
@@ -27,6 +61,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   }
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <>
@@ -36,7 +71,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+            className="fixed inset-0 bg-primary-bg/60 backdrop-blur-sm z-[60]"
           />
           
           {/* Modal Panel */}
@@ -45,18 +80,18 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[70] bg-cyber-black border-t border-white/10 rounded-t-3xl h-[85vh] overflow-hidden flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-[70] bg-secondary-bg border-t border-border-color rounded-t-3xl h-[85vh] overflow-hidden flex flex-col"
           >
             {/* Drag Handle */}
             <div className="w-full flex justify-center pt-4 pb-2" onClick={handleClose}>
-                <div className="w-16 h-1.5 bg-white/20 rounded-full" />
+                <div className="w-16 h-1.5 bg-border-color/20 rounded-full" />
             </div>
 
             {/* Header */}
-            <div className="px-6 py-4 flex items-center justify-between border-b border-white/5">
-                <h2 className="text-xl font-bold text-white">Settings</h2>
-                <button onClick={handleClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
-                    <X className="w-5 h-5 text-gray-400" />
+            <div className="px-6 py-4 border-b border-border-color flex items-center justify-between bg-primary-bg">
+                <h2 className="text-xl font-bold text-primary-text">Settings</h2>
+                <button onClick={handleClose} className="p-2 bg-secondary-bg/5 rounded-full hover:bg-secondary-bg/10 transition-colors">
+                    <X className="w-5 h-5 text-secondary-text" />
                 </button>
             </div>
 
@@ -65,13 +100,59 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 
                 {/* Section: Account */}
                 <Section title="Account">
-                    <SettingItem icon={User} label="Edit Profile" value="neon_genesis" onClick={handleButtonClick} />
-                    <SettingItem icon={Shield} label="Privacy & Security" onClick={handleButtonClick} />
+                    <SettingItem 
+                        icon={User} 
+                        label="Edit Profile" 
+                        value={user.handle} 
+                        onClick={() => {
+                            handleButtonClick();
+                            setIsEditProfileOpen(true);
+                        }} 
+                    />
+                </Section>
+
+                {/* Section: Privacy & Security */}
+                <Section title="Privacy & Security">
+                    <SettingItem 
+                        icon={EyeOff} 
+                        label="Ghost Mode" 
+                        toggle 
+                        isEnabled={ghostMode} 
+                        onClick={() => handleToggle('oblivion_ghostMode', ghostMode, setGhostMode)} 
+                    />
+                    <SettingItem 
+                        icon={Clock} 
+                        label="Default Message TTL" 
+                        value={selfDestructTimer}
+                        onClick={() => handleButtonClick()} // Could open a picker modal later
+                    />
+                    <SettingItem 
+                        icon={Fingerprint} 
+                        label="Bio-Lock" 
+                        toggle 
+                        isEnabled={bioLock} 
+                        onClick={() => handleToggle('oblivion_bioLock', bioLock, setBioLock)} 
+                        isPaid // Mark as paid
+                    />
+                    <SettingItem 
+                        icon={CameraOff} 
+                        label="Screenshot Alert" 
+                        toggle 
+                        isEnabled={screenshotAlert} 
+                        onClick={() => handleToggle('oblivion_screenshotAlert', screenshotAlert, setScreenshotAlert)} 
+                    />
                 </Section>
 
                 {/* Section: Appearance */}
                 <Section title="Appearance">
-                    <SettingItem icon={Moon} label="Theme" value="Cyber Dark" onClick={handleButtonClick} />
+                    <SettingItem 
+                        icon={Moon} 
+                        label="Theme" 
+                        onClick={() => {
+                            handleButtonClick();
+                            setIsThemeSelectorOpen(true);
+                        }} 
+                    />
                     <SettingItem icon={Database} label="Data Saver" toggle onClick={handleButtonClick} />
                 </Section>
 
@@ -86,64 +167,21 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                      </button>
                 </div>
                 
-                <div className="text-center text-xs text-gray-600 pt-8">
-                    Cyclotron v0.1.0 (Alpha)
+                <div className="text-center text-xs text-secondary-text pt-8">
+                    Oblivion v0.1.0 (Alpha)
                 </div>
             </div>
           </motion.div>
         </>
       )}
     </AnimatePresence>
-  );
-}
-
-function Section({ title, children }: { title: string, children: React.ReactNode }) {
-    return (
-        <div className="space-y-3">
-            <h3 className="text-sm font-bold text-cyber-blue uppercase tracking-wider">{title}</h3>
-            <div className="bg-white/5 rounded-2xl overflow-hidden border border-white/5 divide-y divide-white/5">
-                {children}
-            </div>
-        </div>
-    )
-}
-
-function SettingItem({ icon: Icon, label, value, toggle, onClick }: { icon: any, label: string, value?: string, toggle?: boolean, onClick: () => void }) {
-    const [isEnabled, setIsEnabled] = useState(false);
-
-    const handleClick = () => {
-        onClick(); // Play sound and vibrate
-        if (toggle) {
-            setIsEnabled(!isEnabled);
-        }
-    };
-
-    return (
-        <button 
-            onClick={handleClick}
-            className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
-        >
-            <div className="flex items-center gap-3">
-                <div className="p-2 bg-cyber-blue/10 rounded-lg">
-                    <Icon className="w-5 h-5 text-cyber-blue" />
-                </div>
-                <span className="text-white font-medium">{label}</span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-                {value && <span className="text-sm text-gray-500">{value}</span>}
-                
-                {toggle ? (
-                    <div className={cn("w-10 h-6 rounded-full relative transition-colors", isEnabled ? "bg-cyber-blue" : "bg-gray-700")}>
-                        <motion.div 
-                            className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-sm"
-                            animate={{ x: isEnabled ? 16 : 0 }}
-                        />
-                    </div>
-                ) : (
-                    <ChevronRight className="w-5 h-5 text-gray-600" />
-                )}
-            </div>
-        </button>
-    )
-}
+    
+    <EditProfileModal 
+        isOpen={isEditProfileOpen} 
+        onClose={() => setIsEditProfileOpen(false)} 
+    />
+    <ThemeSelectorModal
+        isOpen={isThemeSelectorOpen}
+        onClose={() => setIsThemeSelectorOpen(false)}
+    />
+    </>

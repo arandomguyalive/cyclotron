@@ -6,10 +6,12 @@ import { motion } from "framer-motion";
 import { Settings, Grid, Film, Heart, MessageCircle } from "lucide-react";
 import { SettingsModal } from "@/components/profile/SettingsModal";
 import { useSonic } from "@/lib/SonicContext";
+import { useUser } from "@/lib/UserContext";
 
 export default function ProfilePage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { playClick } = useSonic();
+  const { user } = useUser();
 
   const handleButtonClick = () => {
     playClick(300, 0.05, 'square'); // A softer click for general buttons
@@ -19,9 +21,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-cyber-black text-white pb-24">
+    <div className="min-h-screen bg-primary-bg text-primary-text pb-24">
       {/* Header / Cover */}
-      <div className="h-40 bg-gradient-to-r from-cyber-purple via-cyber-blue to-cyber-pink opacity-50 relative">
+      <div className="h-40 bg-gradient-to-r from-accent-2 via-primary-bg to-accent-1 opacity-50 relative">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40 mix-blend-overlay" />
       </div>
 
@@ -30,18 +32,18 @@ export default function ProfilePage() {
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="relative rounded-3xl bg-cyber-black/90 border border-white/10 backdrop-blur-xl shadow-2xl p-6 overflow-hidden"
+            className="relative rounded-3xl bg-secondary-bg/90 border border-border-color backdrop-blur-xl shadow-2xl p-6 overflow-hidden"
           >
               {/* Neon Pulse Glow Border */}
               <motion.div 
-                 className="absolute inset-0 rounded-3xl border-2 border-cyber-blue/60 pointer-events-none"
+                 className="absolute inset-0 rounded-3xl border-2 border-accent-1/60 pointer-events-none"
                  animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.02, 1] }}
                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               />
               
               {/* Subtle Background Gradient Animation */}
               <motion.div
-                className="absolute inset-0 bg-gradient-to-tr from-cyber-blue/5 via-transparent to-cyber-purple/5 pointer-events-none"
+                className="absolute inset-0 bg-gradient-to-tr from-accent-1/5 via-transparent to-accent-2/5 pointer-events-none"
                 animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
                 transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
               />
@@ -50,47 +52,88 @@ export default function ProfilePage() {
               <motion.div 
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="w-24 h-24 rounded-full border-4 border-cyber-black bg-black overflow-hidden shadow-lg"
+                className="w-24 h-24 rounded-full border-4 border-primary-bg bg-primary-bg overflow-hidden shadow-lg"
               >
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User123" alt="Profile" className="w-full h-full" />
+                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.avatarSeed}`} alt="Profile" className="w-full h-full" />
               </motion.div>
               <div className="flex gap-2">
                 <Link 
                   href="/chat" 
                   onClick={handleButtonClick}
-                  className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10 hover:bg-white/20 transition-colors shadow-lg cursor-pointer z-50"
+                  className="p-2 bg-secondary-bg/10 rounded-full backdrop-blur-md border border-border-color hover:bg-secondary-bg/20 transition-colors shadow-lg cursor-pointer z-50"
                 >
-                  <MessageCircle className="w-6 h-6 text-white" />
+                  <MessageCircle className="w-6 h-6 text-primary-text" />
                 </Link>
                 <button 
                   onClick={() => {
                     setIsSettingsOpen(true);
                     handleButtonClick();
                   }}
-                  className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10 hover:bg-white/20 transition-colors shadow-lg cursor-pointer z-50"
+                  className="p-2 bg-secondary-bg/10 rounded-full backdrop-blur-md border border-border-color hover:bg-secondary-bg/20 transition-colors shadow-lg cursor-pointer z-50"
                 >
-                  <Settings className="w-6 h-6 text-white" />
+                  <Settings className="w-6 h-6 text-primary-text" />
                 </button>
               </div>
             </div>
 
             <div className="mt-4 relative z-30">
-              <h1 className="text-2xl font-bold drop-shadow-md">Cyber Drifter</h1>
-              <p className="text-cyber-blue drop-shadow-sm">@neon_genesis</p>
-              <p className="mt-2 text-sm text-gray-300 leading-relaxed">
-                Building digital dreams in the void. 
-                <br/>
-                Full-stack Developer | UI Enthusiast
+              <h1 className="text-2xl font-bold drop-shadow-md">{user.displayName}</h1>
+              <p className="text-accent-1 drop-shadow-sm">@{user.handle}</p>
+              <p className="mt-2 text-sm text-secondary-text leading-relaxed whitespace-pre-wrap">
+                {user.bio}
               </p>
             </div>
 
             {/* Stats */}
-            <div className="flex gap-6 mt-6 py-4 border-y border-white/10 relative z-30">
-              <Stat label="Following" value="245" />
-              <Stat label="Followers" value="12.4K" />
-              <Stat label="Likes" value="84.2K" />
+            <div className="flex gap-6 mt-6 py-4 border-y border-border-color relative z-30">
+              <Stat label="Following" value={user.stats.following} />
+              <Stat label="Followers" value={user.stats.followers} />
+              <Stat label="Likes" value={user.stats.likes} />
             </div>
           </motion.div>
+
+        {/* Tabs */}
+        <div className="flex mt-6 gap-4">
+          <button 
+            onClick={handleButtonClick}
+            className="flex-1 py-2 border-b-2 border-accent-1 text-accent-1 flex justify-center"
+          >
+            <Grid className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={handleButtonClick}
+            className="flex-1 py-2 border-b-2 border-transparent text-secondary-text flex justify-center"
+          >
+            <Heart className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Grid Content */}
+        <div className="grid grid-cols-3 gap-1 mt-4">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <div key={i} className="aspect-square bg-secondary-bg/5 relative overflow-hidden group rounded-sm">
+                <div className={`absolute inset-0 bg-gradient-to-br ${
+                    ['from-pink-500 to-purple-500', 'from-blue-500 to-cyan-500', 'from-green-500 to-emerald-500'][i % 3]
+                }`} opacity-50 group-hover:opacity-80 transition-opacity"/>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Settings Modal */}
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string, value: string }) {
+  return (
+    <div className="flex flex-col">
+      <span className="font-bold text-lg">{value}</span>
+      <span className="text-xs text-secondary-text uppercase tracking-wider">{label}</span>
+    </div>
+  );
+}
 
         {/* Tabs */}
         <div className="flex mt-6 gap-4">

@@ -42,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-cyber-black text-cyber-white overflow-x-hidden selection:bg-cyber-blue selection:text-cyber-black`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-primary-bg text-primary-text overflow-x-hidden selection:bg-accent-1 selection:text-primary-bg`}
       >
         <Providers>
           <main className="min-h-screen pb-20 relative z-0">

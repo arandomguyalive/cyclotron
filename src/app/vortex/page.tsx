@@ -95,7 +95,7 @@ export default function VortexPage() {
 
   return (
     <motion.div 
-        className="h-[100dvh] w-full bg-black overflow-hidden flex items-center justify-center perspective-container cursor-grab active:cursor-grabbing"
+        className="h-[100dvh] w-full bg-primary-bg overflow-hidden flex items-center justify-center perspective-container cursor-grab active:cursor-grabbing"
         onWheel={handleWheel}
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
@@ -113,9 +113,9 @@ export default function VortexPage() {
       `}</style>
 
       {/* Score / Cycles Display */}
-      <div className="absolute top-4 right-4 z-[60] flex items-center gap-2 bg-black/50 backdrop-blur-md border border-cyber-blue/30 px-3 py-1 rounded-full pointer-events-none">
-          <Box className="w-4 h-4 text-cyber-blue animate-pulse" />
-          <span className="font-mono text-cyber-blue font-bold">{cycles} Cycles</span>
+      <div className="absolute top-4 right-4 z-[60] flex items-center gap-2 bg-secondary-bg/50 backdrop-blur-md border border-accent-1/30 px-3 py-1 rounded-full pointer-events-none">
+          <Box className="w-4 h-4 text-accent-1 animate-pulse" />
+          <span className="font-mono text-accent-1 font-bold">{cycles} Cycles</span>
       </div>
 
       {/* Navigation Hint (Only visible on start) */}
@@ -124,7 +124,7 @@ export default function VortexPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="absolute bottom-24 z-40 text-white/50 flex flex-col items-center pointer-events-none animate-pulse"
+            className="absolute bottom-24 z-40 text-secondary-text/50 flex flex-col items-center pointer-events-none animate-pulse"
           >
               <ChevronUp className="w-6 h-6 animate-bounce" />
               <span className="text-xs tracking-widest uppercase">Swipe / Scroll to Enter</span>
@@ -159,7 +159,7 @@ function TunnelItem({ index, parentZ, activeIndex, onCollect }: { index: number,
     
     // Visual transformations based on Z depth
     const opacity = useTransform(z, [-GAP, -GAP/2, 0, GAP*3], [0, 0, 1, 0]);
-
+    
     // Re-introduce Scale & Rotation using cheap transforms
     // We use a static rotation and dynamic scale calculated from Z
     // Logic: As Z gets closer (moves from negative to 0), scale increases
@@ -233,8 +233,8 @@ function Artifact({ onCollect }: { onCollect: () => void }) {
                     className="w-16 h-16 cursor-pointer group"
                 >
                     {/* Glowing Cube Artifact */}
-                    <div className="w-full h-full bg-cyber-blue/20 border-2 border-cyber-blue backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.6)] flex items-center justify-center transform hover:scale-110 transition-transform">
-                        <div className="w-8 h-8 bg-cyber-blue/50 rotate-45" />
+                    <div className="w-full h-full bg-accent-1/20 border-2 border-accent-1 backdrop-blur-md shadow-[0_0_15px_var(--color-accent-1)] flex items-center justify-center transform hover:scale-110 transition-transform">
+                        <div className="w-8 h-8 bg-accent-1/50 rotate-45" />
                     </div>
                 </motion.div>
             )}

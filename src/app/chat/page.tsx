@@ -57,26 +57,26 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-cyber-black">
+    <div className="flex flex-col h-[100dvh] bg-primary-bg">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-white/10 flex items-center gap-3 bg-cyber-black/80 backdrop-blur-md sticky top-0 z-50 safe-area-top">
+      <div className="px-4 py-3 border-b border-border-color flex items-center gap-3 bg-primary-bg/80 backdrop-blur-md sticky top-0 z-50 safe-area-top">
         <button 
             onClick={() => router.back()} 
-            className="p-2 -ml-2 text-gray-400 hover:text-white transition-colors"
+            className="p-2 -ml-2 text-secondary-text hover:text-primary-text transition-colors"
         >
             <ChevronLeft className="w-6 h-6" />
         </button>
 
-        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyber-blue to-cyber-purple p-[2px]">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-accent-1 to-accent-2 p-[2px]">
           <img 
             src="https://api.dicebear.com/7.x/avataaars/svg?seed=Agent" 
             alt="Agent" 
-            className="w-full h-full rounded-full bg-black"
+            className="w-full h-full rounded-full bg-primary-bg"
           />
         </div>
         <div>
-          <h2 className="font-bold text-white">Agent Zero</h2>
-          <div className="flex items-center gap-1 text-xs text-cyber-blue/80">
+          <h2 className="font-bold text-primary-text">Agent Zero</h2>
+          <div className="flex items-center gap-1 text-xs text-accent-1/80">
             <Lock className="w-3 h-3" />
             <span>E2EE Active</span>
           </div>
@@ -92,7 +92,7 @@ export default function ChatPage() {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-cyber-black border-t border-white/10 sticky bottom-0 z-50 pb-safe-area-inset-bottom">
+      <div className="p-4 bg-primary-bg border-t border-border-color sticky bottom-0 z-50 pb-safe-area-inset-bottom">
         <div className="flex items-center gap-2 relative">
           <input
             type="text"
@@ -100,11 +100,11 @@ export default function ChatPage() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Type encrypted message..."
-            className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-cyber-blue transition-colors"
+            className="flex-1 bg-secondary-bg/50 border border-border-color rounded-full px-4 py-3 text-primary-text placeholder:text-secondary-text focus:outline-none focus:border-accent-1 transition-colors"
           />
           <button 
             onClick={handleSend}
-            className="w-10 h-10 rounded-full bg-cyber-blue flex items-center justify-center text-black hover:bg-cyber-blue/80 transition-colors shrink-0"
+            className="w-10 h-10 rounded-full bg-accent-1 flex items-center justify-center text-primary-bg hover:bg-accent-1/80 transition-colors shrink-0"
           >
             <Send className="w-5 h-5" />
           </button>
@@ -147,14 +147,14 @@ function MessageBubble({ message }: { message: Message }) {
       <div 
         className={`max-w-[80%] rounded-2xl p-3 relative overflow-hidden cursor-crosshair touch-none select-none ${
         message.sender === "me" 
-          ? "bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 rounded-tr-none" 
-          : "bg-white/10 text-white border border-white/10 rounded-tl-none"
+          ? "bg-accent-1/20 text-accent-1 border border-accent-1/30 rounded-tr-none" 
+          : "bg-secondary-bg/10 text-primary-text border border-border-color rounded-tl-none"
       }`}
         onPointerMove={handleScratch}
       >
         {!isRevealed ? (
            <div className="flex flex-col gap-1">
-             <div className="flex items-center gap-2 text-xs font-mono opacity-70 text-cyber-pink">
+             <div className="flex items-center gap-2 text-xs font-mono opacity-70 text-accent-2">
                 <Lock className="w-3 h-3" />
                 <span>SCRUB TO DECRYPT</span>
              </div>
@@ -162,9 +162,9 @@ function MessageBubble({ message }: { message: Message }) {
                 {message.encrypted.substring(0, Math.min(message.encrypted.length, 50))}
              </p>
              {/* Progress Bar */}
-             <div className="h-1 w-full bg-white/10 rounded-full mt-1 overflow-hidden">
+             <div className="h-1 w-full bg-border-color rounded-full mt-1 overflow-hidden">
                  <motion.div 
-                    className="h-full bg-cyber-pink"
+                    className="h-full bg-accent-2"
                     style={{ width: `${scratchProgress}%` }}
                  />
              </div>
@@ -180,7 +180,7 @@ function MessageBubble({ message }: { message: Message }) {
         )}
         
         {/* Decorative corner */}
-        <div className={`absolute top-0 w-2 h-2 ${message.sender === "me" ? "right-0 bg-cyber-blue" : "left-0 bg-white/50"}`} />
+        <div className={`absolute top-0 w-2 h-2 ${message.sender === "me" ? "right-0 bg-accent-1" : "left-0 bg-secondary-bg/50"}`} />
       </div>
     </motion.div>
   );

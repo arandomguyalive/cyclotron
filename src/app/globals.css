@@ -1,25 +1,33 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
-  --color-cyber-black: #0A0A0A;
-  --color-cyber-dark-gray: #1A1A1A;
-  --color-cyber-gray: #2C2C2C;
-  --color-cyber-light-gray: #B0B0B0;
-  --color-cyber-white: #F5F5F5;
-  --color-cyber-blue: #00F0FF;
-  --color-cyber-purple: #8A2BE2;
-  --color-cyber-pink: #FF00FF;
-  --color-cyber-green: #00FF00;
-  --color-cyber-red: #FF4500;
+@layer base {
+  :root {
+    /* Oblivion Theme (Default) */
+    --color-primary-bg: #0A0A0A;
+    --color-secondary-bg: #1A1A1A;
+    --color-primary-text: #F0F0F0;
+    --color-secondary-text: #A0A0A0;
+    --color-accent-1: #00F0FF; /* Cyber Blue */
+    --color-accent-2: #FF00FF; /* Cyber Pink */
+    --color-border: rgba(255,255,255,0.1);
+
+    /* Original colors still defined for fallback or non-themed elements */
+    --cyber-black: #0A0A0A;
+    --cyber-white: #F0F0F0;
+    --cyber-blue: #00F0FF;
+    --cyber-purple: #8A2BE2;
+    --cyber-pink: #FF00FF;
+    --cyber-red: #FF4500;
+    --cyber-green: #00FF7F;
+  }
 }
 
-:root {
-  --background: var(--color-cyber-black);
-  --foreground: var(--color-cyber-white);
-}
-
-body {
+/* Remove old body styles, now handled by Tailwind classes and theme variables */
+/* body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
-}
+} */
+
