@@ -42,7 +42,7 @@ export default function ProfilePage() {
       <div className="px-4 -mt-12 relative z-10">
           <motion.div
             style={{ rotateX, rotateY }}
-            className="relative rounded-3xl bg-cyber-black/80 border border-white/10 backdrop-blur-xl shadow-2xl p-6 overflow-hidden transform-style-3d"
+            className="relative rounded-3xl bg-cyber-black/80 border border-white/10 backdrop-blur-xl shadow-2xl p-6 transform-style-3d"
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
           >
               {/* Dynamic Glare Overlay */}
