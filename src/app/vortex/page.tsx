@@ -158,15 +158,8 @@ function TunnelItem({ index, parentZ, activeIndex, onCollect }: { index: number,
     const z = useTransform(parentZ, (currentZ: number) => baseZ + currentZ);
     
     // Visual transformations based on Z depth
-    // Items fade in from far back (Z=4000), are fully visible at Z=0, and fade out when passing camera (Z=-1000)
     const opacity = useTransform(z, [-GAP, -GAP/2, 0, GAP*3], [0, 0, 1, 0]);
     
-    // Scale effect: items start small in distance, grow to 1 at camera, and become huge when passing
-    const scale = useTransform(z, [-GAP, 0, GAP*4], [2, 1, 0.2]);
-    
-    // Rotation tilt for dynamic feel
-    const rotateX = useTransform(z, [-GAP, 0, GAP], [10, 0, -10]); 
-
     // Optimization: Hide items far off-screen
     const display = useTransform(z, (currentZ) => (currentZ < -GAP*2 || currentZ > GAP*5) ? "none" : "flex");
 
@@ -180,8 +173,6 @@ function TunnelItem({ index, parentZ, activeIndex, onCollect }: { index: number,
             style={{
                 z,
                 opacity,
-                scale,
-                rotateX,
                 display,
                 position: 'absolute',
                 width: '100%',
@@ -189,7 +180,7 @@ function TunnelItem({ index, parentZ, activeIndex, onCollect }: { index: number,
                 transformStyle: 'preserve-3d',
                 alignItems: 'center',
                 justifyContent: 'center',
-                willChange: 'transform, opacity'
+                willChange: 'transform, opacity' // Force hardware acceleration layer
             }}
             className="origin-center p-4"
         >
