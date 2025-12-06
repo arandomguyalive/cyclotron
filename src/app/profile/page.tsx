@@ -54,7 +54,7 @@ export default function ProfilePage() {
               />
             
             {/* Content Wrapper - Promoted above glare */}
-            <div className="relative z-30">
+            <div className="relative z-30" style={{ transform: "translateZ(20px)" }}>
                 <div className="flex justify-between items-end">
                 <motion.div 
                     initial={{ scale: 0 }}
