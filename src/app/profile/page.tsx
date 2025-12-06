@@ -34,8 +34,8 @@ export default function ProfilePage() {
           >
               {/* Neon Pulse Glow Border */}
               <motion.div 
-                 className="absolute inset-0 rounded-3xl border-2 border-cyber-blue/30 pointer-events-none"
-                 animate={{ opacity: [0.3, 0.8, 0.3], scale: [1, 1.02, 1] }}
+                 className="absolute inset-0 rounded-3xl border-2 border-cyber-blue/60 pointer-events-none"
+                 animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.02, 1] }}
                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               />
               
