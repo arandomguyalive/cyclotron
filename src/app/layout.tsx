@@ -1,10 +1,8 @@
-"use client";
-
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/ui/BottomNav";
-import { SonicProvider } from "@/lib/SonicContext";
+import { Providers } from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,10 +14,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Metadata and Viewport are not client-side concepts, they should remain as is
-// if possible, or moved to a layout.tsx parent if it needs to be server rendered.
-// For now, I'll keep them as is and assume Next.js handles it.
-// If not, I'll address it in the next iteration.
+export const metadata: Metadata = {
+  title: "Cyclotron",
+  description: "The future of social connection.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Cyclotron",
+  },
+};
 
 export const viewport: Viewport = {
   themeColor: "#0A0A0A",
@@ -40,12 +44,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-cyber-black text-cyber-white overflow-x-hidden selection:bg-cyber-blue selection:text-cyber-black`}
       >
-        <SonicProvider>
+        <Providers>
           <main className="min-h-screen pb-20 relative z-0">
             {children}
           </main>
           <BottomNav />
-        </SonicProvider>
+        </Providers>
       </body>
     </html>
   );
