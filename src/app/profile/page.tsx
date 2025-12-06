@@ -114,49 +114,6 @@ export default function ProfilePage() {
             <div key={i} className="aspect-square bg-secondary-bg/5 relative overflow-hidden group rounded-sm">
                 <div className={`absolute inset-0 bg-gradient-to-br ${
                     ['from-pink-500 to-purple-500', 'from-blue-500 to-cyan-500', 'from-green-500 to-emerald-500'][i % 3]
-                }`} opacity-50 group-hover:opacity-80 transition-opacity"/>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Settings Modal */}
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string, value: string }) {
-  return (
-    <div className="flex flex-col">
-      <span className="font-bold text-lg">{value}</span>
-      <span className="text-xs text-secondary-text uppercase tracking-wider">{label}</span>
-    </div>
-  );
-}
-
-        {/* Tabs */}
-        <div className="flex mt-6 gap-4">
-          <button 
-            onClick={handleButtonClick}
-            className="flex-1 py-2 border-b-2 border-cyber-blue text-cyber-blue flex justify-center"
-          >
-            <Grid className="w-5 h-5" />
-          </button>
-          <button 
-            onClick={handleButtonClick}
-            className="flex-1 py-2 border-b-2 border-transparent text-gray-500 flex justify-center"
-          >
-            <Heart className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Grid Content */}
-        <div className="grid grid-cols-3 gap-1 mt-4">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className="aspect-square bg-white/5 relative overflow-hidden group rounded-sm">
-                <div className={`absolute inset-0 bg-gradient-to-br ${
-                    ['from-pink-500 to-purple-500', 'from-blue-500 to-cyan-500', 'from-green-500 to-emerald-500'][i % 3]
                 } opacity-50 group-hover:opacity-80 transition-opacity`}/>
             </div>
           ))}
@@ -173,7 +130,7 @@ function Stat({ label, value }: { label: string, value: string }) {
   return (
     <div className="flex flex-col">
       <span className="font-bold text-lg">{value}</span>
-      <span className="text-xs text-gray-500 uppercase tracking-wider">{label}</span>
+      <span className="text-xs text-secondary-text uppercase tracking-wider">{label}</span>
     </div>
   );
 }
