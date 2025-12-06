@@ -52,50 +52,53 @@ export default function ProfilePage() {
                  }}
                  className="absolute inset-0 pointer-events-none z-20 mix-blend-overlay"
               />
-
-            <div className="flex justify-between items-end relative z-30">
-              <motion.div 
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="w-24 h-24 rounded-full border-4 border-cyber-black bg-black overflow-hidden shadow-lg"
-              >
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User123" alt="Profile" className="w-full h-full" />
-              </motion.div>
-              <div className="flex gap-2">
-                <Link 
-                  href="/chat" 
-                  onClick={handleButtonClick}
-                  className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10 hover:bg-white/20 transition-colors shadow-lg"
+            
+            {/* Content Wrapper - Promoted above glare */}
+            <div className="relative z-30">
+                <div className="flex justify-between items-end">
+                <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="w-24 h-24 rounded-full border-4 border-cyber-black bg-black overflow-hidden shadow-lg"
                 >
-                  <MessageCircle className="w-6 h-6 text-white" />
-                </Link>
-                <button 
-                  onClick={() => {
-                    setIsSettingsOpen(true);
-                    handleButtonClick();
-                  }}
-                  className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10 hover:bg-white/20 transition-colors shadow-lg"
-                >
-                  <Settings className="w-6 h-6 text-white" />
-                </button>
-              </div>
-            </div>
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User123" alt="Profile" className="w-full h-full" />
+                </motion.div>
+                <div className="flex gap-2">
+                    <Link 
+                    href="/chat" 
+                    onClick={handleButtonClick}
+                    className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10 hover:bg-white/20 transition-colors shadow-lg cursor-pointer"
+                    >
+                    <MessageCircle className="w-6 h-6 text-white" />
+                    </Link>
+                    <button 
+                    onClick={() => {
+                        setIsSettingsOpen(true);
+                        handleButtonClick();
+                    }}
+                    className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10 hover:bg-white/20 transition-colors shadow-lg cursor-pointer"
+                    >
+                    <Settings className="w-6 h-6 text-white" />
+                    </button>
+                </div>
+                </div>
 
-            <div className="mt-4 relative z-30">
-              <h1 className="text-2xl font-bold drop-shadow-md">Cyber Drifter</h1>
-              <p className="text-cyber-blue drop-shadow-sm">@neon_genesis</p>
-              <p className="mt-2 text-sm text-gray-300 leading-relaxed">
-                Building digital dreams in the void. 
-                <br/>
-                Full-stack Developer | UI Enthusiast
-              </p>
-            </div>
+                <div className="mt-4">
+                <h1 className="text-2xl font-bold drop-shadow-md">Cyber Drifter</h1>
+                <p className="text-cyber-blue drop-shadow-sm">@neon_genesis</p>
+                <p className="mt-2 text-sm text-gray-300 leading-relaxed">
+                    Building digital dreams in the void. 
+                    <br/>
+                    Full-stack Developer | UI Enthusiast
+                </p>
+                </div>
 
-            {/* Stats */}
-            <div className="flex gap-6 mt-6 py-4 border-y border-white/10 relative z-30">
-              <Stat label="Following" value="245" />
-              <Stat label="Followers" value="12.4K" />
-              <Stat label="Likes" value="84.2K" />
+                {/* Stats */}
+                <div className="flex gap-6 mt-6 py-4 border-y border-white/10">
+                <Stat label="Following" value="245" />
+                <Stat label="Followers" value="12.4K" />
+                <Stat label="Likes" value="84.2K" />
+                </div>
             </div>
           </motion.div>
 
