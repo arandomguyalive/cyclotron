@@ -94,9 +94,14 @@ export default function VortexPage() {
   }, [activeIndex, GAP, zPosition]);
 
   return (
-    <div 
-        className="h-[100dvh] w-full bg-black overflow-hidden flex items-center justify-center perspective-container"
+    <motion.div 
+        className="h-[100dvh] w-full bg-black overflow-hidden flex items-center justify-center perspective-container cursor-grab active:cursor-grabbing"
         onWheel={handleWheel}
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={0.2}
+        onDragEnd={handleDragEnd}
+        style={{ touchAction: "none" }}
     >
       <style jsx global>{`
         .perspective-container {
@@ -107,18 +112,8 @@ export default function VortexPage() {
         }
       `}</style>
 
-      {/* Touch Interaction Layer */}
-      <motion.div
-        className="absolute inset-0 z-50 cursor-grab active:cursor-grabbing"
-        drag="y"
-        dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={0.2}
-        onDragEnd={handleDragEnd}
-        style={{ touchAction: "none" }}
-      />
-
       {/* Score / Cycles Display */}
-      <div className="absolute top-4 right-4 z-[60] flex items-center gap-2 bg-black/50 backdrop-blur-md border border-cyber-blue/30 px-3 py-1 rounded-full">
+      <div className="absolute top-4 right-4 z-[60] flex items-center gap-2 bg-black/50 backdrop-blur-md border border-cyber-blue/30 px-3 py-1 rounded-full pointer-events-none">
           <Box className="w-4 h-4 text-cyber-blue animate-pulse" />
           <span className="font-mono text-cyber-blue font-bold">{cycles} Cycles</span>
       </div>
@@ -137,7 +132,7 @@ export default function VortexPage() {
       )}
 
       {/* The 3D Tunnel World */}
-      <div className="relative w-full h-full md:max-w-md md:aspect-[9/16] preserve-3d flex items-center justify-center">
+      <div className="relative w-full h-full md:max-w-md md:aspect-[9/16] preserve-3d flex items-center justify-center pointer-events-none">
         {Array.from({ length: ITEMS_COUNT }).map((_, i) => (
             <TunnelItem 
                 key={i} 
@@ -151,7 +146,7 @@ export default function VortexPage() {
       
       {/* Ambient Particles / Stars */}
       <div className="absolute inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-screen" />
-    </div>
+    </motion.div>
   );
 }
 
@@ -168,9 +163,6 @@ function TunnelItem({ index, parentZ, activeIndex, onCollect }: { index: number,
     
     // Scale effect: items start small in distance, grow to 1 at camera, and become huge when passing
     const scale = useTransform(z, [-GAP, 0, GAP*4], [2, 1, 0.2]);
-    
-    // Blur effect for depth of field
-    const blur = useTransform(z, [-GAP, 0, GAP*4], ["blur(10px)", "blur(0px)", "blur(8px)"]);
     
     // Rotation tilt for dynamic feel
     const rotateX = useTransform(z, [-GAP, 0, GAP], [10, 0, -10]); 
@@ -189,7 +181,6 @@ function TunnelItem({ index, parentZ, activeIndex, onCollect }: { index: number,
                 z,
                 opacity,
                 scale,
-                filter: blur,
                 rotateX,
                 display,
                 position: 'absolute',
@@ -198,6 +189,7 @@ function TunnelItem({ index, parentZ, activeIndex, onCollect }: { index: number,
                 transformStyle: 'preserve-3d',
                 alignItems: 'center',
                 justifyContent: 'center',
+                willChange: 'transform, opacity'
             }}
             className="origin-center p-4"
         >
@@ -206,7 +198,7 @@ function TunnelItem({ index, parentZ, activeIndex, onCollect }: { index: number,
 
              {/* Scavenger Hunt Artifact */}
              {hasArtifact && (
-                 <div style={{ transform: `translate3d(${artifactX}px, ${artifactY}px, 100px)` }} className="absolute z-[70]">
+                 <div style={{ transform: `translate3d(${artifactX}px, ${artifactY}px, 100px)` }} className="absolute z-[70] pointer-events-auto">
                      <Artifact onCollect={onCollect} />
                  </div>
              )}
