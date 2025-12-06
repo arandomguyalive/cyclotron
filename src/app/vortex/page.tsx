@@ -159,6 +159,11 @@ function TunnelItem({ index, parentZ, activeIndex, onCollect }: { index: number,
     
     // Visual transformations based on Z depth
     const opacity = useTransform(z, [-GAP, -GAP/2, 0, GAP*3], [0, 0, 1, 0]);
+
+    // Re-introduce Scale & Rotation using cheap transforms
+    // We use a static rotation and dynamic scale calculated from Z
+    // Logic: As Z gets closer (moves from negative to 0), scale increases
+    const scale = useTransform(z, [-GAP, 0, GAP*4], [2, 1, 0.2]);
     
     // Optimization: Hide items far off-screen
     const display = useTransform(z, (currentZ) => (currentZ < -GAP*2 || currentZ > GAP*5) ? "none" : "flex");
@@ -172,8 +177,10 @@ function TunnelItem({ index, parentZ, activeIndex, onCollect }: { index: number,
         <motion.div
             style={{
                 z,
+                scale,
                 opacity,
                 display,
+                rotateX: 10, // Static rotation for 3D effect
                 position: 'absolute',
                 width: '100%',
                 height: '100%',
