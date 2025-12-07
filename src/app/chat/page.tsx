@@ -9,6 +9,7 @@ import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { UserSearchModal } from "@/components/chat/UserSearchModal";
 
 interface Chat {
   id: string;
@@ -24,6 +25,7 @@ export default function ChatListPage() {
   const router = useRouter();
   const [chats, setChats] = useState<Chat[]>([]);
   const [chatsLoading, setChatsLoading] = useState(true);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
     if (!userLoading && !firebaseUser) {
@@ -61,8 +63,7 @@ export default function ChatListPage() {
   const handleNewChat = () => {
     playClick(500, 0.08, 'sine');
     if (navigator.vibrate) navigator.vibrate(30);
-    // TODO: Implement logic to create a new chat, e.g., navigate to a user search page
-    alert("New chat functionality coming soon!");
+    setIsSearchOpen(true);
   };
 
   if (userLoading || chatsLoading) {
@@ -132,6 +133,8 @@ export default function ChatListPage() {
           ))
         )}
       </div>
+
+      <UserSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </div>
   );
 }
