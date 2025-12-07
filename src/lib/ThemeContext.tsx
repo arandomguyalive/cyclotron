@@ -40,6 +40,51 @@ const themes = {
     '--color-accent-2': '#CCCCCC',
     '--color-border': 'rgba(255,255,255,0.1)',
   },
+  vaporwave: {
+    '--color-primary-bg': '#1a0a2e',
+    '--color-secondary-bg': '#2d1b4e',
+    '--color-primary-text': '#00fff9',
+    '--color-secondary-text': '#ff00c1',
+    '--color-accent-1': '#00fff9',
+    '--color-accent-2': '#ff00c1',
+    '--color-border': 'rgba(0,255,249,0.3)',
+  },
+  solar: {
+    '--color-primary-bg': '#0f0f0f',
+    '--color-secondary-bg': '#1a1a1a',
+    '--color-primary-text': '#ffaa00',
+    '--color-secondary-text': '#cc8800',
+    '--color-accent-1': '#ffcc00',
+    '--color-accent-2': '#ff6600',
+    '--color-border': 'rgba(255,170,0,0.2)',
+  },
+  netrunner: {
+    '--color-primary-bg': '#051a1a',
+    '--color-secondary-bg': '#0a2525',
+    '--color-primary-text': '#00ff9d',
+    '--color-secondary-text': '#00cc7d',
+    '--color-accent-1': '#00ff9d',
+    '--color-accent-2': '#00b8ff',
+    '--color-border': 'rgba(0,255,157,0.2)',
+  },
+  arctic: {
+    '--color-primary-bg': '#081018',
+    '--color-secondary-bg': '#102028',
+    '--color-primary-text': '#e0f0ff',
+    '--color-secondary-text': '#a0c0d0',
+    '--color-accent-1': '#00aaff',
+    '--color-accent-2': '#ffffff',
+    '--color-border': 'rgba(0,170,255,0.2)',
+  },
+  km18_gold: {
+    '--color-primary-bg': '#050505',
+    '--color-secondary-bg': '#111111',
+    '--color-primary-text': '#D4AF37', // Gold
+    '--color-secondary-text': '#C5A028',
+    '--color-accent-1': '#FFD700',
+    '--color-accent-2': '#FFFFFF',
+    '--color-border': 'rgba(212,175,55,0.4)',
+  },
 };
 
 type ThemeName = keyof typeof themes;

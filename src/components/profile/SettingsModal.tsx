@@ -1,8 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Moon, Shield, Database, LogOut, ChevronRight, User, EyeOff, Clock, Fingerprint, CameraOff } from "lucide-react";
-import { useState, useEffect } from "react"; // Added useEffect
+import { X, Moon, Shield, Database, LogOut, ChevronRight, ChevronLeft, User, EyeOff, Clock, Fingerprint, CameraOff, Lock } from "lucide-react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useSonic } from "@/lib/SonicContext";
 import { EditProfileModal } from "./EditProfileModal";
@@ -14,11 +14,14 @@ interface SettingsModalProps {
   onClose: () => void;
 }
 
+type SettingsView = 'main' | 'privacy' | 'appearance';
+
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { playClick } = useSonic();
   const { user } = useUser();
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
+  const [currentView, setCurrentView] = useState<SettingsView>('main');
 
   // Privacy Settings States
   const [ghostMode, setGhostMode] = useState(false);
@@ -40,13 +43,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const newState = !currentState;
     setter(newState);
     localStorage.setItem(key, String(newState));
+    playClick(newState ? 660 : 440, 0.05, 'sine');
   };
-
-  const handleSelfDestructChange = (value: string) => {
-    setSelfDestructTimer(value);
-    localStorage.setItem('oblivion_selfDestructTimer', value);
-  };
-
 
   const handleButtonClick = () => {
     playClick(350, 0.05, 'square');
@@ -57,7 +55,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   const handleClose = () => {
     handleButtonClick();
+    setCurrentView('main');
     onClose();
+  }
+
+  const navigateTo = (view: SettingsView) => {
+      handleButtonClick();
+      setCurrentView(view);
   }
 
   return (
@@ -89,7 +93,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
             {/* Header */}
             <div className="px-6 py-4 border-b border-border-color flex items-center justify-between bg-primary-bg">
-                <h2 className="text-xl font-bold text-primary-text">Settings</h2>
+                <div className="flex items-center gap-2">
+                    {currentView !== 'main' && (
+                        <button onClick={() => navigateTo('main')} className="mr-2 -ml-2 p-1 hover:bg-secondary-bg rounded-full">
+                            <ChevronLeft className="w-6 h-6 text-primary-text" />
+                        </button>
+                    )}
+                    <h2 className="text-xl font-bold text-primary-text">
+                        {currentView === 'main' ? 'Settings' : (currentView === 'privacy' ? 'Privacy & Security' : 'Appearance')}
+                    </h2>
+                </div>
                 <button onClick={handleClose} className="p-2 bg-secondary-bg/5 rounded-full hover:bg-secondary-bg/10 transition-colors">
                     <X className="w-5 h-5 text-secondary-text" />
                 </button>
@@ -98,74 +111,122 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-8">
                 
-                {/* Section: Account */}
-                <Section title="Account">
-                    <SettingItem 
-                        icon={User} 
-                        label="Edit Profile" 
-                        value={user?.handle || 'Guest'} 
-                        onClick={() => {
-                            handleButtonClick();
-                            setIsEditProfileOpen(true);
-                        }} 
-                    />
-                </Section>
+                {currentView === 'main' && (
+                    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
+                        {/* Section: Account */}
+                        <Section title="Account">
+                            <SettingItem 
+                                icon={User} 
+                                label="Edit Profile" 
+                                value={user?.handle || 'Guest'} 
+                                onClick={() => {
+                                    handleButtonClick();
+                                    setIsEditProfileOpen(true);
+                                }} 
+                            />
+                        </Section>
 
-                {/* Section: Privacy & Security */}
-                <Section title="Privacy & Security">
-                    <SettingItem 
-                        icon={EyeOff} 
-                        label="Ghost Mode" 
-                        toggle 
-                        isEnabled={ghostMode} 
-                        onClick={() => handleToggle('oblivion_ghostMode', ghostMode, setGhostMode)} 
-                    />
-                    <SettingItem 
-                        icon={Clock} 
-                        label="Default Message TTL" 
-                        value={selfDestructTimer}
-                        onClick={() => handleButtonClick()} // Could open a picker modal later
-                    />
-                    <SettingItem 
-                        icon={Fingerprint} 
-                        label="Bio-Lock" 
-                        toggle 
-                        isEnabled={bioLock} 
-                        onClick={() => handleToggle('oblivion_bioLock', bioLock, setBioLock)} 
-                        isPaid // Mark as paid
-                    />
-                    <SettingItem 
-                        icon={CameraOff} 
-                        label="Screenshot Alert" 
-                        toggle 
-                        isEnabled={screenshotAlert} 
-                        onClick={() => handleToggle('oblivion_screenshotAlert', screenshotAlert, setScreenshotAlert)} 
-                    />
-                </Section>
+                        {/* Categories */}
+                        <div className="grid grid-cols-1 gap-4">
+                            <button onClick={() => navigateTo('privacy')} className="flex items-center justify-between p-6 bg-primary-bg border border-border-color rounded-2xl hover:border-accent-1/50 transition-colors group">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-accent-1/10 text-accent-1 rounded-full group-hover:bg-accent-1/20 transition-colors">
+                                        <Shield className="w-6 h-6" />
+                                    </div>
+                                    <div className="flex flex-col items-start">
+                                        <span className="text-lg font-bold text-primary-text">Privacy & Security</span>
+                                        <span className="text-xs text-secondary-text">Ghost Mode, Bio-Lock, TTL</span>
+                                    </div>
+                                </div>
+                                <ChevronRight className="w-6 h-6 text-secondary-text group-hover:text-accent-1" />
+                            </button>
 
-                {/* Section: Appearance */}
-                <Section title="Appearance">
-                    <SettingItem 
-                        icon={Moon} 
-                        label="Theme" 
-                        onClick={() => {
-                            handleButtonClick();
-                            setIsThemeSelectorOpen(true);
-                        }} 
-                    />
-                    <SettingItem icon={Database} label="Data Saver" toggle onClick={handleButtonClick} />
-                </Section>
+                            <button onClick={() => navigateTo('appearance')} className="flex items-center justify-between p-6 bg-primary-bg border border-border-color rounded-2xl hover:border-accent-2/50 transition-colors group">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-accent-2/10 text-accent-2 rounded-full group-hover:bg-accent-2/20 transition-colors">
+                                        <Moon className="w-6 h-6" />
+                                    </div>
+                                    <div className="flex flex-col items-start">
+                                        <span className="text-lg font-bold text-primary-text">Appearance</span>
+                                        <span className="text-xs text-secondary-text">Themes, UI Density</span>
+                                    </div>
+                                </div>
+                                <ChevronRight className="w-6 h-6 text-secondary-text group-hover:text-accent-2" />
+                            </button>
+                        </div>
 
-                {/* Section: Danger Zone */}
-                <div className="pt-4">
-                     <button 
-                        onClick={handleButtonClick}
-                        className="w-full py-4 flex items-center justify-center gap-2 text-red-500 bg-red-500/10 rounded-xl border border-red-500/20 hover:bg-red-500/20 transition-colors"
-                     >
-                        <LogOut className="w-5 h-5" />
-                        <span className="font-bold">Log Out</span>
-                     </button>
-                </div>
+                        {/* Section: Danger Zone */}
+                        <div className="pt-4">
+                            <button 
+                                onClick={handleButtonClick}
+                                className="w-full py-4 flex items-center justify-center gap-2 text-red-500 bg-red-500/10 rounded-xl border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                            >
+                                <LogOut className="w-5 h-5" />
+                                <span className="font-bold">Log Out</span>
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+
+                {currentView === 'privacy' && (
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
+                        <Section title="Anonymity">
+                            <SettingItem 
+                                icon={EyeOff} 
+                                label="Ghost Mode" 
+                                toggle 
+                                isEnabled={ghostMode} 
+                                onClick={() => handleToggle('oblivion_ghostMode', ghostMode, setGhostMode)} 
+                            />
+                            <SettingItem 
+                                icon={Clock} 
+                                label="Default Message TTL" 
+                                value={selfDestructTimer}
+                                onClick={() => handleButtonClick()} 
+                            />
+                        </Section>
+                        <Section title="Hardening">
+                            <SettingItem 
+                                icon={Fingerprint} 
+                                label="Bio-Lock" 
+                                toggle 
+                                isEnabled={bioLock} 
+                                onClick={() => handleToggle('oblivion_bioLock', bioLock, setBioLock)} 
+                                isPaid 
+                            />
+                            <SettingItem 
+                                icon={CameraOff} 
+                                label="Screenshot Alert" 
+                                toggle 
+                                isEnabled={screenshotAlert} 
+                                onClick={() => handleToggle('oblivion_screenshotAlert', screenshotAlert, setScreenshotAlert)} 
+                            />
+                            <SettingItem 
+                                icon={Lock} 
+                                label="Burner Key" 
+                                value="Active"
+                                onClick={() => handleButtonClick()} 
+                                isPaid
+                            />
+                        </Section>
+                    </motion.div>
+                )}
+
+                {currentView === 'appearance' && (
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
+                        <Section title="Interface">
+                            <SettingItem 
+                                icon={Moon} 
+                                label="Theme Engine" 
+                                onClick={() => {
+                                    handleButtonClick();
+                                    setIsThemeSelectorOpen(true);
+                                }} 
+                            />
+                            <SettingItem icon={Database} label="Data Saver" toggle onClick={handleButtonClick} />
+                        </Section>
+                    </motion.div>
+                )}
                 
                 <div className="text-center text-xs text-secondary-text pt-8">
                     ABHED v1.0.0 <span className="opacity-50">// Powered by KM18</span>
