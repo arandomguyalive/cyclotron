@@ -103,7 +103,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     <SettingItem 
                         icon={User} 
                         label="Edit Profile" 
-                        value={user.handle} 
+                        value={user?.handle || 'Guest'} 
                         onClick={() => {
                             handleButtonClick();
                             setIsEditProfileOpen(true);
@@ -185,3 +185,63 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         onClose={() => setIsThemeSelectorOpen(false)}
     />
     </>
+  );
+}
+
+function Section({ title, children }: { title: string, children: React.ReactNode }) {
+  return (
+    <div className="space-y-3">
+      <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider ml-2">{title}</h3>
+      <div className="space-y-1">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function SettingItem({ 
+  icon: Icon, 
+  label, 
+  value, 
+  toggle, 
+  isEnabled, 
+  isPaid, 
+  onClick 
+}: { 
+  icon: any, 
+  label: string, 
+  value?: string, 
+  toggle?: boolean, 
+  isEnabled?: boolean, 
+  isPaid?: boolean, 
+  onClick: () => void 
+}) {
+  return (
+    <button 
+      onClick={onClick}
+      className="w-full flex items-center justify-between p-4 bg-primary-bg rounded-2xl border border-border-color hover:border-accent-1/30 transition-colors active:scale-[0.98]"
+    >
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-secondary-bg rounded-full text-secondary-text">
+          <Icon className="w-5 h-5" />
+        </div>
+        <div className="flex flex-col items-start">
+            <span className="font-medium text-primary-text flex items-center gap-2">
+                {label}
+                {isPaid && <span className="px-1.5 py-0.5 bg-accent-1/20 text-accent-1 text-[10px] rounded font-bold uppercase">Pro</span>}
+            </span>
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-2">
+        {value && <span className="text-sm text-secondary-text">{value}</span>}
+        {toggle && (
+           <div className={`w-12 h-6 rounded-full relative transition-colors ${isEnabled ? "bg-accent-1" : "bg-secondary-bg"}`}>
+               <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${isEnabled ? "left-7" : "left-1"}`} />
+           </div>
+        )}
+        {!toggle && !value && <ChevronRight className="w-5 h-5 text-secondary-text/50" />}
+      </div>
+    </button>
+  );
+}

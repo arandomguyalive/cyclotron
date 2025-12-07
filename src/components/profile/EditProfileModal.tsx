@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Save, RefreshCw } from "lucide-react";
 import { useUser } from "@/lib/UserContext";
@@ -16,10 +16,19 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   const { playClick } = useSonic();
   
   // Local state for form inputs
-  const [name, setName] = useState(user.displayName);
-  const [handle, setHandle] = useState(user.handle);
-  const [bio, setBio] = useState(user.bio);
-  const [avatarSeed, setAvatarSeed] = useState(user.avatarSeed);
+  const [name, setName] = useState(user?.displayName || "");
+  const [handle, setHandle] = useState(user?.handle || "");
+  const [bio, setBio] = useState(user?.bio || "");
+  const [avatarSeed, setAvatarSeed] = useState(user?.avatarSeed || "default");
+
+  useEffect(() => {
+    if (user) {
+      setName(user.displayName);
+      setHandle(user.handle);
+      setBio(user.bio);
+      setAvatarSeed(user.avatarSeed);
+    }
+  }, [user]);
 
   const handleSave = () => {
     playClick(440, 0.1, 'sine');

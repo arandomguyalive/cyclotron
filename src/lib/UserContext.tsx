@@ -1,6 +1,14 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { auth, db } from "./firebase";
+import { 
+  onAuthStateChanged, 
+  signInAnonymously as firebaseSignInAnonymously, 
+  signOut as firebaseSignOut, 
+  User 
+} from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 interface UserProfile {
   displayName: string;
@@ -16,8 +24,12 @@ interface UserProfile {
 }
 
 interface UserContextType {
-  user: UserProfile;
+  user: UserProfile | null;
+  firebaseUser: User | null;
+  loading: boolean;
   updateUser: (updates: Partial<UserProfile>) => void;
+  loginAnonymously: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const defaultUser: UserProfile = {
@@ -36,30 +48,77 @@ const defaultUser: UserProfile = {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserProfile>(defaultUser);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Load from local storage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("oblivion_user");
-    if (saved) {
-      try {
-        setUser(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to load user data", e);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setFirebaseUser(currentUser);
+      
+      if (currentUser) {
+        // Try to fetch real profile from Firestore
+        try {
+          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          if (userDoc.exists()) {
+            setUser(userDoc.data() as UserProfile);
+          } else {
+            // Fallback to default/mock user if no profile exists (e.g. Anonymous)
+            // We check localStorage first to persist changes in "Ghost" mode
+            const saved = localStorage.getItem("oblivion_user");
+            if (saved) {
+               setUser(JSON.parse(saved));
+            } else {
+               setUser(defaultUser);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+          setUser(defaultUser);
+        }
+      } else {
+        setUser(null);
       }
-    }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const updateUser = (updates: Partial<UserProfile>) => {
     setUser((prev) => {
+      if (!prev) return null;
       const newState = { ...prev, ...updates };
-      localStorage.setItem("oblivion_user", JSON.stringify(newState));
+      // If we are anonymous/testing, save to local storage
+      if (firebaseUser?.isAnonymous) {
+          localStorage.setItem("oblivion_user", JSON.stringify(newState));
+      }
+      // TODO: In Phase 2, we will also update Firestore here
       return newState;
     });
   };
 
+  const loginAnonymously = async () => {
+    setLoading(true);
+    try {
+      await firebaseSignInAnonymously(auth);
+    } catch (error) {
+      console.error("Anonymous login failed", error);
+      setLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await firebaseSignOut(auth);
+      localStorage.removeItem("oblivion_user"); // Clear local overrides on logout
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
+
   return (
-    <UserContext.Provider value={{ user, updateUser }}>
+    <UserContext.Provider value={{ user, firebaseUser, loading, updateUser, loginAnonymously, logout }}>
       {children}
     </UserContext.Provider>
   );

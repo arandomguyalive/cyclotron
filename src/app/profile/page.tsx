@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Settings, Grid, Film, Heart, MessageCircle } from "lucide-react";
 import { SettingsModal } from "@/components/profile/SettingsModal";
@@ -11,7 +12,14 @@ import { useUser } from "@/lib/UserContext";
 export default function ProfilePage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { playClick } = useSonic();
-  const { user } = useUser();
+  const { user, loading, firebaseUser } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !firebaseUser) {
+        router.push("/login");
+    }
+  }, [loading, firebaseUser, router]);
 
   const handleButtonClick = () => {
     playClick(300, 0.05, 'square'); // A softer click for general buttons
@@ -19,6 +27,14 @@ export default function ProfilePage() {
       navigator.vibrate(20); // Even shorter vibration
     }
   };
+
+  if (loading || !user) {
+      return (
+          <div className="min-h-screen flex items-center justify-center bg-primary-bg text-accent-1 font-mono animate-pulse">
+              LOADING PROFILE DATA...
+          </div>
+      );
+  }
 
   return (
     <div className="min-h-screen bg-primary-bg text-primary-text pb-24">
