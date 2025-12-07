@@ -2,7 +2,7 @@ import { initializeApp, getApps } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
-import { getAnalytics, isSupported } from "firebase/analytics";
+// import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -21,9 +21,10 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 
+// Analytics disabled to prevent 400 errors due to API Key restrictions
+/*
 export let analytics: ReturnType<typeof getAnalytics> | null = null;
 
-// Initialize Analytics only on the client side
 if (typeof window !== "undefined") {
   isSupported().then((supported) => {
     if (supported) {
@@ -31,3 +32,4 @@ if (typeof window !== "undefined") {
     }
   });
 }
+*/

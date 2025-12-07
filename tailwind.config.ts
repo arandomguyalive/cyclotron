@@ -1,18 +1,15 @@
-// The current `tailwind.config.mjs` is empty. We need to replace it with the `tailwind.config.ts` version.
-
 import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/**/*.{js,ts,jsx,tsx,mdx}", // Ensure all src files are covered
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        // Define CSS variables for themeable colors
         "primary-bg": "var(--color-primary-bg)",
         "secondary-bg": "var(--color-secondary-bg)",
         "primary-text": "var(--color-primary-text)",
@@ -21,7 +18,6 @@ const config: Config = {
         "accent-2": "var(--color-accent-2)",
         "border-color": "var(--color-border)",
         
-        // Original cyberpunk colors (can be mapped to vars later)
         "cyber-black": "#0A0A0A",
         "cyber-white": "#F0F0F0",
         "cyber-blue": "#00F0FF",
