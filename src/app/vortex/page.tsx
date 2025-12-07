@@ -10,10 +10,72 @@ import { db } from "@/lib/firebase";
 
 const GAP = 1200; // Distance between items on Z axis
 
+// Mock Data for Showcase
+const mockPosts: Post[] = [
+    {
+        id: "mock-1",
+        caption: "Neon city lights reflecting on wet pavement. The vibe is unmatched. #cyberpunk #nightcity",
+        mediaUrl: "https://images.unsplash.com/photo-1555680202-c86f0e12f086?q=80&w=1000&auto=format&fit=crop",
+        mediaType: "image",
+        userId: "mock-user-1",
+        userHandle: "neon_drifter",
+        userAvatar: "Felix",
+        likes: 1240,
+        createdAt: { toDate: () => new Date() }
+    },
+    {
+        id: "mock-2",
+        caption: "Neural interface upgrade complete. Systems green. Ready for the dive.",
+        mediaUrl: "https://images.unsplash.com/photo-1535295972055-1c762f4483e5?q=80&w=1000&auto=format&fit=crop",
+        mediaType: "image",
+        userId: "mock-user-2",
+        userHandle: "system_shock",
+        userAvatar: "Cipher",
+        likes: 892,
+        createdAt: { toDate: () => new Date() }
+    },
+    {
+        id: "mock-3",
+        caption: "Lost in the digital void. Send coordinates.",
+        mediaUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop",
+        mediaType: "image",
+        userId: "mock-user-3",
+        userHandle: "void_walker",
+        userAvatar: "Echo",
+        likes: 3400,
+        createdAt: { toDate: () => new Date() }
+    },
+    {
+        id: "mock-4",
+        caption: "Hardware accelerated rendering test. FPS stable.",
+        mediaUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1000&auto=format&fit=crop",
+        mediaType: "image",
+        userId: "mock-user-4",
+        userHandle: "hardware_fiend",
+        userAvatar: "Chip",
+        likes: 560,
+        createdAt: { toDate: () => new Date() }
+    },
+    {
+        id: "mock-5",
+        caption: "The architecture of the future is purely code.",
+        mediaUrl: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop",
+        mediaType: "image",
+        userId: "mock-user-5",
+        userHandle: "architect_zero",
+        userAvatar: "Architect",
+        likes: 2100,
+        createdAt: { toDate: () => new Date() }
+    }
+];
+
 export default function VortexPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [realPosts, setRealPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   
+  const displayPosts = realPosts.length > 0 ? realPosts : mockPosts;
+  const isSimulation = realPosts.length === 0 && !loading;
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [cycles, setCycles] = useState(0); // Score for collecting artifacts
   const zPosition = useMotionValue(0);
@@ -35,7 +97,10 @@ export default function VortexPage() {
             id: doc.id,
             ...doc.data()
         })) as Post[];
-        setPosts(newPosts);
+        setRealPosts(newPosts);
+        setLoading(false);
+    }, (error) => {
+        console.error("Firestore error, falling back to mock", error);
         setLoading(false);
     });
     return () => unsubscribe();
@@ -59,7 +124,7 @@ export default function VortexPage() {
 
 
   const handleNavigation = (newIndex: number) => {
-    if (posts.length === 0) return;
+    // if (displayPosts.length === 0) return; // Always have posts now
     
     if (newIndex !== activeIndex) {
       setActiveIndex(newIndex);
@@ -79,7 +144,7 @@ export default function VortexPage() {
 
     // Swipe Up (drag y negative) -> Go Forward (Next Item)
     if (info.offset.y < -threshold || velocity < -300) {
-       newIndex = Math.min(activeIndex + 1, posts.length - 1);
+       newIndex = Math.min(activeIndex + 1, displayPosts.length - 1);
     } 
     // Swipe Down (drag y positive) -> Go Backward (Prev Item)
     else if (info.offset.y > threshold || velocity > 300) {
@@ -98,7 +163,7 @@ export default function VortexPage() {
       if (Math.abs(e.deltaY) > 30) {
           if (e.deltaY > 0) {
                // Scroll Down -> Next Item
-               newIndex = Math.min(activeIndex + 1, posts.length - 1);
+               newIndex = Math.min(activeIndex + 1, displayPosts.length - 1);
           } else {
                // Scroll Up -> Prev Item
                newIndex = Math.max(activeIndex - 1, 0);
@@ -118,20 +183,6 @@ export default function VortexPage() {
           <div className="h-screen w-full flex flex-col items-center justify-center bg-primary-bg text-accent-1">
               <Loader2 className="w-10 h-10 animate-spin mb-4" />
               <p className="font-mono text-xs tracking-widest animate-pulse">ESTABLISHING UPLINK...</p>
-          </div>
-      )
-  }
-
-  if (posts.length === 0) {
-      return (
-          <div className="h-screen w-full flex flex-col items-center justify-center bg-primary-bg text-secondary-text p-8 text-center">
-              <WifiOff className="w-16 h-16 mb-4 opacity-50" />
-              <h2 className="text-xl font-bold text-primary-text mb-2">NO SIGNALS DETECTED</h2>
-              <p className="max-w-md font-mono text-sm opacity-70">The void is silent. Be the first to transmit.</p>
-              <div className="mt-8 animate-bounce">
-                  <ChevronUp className="w-6 h-6 rotate-180" />
-                  <span className="text-[10px] uppercase tracking-widest">Use Transmit Button</span>
-              </div>
           </div>
       )
   }
@@ -156,9 +207,16 @@ export default function VortexPage() {
       `}</style>
 
       {/* Score / Cycles Display */}
-      <div className="absolute top-4 right-4 z-[60] flex items-center gap-2 bg-secondary-bg/50 backdrop-blur-md border border-accent-1/30 px-3 py-1 rounded-full pointer-events-none">
-          <Box className="w-4 h-4 text-accent-1 animate-pulse" />
-          <span className="font-mono text-accent-1 font-bold">{cycles} Cycles</span>
+      <div className="absolute top-4 right-4 z-[60] flex flex-col items-end gap-1 pointer-events-none">
+          <div className="flex items-center gap-2 bg-secondary-bg/50 backdrop-blur-md border border-accent-1/30 px-3 py-1 rounded-full">
+            <Box className="w-4 h-4 text-accent-1 animate-pulse" />
+            <span className="font-mono text-accent-1 font-bold">{cycles} Cycles</span>
+          </div>
+          {isSimulation && (
+              <span className="text-[10px] text-secondary-text bg-black/50 px-2 py-0.5 rounded uppercase tracking-widest">
+                  Simulation Mode
+              </span>
+          )}
       </div>
 
       {/* Navigation Hint (Only visible on start) */}
@@ -176,7 +234,7 @@ export default function VortexPage() {
 
       {/* The 3D Tunnel World */}
       <div className="relative w-full h-full md:max-w-md md:aspect-[9/16] preserve-3d flex items-center justify-center pointer-events-none">
-        {posts.map((post, i) => (
+        {displayPosts.map((post, i) => (
             <TunnelItem 
                 key={post.id} 
                 index={i}
