@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Save, RefreshCw } from "lucide-react";
+import { X, Save, RefreshCw, Loader2 } from "lucide-react";
 import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -12,7 +14,7 @@ interface EditProfileModalProps {
 }
 
 export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
-  const { user, updateUser } = useUser();
+  const { user, updateUser, firebaseUser } = useUser();
   const { playClick } = useSonic();
   
   // Local state for form inputs
@@ -20,6 +22,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   const [handle, setHandle] = useState(user?.handle || "");
   const [bio, setBio] = useState(user?.bio || "");
   const [avatarSeed, setAvatarSeed] = useState(user?.avatarSeed || "default");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -30,15 +33,34 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     }
   }, [user]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!firebaseUser) return;
+    
+    setIsSaving(true);
     playClick(440, 0.1, 'sine');
-    updateUser({
-      displayName: name,
-      handle,
-      bio,
-      avatarSeed
-    });
-    onClose();
+
+    try {
+        // Save to Firestore
+        const userRef = doc(db, "users", firebaseUser.uid);
+        const userData = {
+            displayName: name,
+            handle,
+            bio,
+            avatarSeed
+        };
+        
+        await setDoc(userRef, userData, { merge: true });
+
+        // Update local context
+        updateUser(userData);
+        
+        onClose();
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        alert("Failed to update profile. Neural link unstable.");
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const randomizeAvatar = () => {
@@ -139,10 +161,20 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               <div className="p-4 border-t border-border-color bg-primary-bg flex justify-end">
                 <button 
                   onClick={handleSave}
-                  className="flex items-center gap-2 px-6 py-3 bg-accent-1 text-primary-bg font-bold rounded-xl hover:bg-accent-1/90 transition-colors"
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-6 py-3 bg-accent-1 text-primary-bg font-bold rounded-xl hover:bg-accent-1/90 transition-colors disabled:opacity-50"
                 >
-                  <Save className="w-4 h-4" />
-                  Save Changes
+                  {isSaving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Saving...
+                      </>
+                  ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        Save Changes
+                      </>
+                  )}
                 </button>
               </div>
 
