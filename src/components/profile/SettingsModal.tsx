@@ -168,7 +168,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </div>
                 
                 <div className="text-center text-xs text-secondary-text pt-8">
-                    KM18&apos;s ABHED v1.0.0
+                    ABHED v1.0.0 <span className="opacity-50">// Powered by KM18</span>
                 </div>
             </div>
           </motion.div>

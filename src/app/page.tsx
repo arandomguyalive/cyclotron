@@ -40,7 +40,7 @@ export default function Home() {
         >
             The Impenetrable Digital Sanctum.
             <br />
-            <span className="text-sm opacity-50">KM18&apos;s Fortress of Solitude.</span>
+            <span className="text-xs uppercase tracking-[0.3em] text-accent-2/80 mt-4 inline-block">A KM18 Production</span>
         </motion.p>
 
         <motion.button
