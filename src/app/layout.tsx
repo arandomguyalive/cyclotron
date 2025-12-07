@@ -15,13 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cyclotron",
-  description: "The future of social connection.",
+  title: "KM18's ABHED",
+  description: "The Impenetrable Digital Sanctum.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Cyclotron",
+    title: "KM18's ABHED",
   },
 };
 

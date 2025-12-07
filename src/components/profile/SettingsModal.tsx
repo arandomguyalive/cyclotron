@@ -168,7 +168,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </div>
                 
                 <div className="text-center text-xs text-secondary-text pt-8">
-                    Oblivion v0.1.0 (Alpha)
+                    KM18&apos;s ABHED v1.0.0
                 </div>
             </div>
           </motion.div>

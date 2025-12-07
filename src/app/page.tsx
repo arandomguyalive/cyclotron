@@ -28,7 +28,7 @@ export default function Home() {
             transition={{ duration: 0.8 }}
         >
             <h1 className="text-6xl md:text-9xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-accent-1 to-transparent tracking-tighter">
-                OBLIVION
+                ABHED
             </h1>
         </motion.div>
         
@@ -38,7 +38,9 @@ export default function Home() {
             transition={{ delay: 0.5, duration: 1 }}
             className="text-primary-text/80 text-xl font-light tracking-wide max-w-lg"
         >
-            The future is not written. It is encrypted.
+            The Impenetrable Digital Sanctum.
+            <br />
+            <span className="text-sm opacity-50">KM18&apos;s Fortress of Solitude.</span>
         </motion.p>
 
         <motion.button
