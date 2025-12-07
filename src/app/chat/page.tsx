@@ -1,187 +1,137 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Send, Lock, RefreshCw, ChevronLeft } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import AES from "crypto-js/aes";
-import encUtf8 from "crypto-js/enc-utf8";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { MessageCircle, Search, PlusCircle, Loader2 } from "lucide-react";
+import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
-interface Message {
+interface Chat {
   id: string;
-  text: string;
-  encrypted: string;
-  sender: "me" | "them";
-  timestamp: number;
+  participants: string[]; // UIDs of participants
+  lastMessage: string;
+  lastMessageTimestamp: any;
+  // Other metadata like chat name, avatar, etc.
 }
 
-const SECRET_KEY = "cyclotron-secret-key-v1";
-
-export default function ChatPage() {
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const bottomRef = useRef<HTMLDivElement>(null);
+export default function ChatListPage() {
+  const { firebaseUser, loading: userLoading } = useUser();
+  const { playClick } = useSonic();
   const router = useRouter();
-
-  // Initial welcome message
-  useEffect(() => {
-    addMessage("Welcome to Cyclotron Secure Chat. End-to-End Encrypted.", "them");
-  }, []);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [chatsLoading, setChatsLoading] = useState(true);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (!userLoading && !firebaseUser) {
+      router.push("/login");
+      return;
+    }
 
-  const addMessage = (text: string, sender: "me" | "them") => {
-    const encrypted = AES.encrypt(text, SECRET_KEY).toString();
-    const newMessage: Message = {
-      id: Date.now().toString() + Math.random(),
-      text,
-      encrypted,
-      sender,
-      timestamp: Date.now(),
-    };
-    setMessages((prev) => [...prev, newMessage]);
+    if (firebaseUser) {
+      const q = query(
+        collection(db, "chats"),
+        where("participants", "array-contains", firebaseUser.uid)
+      );
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const fetchedChats: Chat[] = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Chat[];
+        setChats(fetchedChats);
+        setChatsLoading(false);
+      }, (error) => {
+        console.error("Error fetching chat list:", error);
+        setChatsLoading(false);
+      });
+
+      return () => unsubscribe();
+    }
+  }, [firebaseUser, userLoading, router]);
+
+  const handleChatClick = () => {
+    playClick(350, 0.05, 'square');
+    if (navigator.vibrate) navigator.vibrate(20);
   };
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    addMessage(input, "me");
-    setInput("");
-    
-    // Auto-reply simulation
-    setTimeout(() => {
-      addMessage("I received your encrypted transmission.", "them");
-    }, 2000);
+  const handleNewChat = () => {
+    playClick(500, 0.08, 'sine');
+    if (navigator.vibrate) navigator.vibrate(30);
+    // TODO: Implement logic to create a new chat, e.g., navigate to a user search page
+    alert("New chat functionality coming soon!");
   };
+
+  if (userLoading || chatsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-primary-bg text-accent-1">
+        <Loader2 className="w-10 h-10 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!firebaseUser) {
+      return null; // Should redirect to login by useEffect
+  }
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-primary-bg">
+    <div className="flex flex-col h-screen bg-primary-bg">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-border-color flex items-center gap-3 bg-primary-bg/80 backdrop-blur-md sticky top-0 z-50 safe-area-top">
-        <button 
-            onClick={() => router.back()} 
-            className="p-2 -ml-2 text-secondary-text hover:text-primary-text transition-colors"
-        >
-            <ChevronLeft className="w-6 h-6" />
-        </button>
-
-        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-accent-1 to-accent-2 p-[2px]">
-          <img 
-            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Agent" 
-            alt="Agent" 
-            className="w-full h-full rounded-full bg-primary-bg"
-          />
-        </div>
-        <div>
-          <h2 className="font-bold text-primary-text">Agent Zero</h2>
-          <div className="flex items-center gap-1 text-xs text-accent-1/80">
-            <Lock className="w-3 h-3" />
-            <span>E2EE Active</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
-        ))}
-        <div ref={bottomRef} />
-      </div>
-
-      {/* Input Area */}
-      <div className="p-4 bg-primary-bg border-t border-border-color sticky bottom-0 z-50 pb-safe-area-inset-bottom">
-        <div className="flex items-center gap-2 relative">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Type encrypted message..."
-            className="flex-1 bg-secondary-bg/50 border border-border-color rounded-full px-4 py-3 text-primary-text placeholder:text-secondary-text focus:outline-none focus:border-accent-1 transition-colors"
-          />
-          <button 
-            onClick={handleSend}
-            className="w-10 h-10 rounded-full bg-accent-1 flex items-center justify-center text-primary-bg hover:bg-accent-1/80 transition-colors shrink-0"
-          >
-            <Send className="w-5 h-5" />
+      <div className="px-4 py-3 border-b border-border-color flex items-center justify-between bg-primary-bg/80 backdrop-blur-md sticky top-0 z-50 safe-area-top">
+        <h2 className="text-xl font-bold text-primary-text">Transmissions</h2>
+        <div className="flex items-center gap-4">
+          <button onClick={handleChatClick} className="text-secondary-text hover:text-primary-text transition-colors">
+            <Search className="w-6 h-6" />
+          </button>
+          <button onClick={handleNewChat} className="text-accent-1 hover:text-accent-1/80 transition-colors">
+            <PlusCircle className="w-6 h-6" />
           </button>
         </div>
       </div>
-    </div>
-  );
-}
 
-function MessageBubble({ message }: { message: Message }) {
-  const [isRevealed, setIsRevealed] = useState(message.sender === "me"); // Sent messages are always revealed
-  const [scratchProgress, setScratchProgress] = useState(0);
-  const { playClick } = useSonic();
-
-  const handleScratch = (e: React.PointerEvent) => {
-    if (isRevealed) return;
-    
-    // Increment progress on movement
-    setScratchProgress(prev => {
-        const newProgress = prev + 2;
-        if (newProgress >= 100) {
-            setIsRevealed(true);
-            playClick(800, 0.1, 'sine'); // Unlock sound
-            if (navigator.vibrate) navigator.vibrate(50);
-            return 100;
-        }
-        if (newProgress % 10 === 0) {
-             playClick(100 + newProgress * 2, 0.02, 'sawtooth'); // Scratching sound
-        }
-        return newProgress;
-    });
-  };
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`flex ${message.sender === "me" ? "justify-end" : "justify-start"}`}
-    >
-      <div 
-        className={`max-w-[80%] rounded-2xl p-3 relative overflow-hidden cursor-crosshair touch-none select-none ${
-        message.sender === "me" 
-          ? "bg-accent-1/20 text-accent-1 border border-accent-1/30 rounded-tr-none" 
-          : "bg-secondary-bg/10 text-primary-text border border-border-color rounded-tl-none"
-      }`}
-        onPointerMove={handleScratch}
-      >
-        {!isRevealed ? (
-           <div className="flex flex-col gap-1">
-             <div className="flex items-center gap-2 text-xs font-mono opacity-70 text-accent-2">
-                <Lock className="w-3 h-3" />
-                <span>SCRUB TO DECRYPT</span>
-             </div>
-             <p className="font-mono text-sm break-all opacity-50 blur-[1px]">
-                {message.encrypted.substring(0, Math.min(message.encrypted.length, 50))}
-             </p>
-             {/* Progress Bar */}
-             <div className="h-1 w-full bg-border-color rounded-full mt-1 overflow-hidden">
-                 <motion.div 
-                    className="h-full bg-accent-2"
-                    style={{ width: `${scratchProgress}%` }}
-                 />
-             </div>
-           </div>
+      {/* Chat List */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {chats.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-secondary-text text-center">
+            <MessageCircle className="w-16 h-16 opacity-50 mb-4" />
+            <p className="text-lg font-bold text-primary-text mb-2">No Active Transmissions</p>
+            <p className="text-sm">Initiate a new encrypted channel.</p>
+          </div>
         ) : (
-          <motion.p 
-            initial={{ opacity: 0, filter: "blur(5px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            className="text-sm"
-          >
-            {message.text}
-          </motion.p>
+          chats.map((chat) => (
+            <Link key={chat.id} href={`/chat/${chat.id}`} onClick={handleChatClick}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.01 }}
+                className="flex items-center gap-3 p-4 bg-secondary-bg/50 border border-border-color rounded-xl hover:border-accent-1/30 transition-all"
+              >
+                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-accent-1 to-accent-2 flex items-center justify-center p-[2px]">
+                  {/* TODO: Dynamically render chat avatar/icon */}
+                  <span className="text-lg font-bold text-primary-bg">
+                    {chat.lastMessage ? chat.lastMessage[0].toUpperCase() : "?"}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-primary-text">
+                    {/* TODO: Display other participant's name/handle */}
+                    Encrypted Channel {chat.id.substring(0, 5)}...
+                  </h3>
+                  <p className="text-sm text-secondary-text line-clamp-1">
+                    {chat.lastMessage || "No messages yet."}
+                  </p>
+                </div>
+                <span className="text-xs text-secondary-text/70">
+                  {chat.lastMessageTimestamp?.toDate().toLocaleTimeString() || ""}
+                </span>
+              </motion.div>
+            </Link>
+          ))
         )}
-        
-        {/* Decorative corner */}
-        <div className={`absolute top-0 w-2 h-2 ${message.sender === "me" ? "right-0 bg-accent-1" : "left-0 bg-secondary-bg/50"}`} />
       </div>
-    </motion.div>
+    </div>
   );
 }
