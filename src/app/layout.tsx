@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { BottomNav } from "@/components/ui/BottomNav";
 import { Providers } from "./providers";
+import { AppShell } from "@/components/layout/AppShell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,10 +45,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-primary-bg text-primary-text overflow-x-hidden selection:bg-accent-1 selection:text-primary-bg`}
       >
         <Providers>
-          <main className="min-h-screen pb-20 relative z-0">
+          <AppShell>
             {children}
-          </main>
-          <BottomNav />
+          </AppShell>
         </Providers>
       </body>
     </html>

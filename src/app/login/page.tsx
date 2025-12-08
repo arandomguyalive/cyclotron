@@ -48,9 +48,12 @@ export default function LoginPage() {
           <div className="w-16 h-16 bg-accent-1/20 rounded-full flex items-center justify-center mb-4 border border-accent-1/50 shadow-[0_0_15px_var(--color-accent-1)]">
             <Fingerprint className="w-8 h-8 text-accent-1" />
           </div>
-          <h1 className="text-3xl font-bold text-primary-text mb-2 tracking-tight">IDENTITY CHECK</h1>
-          <p className="text-secondary-text text-sm font-mono">
-            Secure connection required to enter the Vortex.
+          <div className="mb-2">
+              <span className="block text-[10px] font-mono tracking-[0.3em] text-accent-1/80 uppercase mb-1">KM18 Presents</span>
+              <h1 className="text-4xl font-bold text-primary-text tracking-tighter">ABHED</h1>
+          </div>
+          <p className="text-secondary-text text-sm font-mono mt-2">
+            Secure connection required.
           </p>
         </div>
 
