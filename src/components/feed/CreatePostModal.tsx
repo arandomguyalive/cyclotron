@@ -22,8 +22,8 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0); // Mock progress for now
   const [isSuccess, setIsSuccess] = useState(false);
+  const [mode, setMode] = useState<"post" | "story">("post"); // New: Mode State
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,16 +43,17 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
 
     try {
       // 1. Upload File
-      // Note: In a real app, use a proper path structure like `posts/{userId}/{timestamp}_{filename}`
-      const storageRef = ref(storage, `uploads/${firebaseUser.uid}/${Date.now()}_${file.name}`);
+      const path = mode === "story" ? "stories" : "uploads";
+      const storageRef = ref(storage, `${path}/${firebaseUser.uid}/${Date.now()}_${file.name}`);
       
-      // Simulating progress since uploadBytes doesn't give a stream callback easily without uploadBytesResumable
-      // We'll just use the promise for now.
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
 
       // 2. Create Firestore Document
-      await addDoc(collection(db, "posts"), {
+      // Stories go to 'stories', Posts to 'posts'
+      const collectionName = mode === "story" ? "stories" : "posts";
+      
+      await addDoc(collection(db, collectionName), {
         caption: caption,
         mediaUrl: downloadURL,
         mediaType: file.type.startsWith("video") ? "video" : "image",
@@ -61,11 +62,12 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
         userAvatar: user?.avatarSeed || "default",
         likes: 0,
         createdAt: serverTimestamp(),
-        ttl: Date.now() + 24 * 60 * 60 * 1000, // 24 hours TTL
+        // Stories auto-expire in 24h
+        expiresAt: mode === "story" ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
       });
 
       setIsSuccess(true);
-      playClick(880, 0.2, 'triangle'); // Success chime
+      playClick(880, 0.2, 'triangle'); 
       
       setTimeout(() => {
         handleClose();
@@ -109,7 +111,21 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border-color">
-              <h2 className="text-xl font-bold text-accent-1 tracking-wider uppercase">Transmit</h2>
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setMode("post")}
+                  className={`text-xl font-bold tracking-wider uppercase transition-colors ${mode === "post" ? "text-accent-1" : "text-secondary-text"}`}
+                >
+                  Transmit
+                </button>
+                <div className="w-[1px] h-6 bg-border-color" />
+                <button 
+                  onClick={() => setMode("story")}
+                  className={`text-xl font-bold tracking-wider uppercase transition-colors ${mode === "story" ? "text-accent-1" : "text-secondary-text"}`}
+                >
+                  Story
+                </button>
+              </div>
               <button onClick={handleClose} className="p-2 bg-secondary-bg/50 rounded-full text-secondary-text hover:text-primary-text hover:bg-secondary-bg">
                 <X className="w-6 h-6" />
               </button>

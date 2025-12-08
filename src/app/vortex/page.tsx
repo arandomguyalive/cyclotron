@@ -7,6 +7,7 @@ import { ChevronUp, Box, Loader2, WifiOff } from "lucide-react";
 import { useSonic } from "@/lib/SonicContext";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { StoriesTray } from "@/components/feed/StoriesTray";
 
 const GAP = 1200; // Distance between items on Z axis
 
@@ -207,7 +208,12 @@ export default function VortexPage() {
       `}</style>
 
       {/* Score / Cycles Display */}
-      <div className="absolute top-4 right-4 z-[60] flex flex-col items-end gap-1 pointer-events-none">
+      <div className="absolute top-4 right-4 z-[60] flex flex-col items-end gap-2 pointer-events-none">
+          {/* Stories Tray */}
+          <div className="pointer-events-auto">
+              <StoriesTray />
+          </div>
+
           <div className="flex items-center gap-2 bg-secondary-bg/50 backdrop-blur-md border border-accent-1/30 px-3 py-1 rounded-full">
             <Box className="w-4 h-4 text-accent-1 animate-pulse" />
             <span className="font-mono text-accent-1 font-bold">{cycles} Cycles</span>
