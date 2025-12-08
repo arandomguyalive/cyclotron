@@ -230,7 +230,7 @@ export default function ChatPage() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Type encrypted message..."
-            className="flex-1 bg-secondary-bg/50 border border-border-color rounded-full px-4 py-3 text-primary-text placeholder:text-secondary-text focus:outline-none focus:border-accent-1 transition-colors"
+            className="flex-1 bg-secondary-bg backdrop-blur-sm border border-border-color rounded-full px-4 py-3 text-primary-text placeholder:text-secondary-text focus:outline-none focus:border-accent-1 transition-colors"
           />
           <button 
             onClick={handleSend}
