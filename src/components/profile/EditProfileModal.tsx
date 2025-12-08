@@ -127,7 +127,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                       type="text" 
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full bg-secondary-bg/50 border border-border-color rounded-xl px-4 py-3 text-primary-text placeholder:text-secondary-text focus:border-accent-1 focus:outline-none transition-colors"
+                      className="w-full bg-secondary-bg border border-border-color rounded-xl px-4 py-3 text-primary-text placeholder:text-secondary-text focus:border-accent-1 focus:outline-none transition-colors"
                     />
                   </div>
 
@@ -139,7 +139,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                         type="text" 
                         value={handle}
                         onChange={(e) => setHandle(e.target.value)}
-                        className="w-full bg-secondary-bg/50 border border-border-color rounded-xl pl-8 pr-4 py-3 text-primary-text placeholder:text-secondary-text focus:border-accent-1 focus:outline-none transition-colors"
+                        className="w-full bg-secondary-bg border border-border-color rounded-xl pl-8 pr-4 py-3 text-primary-text placeholder:text-secondary-text focus:border-accent-1 focus:outline-none transition-colors"
                         />
                     </div>
                   </div>
@@ -150,7 +150,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       rows={3}
-                      className="w-full bg-secondary-bg/50 border border-border-color rounded-xl px-4 py-3 text-primary-text placeholder:text-secondary-text focus:border-accent-1 focus:outline-none transition-colors resize-none"
+                      className="w-full bg-secondary-bg border border-border-color rounded-xl px-4 py-3 text-primary-text placeholder:text-secondary-text focus:border-accent-1 focus:outline-none transition-colors resize-none"
                     />
                   </div>
                 </div>
