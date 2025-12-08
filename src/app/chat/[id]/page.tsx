@@ -46,6 +46,37 @@ export default function ChatPage() {
         return;
     }
 
+    // Handle Mock Chats (Prevent Firebase Calls)
+    if (chatId.startsWith("mock-")) {
+        setChatPartner({
+            uid: "mock-partner",
+            handle: "Cyber_Ghost",
+            avatarSeed: "Ghost"
+        });
+        setMessages([
+            {
+                id: "m1",
+                text: "The grid is unstable today.",
+                encrypted: "U2FsdGVkX1+...",
+                senderId: "mock-partner",
+                senderHandle: "Cyber_Ghost",
+                senderAvatar: "Ghost",
+                timestamp: { toDate: () => new Date(Date.now() - 3600000) }
+            },
+            {
+                id: "m2",
+                text: "Affirmative. I'm seeing packet loss in Sector 7.",
+                encrypted: "U2FsdGVkX1+...",
+                senderId: firebaseUser.uid,
+                senderHandle: currentUserProfile?.handle || "You",
+                senderAvatar: currentUserProfile?.avatarSeed || "User",
+                timestamp: { toDate: () => new Date(Date.now() - 3500000) }
+            }
+        ]);
+        setChatLoading(false);
+        return;
+    }
+
     // Fetch chat participants and details
     const fetchChatDetails = async () => {
         const chatDocRef = doc(db, "chats", chatId);
