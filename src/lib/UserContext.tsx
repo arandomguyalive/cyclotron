@@ -16,6 +16,7 @@ interface UserProfile {
   bio: string;
   avatarSeed: string;
   faction: "Netrunner" | "Drifter" | "Corp" | "Ghost";
+  tier: "free" | "premium" | "gold" | "platinum" | "ultimate";
   stats: {
     following: string;
     followers: string;
@@ -38,6 +39,7 @@ const defaultUser: UserProfile = {
   bio: "Building digital dreams in the void.\nFull-stack Developer | UI Enthusiast",
   avatarSeed: "User123",
   faction: "Netrunner",
+  tier: "free",
   stats: {
     following: "245",
     followers: "12.4K",

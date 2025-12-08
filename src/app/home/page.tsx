@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/UserContext";
 import { motion } from "framer-motion";
 import { StoriesTray } from "@/components/feed/StoriesTray";
-import { Box, Activity, Zap } from "lucide-react";
+import { Activity, Zap, Shield, Globe, Lock, AlertTriangle, Eye, Server, Radio } from "lucide-react";
 
 export default function HomePage() {
   const { user, firebaseUser, loading } = useUser();
@@ -18,24 +18,82 @@ export default function HomePage() {
     }
   }, [loading, firebaseUser, router]);
 
-  if (loading || !firebaseUser) return null;
+  if (loading || !firebaseUser || !user) return null;
+
+  const tier = user.tier || "free";
+
+  // Tier-Specific Config
+  const config = {
+      free: {
+          color: "text-red-500",
+          bgColor: "bg-red-500/10",
+          borderColor: "border-red-500/20",
+          threat: "HIGH",
+          label: "UNSECURED",
+          glitch: true
+      },
+      premium: {
+          color: "text-cyan-400",
+          bgColor: "bg-cyan-400/10",
+          borderColor: "border-cyan-400/20",
+          threat: "MODERATE",
+          label: "SECURED",
+          glitch: false
+      },
+      gold: {
+          color: "text-amber-400",
+          bgColor: "bg-amber-400/10",
+          borderColor: "border-amber-400/20",
+          threat: "LOW",
+          label: "FORTIFIED",
+          glitch: false
+      },
+      platinum: {
+          color: "text-white",
+          bgColor: "bg-white/10",
+          borderColor: "border-white/20",
+          threat: "MINIMAL",
+          label: "IMPERVIOUS",
+          glitch: false
+      },
+      ultimate: {
+          color: "text-purple-500",
+          bgColor: "bg-purple-500/10",
+          borderColor: "border-purple-500/20",
+          threat: "UNKNOWN",
+          label: "GOD MODE",
+          glitch: false
+      }
+  }[tier];
 
   return (
     <div className="min-h-screen bg-primary-bg text-primary-text pb-20 relative overflow-hidden">
-      {/* Ambient Background */}
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,var(--color-accent-1)_0%,transparent_40%)] opacity-10 blur-3xl" />
-      <div className="absolute inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-screen" />
+      {/* Dynamic Background */}
+      <div className={`absolute inset-0 pointer-events-none opacity-10 blur-3xl transition-colors duration-1000 ${
+          tier === 'free' ? 'bg-[radial-gradient(circle_at_top_right,red_0%,transparent_40%)]' :
+          tier === 'premium' ? 'bg-[radial-gradient(circle_at_top_right,cyan_0%,transparent_40%)]' :
+          tier === 'gold' ? 'bg-[radial-gradient(circle_at_top_right,amber_0%,transparent_40%)]' :
+          tier === 'platinum' ? 'bg-[radial-gradient(circle_at_top_right,white_0%,transparent_40%)]' :
+          'bg-[radial-gradient(circle_at_top_right,purple_0%,transparent_40%)]'
+      }`} />
+      
+      {/* Noise Overlay (Intense for Free tier) */}
+      <div className={`absolute inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-screen ${tier === 'free' ? 'opacity-20' : 'opacity-5'}`} />
 
       {/* Header */}
       <header className="px-6 py-4 pt-safe-area-top flex items-center justify-between sticky top-0 z-50 bg-primary-bg/80 backdrop-blur-md border-b border-border-color/50">
         <div>
-           <h1 className="text-xl font-bold tracking-tight text-primary-text">DASHBOARD</h1>
-           <p className="text-xs text-secondary-text font-mono uppercase tracking-widest">
-              Welcome, {user?.handle || "Agent"}
-           </p>
+           <h1 className="text-xl font-bold tracking-tight text-primary-text">TERMINAL</h1>
+           <div className="flex items-center gap-2">
+               <span className="text-xs text-secondary-text font-mono uppercase tracking-widest">
+                  {user?.handle}
+               </span>
+               <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${config.bgColor} ${config.color} border ${config.borderColor}`}>
+                   {tier}
+               </span>
+           </div>
         </div>
         
-        {/* FLUX / STORIES TRAY - Now lives here */}
         <div className="pointer-events-auto">
              <StoriesTray />
         </div>
@@ -44,49 +102,124 @@ export default function HomePage() {
       {/* Main Content Area */}
       <main className="p-6 space-y-6">
         
-        {/* Quick Stats / Status Card */}
+        {/* Security Status Widget */}
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-6 rounded-3xl bg-secondary-bg/50 border border-border-color relative overflow-hidden"
+            className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} relative overflow-hidden`}
         >
              <div className="absolute top-0 right-0 p-4 opacity-10">
-                 <Activity className="w-24 h-24 text-accent-1" />
+                 {tier === 'free' ? <AlertTriangle className={`w-24 h-24 ${config.color}`} /> : <Shield className={`w-24 h-24 ${config.color}`} />}
              </div>
              
              <div className="relative z-10">
-                 <h2 className="text-3xl font-bold text-accent-1 mb-1">ONLINE</h2>
-                 <p className="text-sm text-secondary-text mb-4">Neural Link Established</p>
-                 
-                 <div className="flex gap-4">
-                     <div className="flex flex-col">
-                         <span className="text-xs uppercase text-secondary-text/70">Faction</span>
-                         <span className="font-bold">{user?.faction || "Drifter"}</span>
-                     </div>
-                     <div className="flex flex-col">
-                         <span className="text-xs uppercase text-secondary-text/70">Signal</span>
-                         <span className="font-bold text-green-400">Strong</span>
-                     </div>
+                 <div className="flex items-center gap-2 mb-1">
+                     <Activity className={`w-5 h-5 ${config.color} ${tier === 'free' ? 'animate-pulse' : ''}`} />
+                     <h2 className={`text-3xl font-bold ${config.color} tracking-tighter`}>{config.label}</h2>
                  </div>
+                 <p className="text-sm text-secondary-text mb-4 font-mono">
+                     Threat Level: <span className={config.color}>{config.threat}</span>
+                 </p>
+                 
+                 {/* Tier-Specific Message */}
+                 {tier === 'free' && (
+                     <div className="bg-red-500/20 border border-red-500/30 p-2 rounded text-xs text-red-200 animate-pulse">
+                         WARNING: Connection unencrypted. Data leakage detected.
+                     </div>
+                 )}
+                 {tier === 'premium' && (
+                     <div className="flex items-center gap-2 text-xs text-cyan-200/80">
+                         <Lock className="w-3 h-3" />
+                         Standard E2EE Protocol Active.
+                     </div>
+                 )}
+                 {tier === 'gold' && (
+                     <div className="flex items-center gap-2 text-xs text-amber-200/80">
+                         <Eye className="w-3 h-3" />
+                         Ghost Mode Available. Monitoring active.
+                     </div>
+                 )}
              </div>
         </motion.div>
 
-        {/* Quick Actions Grid */}
+        {/* Quick Actions Grid (Changes by Tier) */}
         <div className="grid grid-cols-2 gap-4">
+            
+            {/* 1. Vortex Access (All Tiers) */}
             <button 
                 onClick={() => router.push("/vortex")}
-                className="p-6 rounded-3xl bg-gradient-to-br from-accent-1/20 to-accent-1/5 border border-accent-1/20 hover:border-accent-1/50 transition-all group text-left"
+                className={`p-6 rounded-3xl border transition-all group text-left ${
+                    tier === 'free' 
+                    ? 'bg-secondary-bg/30 border-border-color' 
+                    : `bg-gradient-to-br from-${config.color.split('-')[1]}-500/10 to-transparent ${config.borderColor}`
+                }`}
             >
-                <Zap className="w-8 h-8 text-accent-1 mb-3 group-hover:scale-110 transition-transform" />
-                <h3 className="font-bold text-lg">Enter Vortex</h3>
-                <p className="text-xs text-secondary-text mt-1">Dive into the global feed.</p>
+                <Zap className={`w-8 h-8 mb-3 group-hover:scale-110 transition-transform ${config.color}`} />
+                <h3 className="font-bold text-lg">Vortex</h3>
+                <p className="text-xs text-secondary-text mt-1">Global Feed.</p>
             </button>
 
-            <div className="p-6 rounded-3xl bg-secondary-bg/30 border border-border-color flex flex-col justify-center items-center text-center opacity-50">
-                <Box className="w-8 h-8 text-secondary-text mb-3" />
-                <h3 className="font-bold text-lg">Coming Soon</h3>
-                <p className="text-xs text-secondary-text mt-1">Modules offline.</p>
-            </div>
+            {/* 2. Tier Specific Widget */}
+            {tier === 'free' && (
+                <div className="p-6 rounded-3xl bg-secondary-bg/30 border border-border-color flex flex-col justify-center items-center text-center">
+                    <Lock className="w-8 h-8 text-secondary-text mb-3" />
+                    <h3 className="font-bold text-lg text-secondary-text">Locked</h3>
+                    <p className="text-[10px] text-secondary-text mt-1 uppercase">Upgrade to Access</p>
+                </div>
+            )}
+
+            {(tier === 'premium' || tier === 'gold') && (
+                <div className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left relative overflow-hidden`}>
+                     <Radio className={`w-8 h-8 mb-3 ${config.color}`} />
+                     <h3 className="font-bold text-lg">Scanner</h3>
+                     <p className="text-xs text-secondary-text mt-1">Local signals.</p>
+                     {/* Fake Scanning Animation */}
+                     <div className={`absolute top-2 right-2 w-2 h-2 rounded-full ${config.color.replace('text', 'bg')} animate-ping`} />
+                </div>
+            )}
+
+            {(tier === 'platinum' || tier === 'ultimate') && (
+                <div className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left`}>
+                     <Server className={`w-8 h-8 mb-3 ${config.color}`} />
+                     <h3 className="font-bold text-lg">The Vault</h3>
+                     <p className="text-xs text-secondary-text mt-1">Secure Storage.</p>
+                </div>
+            )}
+            
+            {/* 3. Global Stats (Gold+) */}
+            {['gold', 'platinum', 'ultimate'].includes(tier) && (
+                 <div className="col-span-2 p-4 rounded-2xl bg-secondary-bg/30 border border-border-color flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                         <Globe className="w-5 h-5 text-secondary-text" />
+                         <div>
+                             <p className="text-xs text-secondary-text uppercase">Global Signals</p>
+                             <p className="font-mono font-bold">8,492</p>
+                         </div>
+                     </div>
+                     <div className="h-8 w-[1px] bg-border-color" />
+                     <div className="flex items-center gap-3">
+                         <Activity className="w-5 h-5 text-secondary-text" />
+                         <div>
+                             <p className="text-xs text-secondary-text uppercase">Net Stability</p>
+                             <p className="font-mono font-bold text-green-400">98.4%</p>
+                         </div>
+                     </div>
+                 </div>
+            )}
+
+             {/* 4. Upgrade Prompt (Free Only) */}
+             {tier === 'free' && (
+                 <div className="col-span-2 p-4 rounded-2xl bg-gradient-to-r from-accent-1/20 to-purple-500/20 border border-accent-1/30 flex items-center justify-between group cursor-pointer hover:border-accent-1/60 transition-colors">
+                     <div>
+                         <h3 className="font-bold text-accent-1">Upgrade Protocol</h3>
+                         <p className="text-xs text-secondary-text">Secure your connection now.</p>
+                     </div>
+                     <div className="px-4 py-2 bg-accent-1 text-primary-bg font-bold rounded-lg text-xs group-hover:scale-105 transition-transform">
+                         GET ACCESS
+                     </div>
+                 </div>
+             )}
+
         </div>
 
       </main>

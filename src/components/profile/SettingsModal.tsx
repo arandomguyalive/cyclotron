@@ -18,7 +18,7 @@ type SettingsView = 'main' | 'privacy' | 'appearance';
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { playClick } = useSonic();
-  const { user } = useUser();
+  const { user, updateUser } = useUser();
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
   const [currentView, setCurrentView] = useState<SettingsView>('main');
@@ -171,6 +171,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             bio: "Test User 1",
                                             avatarSeed: "Felix",
                                             faction: "Netrunner",
+                                            tier: "premium",
                                             stats: { following: "0", followers: "0", likes: "0" }
                                         });
 
@@ -181,6 +182,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             bio: "Test User 2",
                                             avatarSeed: "Jocelyn",
                                             faction: "Corp",
+                                            tier: "gold",
                                             stats: { following: "0", followers: "0", likes: "0" }
                                         });
 
@@ -196,6 +198,31 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 <Database className="w-5 h-5" />
                                 <span className="font-bold">Seed Test Users</span>
                             </button>
+
+                            {/* Tier Simulator */}
+                            <div className="space-y-2">
+                                <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider ml-2">Simulate Tier</h3>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {(["free", "premium", "gold", "platinum", "ultimate"] as const).map((t) => (
+                                        <button
+                                            key={t}
+                                            onClick={() => {
+                                                if (user) {
+                                                    updateUser({ tier: t });
+                                                    handleButtonClick();
+                                                }
+                                            }}
+                                            className={`px-2 py-2 rounded-lg text-xs font-bold uppercase transition-colors border ${
+                                                user?.tier === t 
+                                                    ? "bg-primary-text text-primary-bg border-primary-text" 
+                                                    : "bg-primary-bg text-secondary-text border-border-color hover:border-primary-text"
+                                            }`}
+                                        >
+                                            {t}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
 
                             <button 
                                 onClick={handleButtonClick}
