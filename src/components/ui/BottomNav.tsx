@@ -13,7 +13,6 @@ const navItems = [
   { name: "Home", href: "/", icon: Home },
   { name: "Vortex", href: "/vortex", icon: Aperture },
   { name: "Transmit", href: "#", icon: Plus, isAction: true }, // Special Action Item
-  { name: "Chat", href: "/chat", icon: MessageCircle },
   { name: "Profile", href: "/profile", icon: User },
 ];
 

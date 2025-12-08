@@ -123,7 +123,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
                   onClick={() => setMode("story")}
                   className={`text-xl font-bold tracking-wider uppercase transition-colors ${mode === "story" ? "text-accent-1" : "text-secondary-text"}`}
                 >
-                  Story
+                  Flux
                 </button>
               </div>
               <button onClick={handleClose} className="p-2 bg-secondary-bg/50 rounded-full text-secondary-text hover:text-primary-text hover:bg-secondary-bg">

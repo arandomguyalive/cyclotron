@@ -20,9 +20,35 @@ interface Story {
   caption?: string;
 }
 
+// Mock Stories for Testing
+const mockStories: Story[] = [
+    {
+        id: "mock-s1",
+        mediaUrl: "https://images.unsplash.com/photo-1531297461136-82lw8u22k1j5?q=80&w=1000",
+        mediaType: "image",
+        userId: "mock-u1",
+        userHandle: "neon_shadow",
+        userAvatar: "Felix",
+        createdAt: { toDate: () => new Date() },
+        expiresAt: { toDate: () => new Date(Date.now() + 86400000) },
+        caption: "System override initiated. #flux"
+    },
+    {
+        id: "mock-s2",
+        mediaUrl: "https://images.unsplash.com/photo-1480796927426-f609979314bd?q=80&w=1000",
+        mediaType: "image",
+        userId: "mock-u2",
+        userHandle: "cyber_punk",
+        userAvatar: "Jocelyn",
+        createdAt: { toDate: () => new Date() },
+        expiresAt: { toDate: () => new Date(Date.now() + 86400000) },
+        caption: "Midnight run."
+    }
+];
+
 export function StoriesTray() {
   const { user, firebaseUser } = useUser();
-  const [stories, setStories] = useState<Story[]>([]);
+  const [realStories, setRealStories] = useState<Story[]>([]);
   const [isOpen, setIsOpen] = useState(false); // Viewer Open
   const [currentIndex, setCurrentIndex] = useState(0);
   const { playClick } = useSonic();
@@ -41,12 +67,13 @@ export function StoriesTray() {
         id: doc.id,
         ...doc.data()
       })) as Story[];
-      setStories(newStories);
+      setRealStories(newStories);
     });
 
     return () => unsubscribe();
   }, []);
 
+  const stories = realStories.length > 0 ? realStories : mockStories;
   const hasStories = stories.length > 0;
   
   // If no stories, we can show a placeholder or nothing.

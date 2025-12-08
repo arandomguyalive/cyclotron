@@ -17,13 +17,42 @@ interface Chat {
   lastMessage: string;
   lastMessageTimestamp: any;
   // Other metadata like chat name, avatar, etc.
+  mockName?: string;
+  mockAvatar?: string;
 }
+
+const mockChats: Chat[] = [
+    {
+        id: "mock-c1",
+        participants: [],
+        lastMessage: "U2FsdGVkX1+...", // Encrypted-looking text
+        lastMessageTimestamp: { toDate: () => new Date(Date.now() - 1000 * 60 * 5) },
+        mockName: "Cyber_Ghost",
+        mockAvatar: "Ghost"
+    },
+    {
+        id: "mock-c2",
+        participants: [],
+        lastMessage: "Coordinates received.",
+        lastMessageTimestamp: { toDate: () => new Date(Date.now() - 1000 * 60 * 60 * 2) },
+        mockName: "Nexus_Admin",
+        mockAvatar: "Admin"
+    },
+    {
+        id: "mock-c3",
+        participants: [],
+        lastMessage: "The grid is unstable.",
+        lastMessageTimestamp: { toDate: () => new Date(Date.now() - 1000 * 60 * 60 * 24) },
+        mockName: "Neon_Rat",
+        mockAvatar: "Rat"
+    }
+];
 
 export default function ChatListPage() {
   const { firebaseUser, loading: userLoading } = useUser();
   const { playClick } = useSonic();
   const router = useRouter();
-  const [chats, setChats] = useState<Chat[]>([]);
+  const [realChats, setRealChats] = useState<Chat[]>([]);
   const [chatsLoading, setChatsLoading] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -44,7 +73,7 @@ export default function ChatListPage() {
           id: doc.id,
           ...doc.data(),
         })) as Chat[];
-        setChats(fetchedChats);
+        setRealChats(fetchedChats);
         setChatsLoading(false);
       }, (error) => {
         console.error("Error fetching chat list:", error);
@@ -54,6 +83,8 @@ export default function ChatListPage() {
       return () => unsubscribe();
     }
   }, [firebaseUser, userLoading, router]);
+
+  const chats = realChats.length > 0 ? realChats : mockChats;
 
   const handleChatClick = () => {
     playClick(350, 0.05, 'square');
@@ -110,23 +141,23 @@ export default function ChatListPage() {
                 whileHover={{ scale: 1.01 }}
                 className="flex items-center gap-3 p-4 bg-secondary-bg/50 border border-border-color rounded-xl hover:border-accent-1/30 transition-all"
               >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-accent-1 to-accent-2 flex items-center justify-center p-[2px]">
-                  {/* TODO: Dynamically render chat avatar/icon */}
-                  <span className="text-lg font-bold text-primary-bg">
-                    {chat.lastMessage ? chat.lastMessage[0].toUpperCase() : "?"}
-                  </span>
+                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-accent-1 to-accent-2 flex items-center justify-center p-[2px] overflow-hidden">
+                  <img 
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${chat.mockAvatar || chat.id}`} 
+                    alt="Avatar" 
+                    className="w-full h-full rounded-full bg-primary-bg"
+                  />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-primary-text">
-                    {/* TODO: Display other participant's name/handle */}
-                    Encrypted Channel {chat.id.substring(0, 5)}...
+                    {chat.mockName || `Encrypted Channel ${chat.id.substring(0, 5)}...`}
                   </h3>
-                  <p className="text-sm text-secondary-text line-clamp-1">
+                  <p className="text-sm text-secondary-text line-clamp-1 font-mono opacity-80">
                     {chat.lastMessage || "No messages yet."}
                   </p>
                 </div>
                 <span className="text-xs text-secondary-text/70">
-                  {chat.lastMessageTimestamp?.toDate().toLocaleTimeString() || ""}
+                  {chat.lastMessageTimestamp?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || ""}
                 </span>
               </motion.div>
             </Link>
