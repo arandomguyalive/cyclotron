@@ -156,7 +156,47 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         </div>
 
                         {/* Section: Danger Zone */}
-                        <div className="pt-4">
+                        <div className="pt-4 space-y-4">
+                            <button 
+                                onClick={async () => {
+                                    handleButtonClick();
+                                    try {
+                                        const { doc, setDoc } = await import("firebase/firestore");
+                                        const { db } = await import("@/lib/firebase");
+                                        
+                                        // Seed Admin One
+                                        await setDoc(doc(db, "users", "admin-one"), {
+                                            displayName: "Admin One",
+                                            handle: "admin_one",
+                                            bio: "Test User 1",
+                                            avatarSeed: "Felix",
+                                            faction: "Netrunner",
+                                            stats: { following: "0", followers: "0", likes: "0" }
+                                        });
+
+                                        // Seed Admin Two
+                                        await setDoc(doc(db, "users", "admin-two"), {
+                                            displayName: "Admin Two",
+                                            handle: "admin_two",
+                                            bio: "Test User 2",
+                                            avatarSeed: "Jocelyn",
+                                            faction: "Corp",
+                                            stats: { following: "0", followers: "0", likes: "0" }
+                                        });
+
+                                        alert("Test users seeded! 'admin-two' UID copied to clipboard.");
+                                        navigator.clipboard.writeText("admin-two");
+                                    } catch (e) {
+                                        console.error(e);
+                                        alert("Failed to seed users.");
+                                    }
+                                }}
+                                className="w-full py-4 flex items-center justify-center gap-2 text-accent-2 bg-accent-2/10 rounded-xl border border-accent-2/20 hover:bg-accent-2/20 transition-colors"
+                            >
+                                <Database className="w-5 h-5" />
+                                <span className="font-bold">Seed Test Users</span>
+                            </button>
+
                             <button 
                                 onClick={handleButtonClick}
                                 className="w-full py-4 flex items-center justify-center gap-2 text-red-500 bg-red-500/10 rounded-xl border border-red-500/20 hover:bg-red-500/20 transition-colors"
