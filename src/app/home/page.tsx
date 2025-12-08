@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/UserContext";
 import { motion } from "framer-motion";
 import { StoriesTray } from "@/components/feed/StoriesTray";
-import { Activity, Zap, Shield, Globe, Lock, AlertTriangle, Eye, Server, Radio } from "lucide-react";
+import { SignalGrid } from "@/components/home/SignalGrid";
+import { Activity, Zap, Shield, Globe, Lock, AlertTriangle, Eye, Server, Radio, Signal, Wifi } from "lucide-react";
 
 export default function HomePage() {
   const { user, firebaseUser, loading } = useUser();
@@ -28,7 +29,8 @@ export default function HomePage() {
           color: "text-red-500",
           bgColor: "bg-red-500/10",
           borderColor: "border-red-500/20",
-          threat: "HIGH",
+          signalText: "WEAK",
+          signalValue: 20,
           label: "UNSECURED",
           glitch: true
       },
@@ -36,7 +38,8 @@ export default function HomePage() {
           color: "text-cyan-400",
           bgColor: "bg-cyan-400/10",
           borderColor: "border-cyan-400/20",
-          threat: "MODERATE",
+          signalText: "STRONG",
+          signalValue: 85,
           label: "SECURED",
           glitch: false
       },
@@ -44,7 +47,8 @@ export default function HomePage() {
           color: "text-amber-400",
           bgColor: "bg-amber-400/10",
           borderColor: "border-amber-400/20",
-          threat: "LOW",
+          signalText: "OPTIMAL",
+          signalValue: 98,
           label: "FORTIFIED",
           glitch: false
       },
@@ -52,7 +56,8 @@ export default function HomePage() {
           color: "text-white",
           bgColor: "bg-white/10",
           borderColor: "border-white/20",
-          threat: "MINIMAL",
+          signalText: "MAXIMUM",
+          signalValue: 100,
           label: "IMPERVIOUS",
           glitch: false
       },
@@ -60,7 +65,8 @@ export default function HomePage() {
           color: "text-purple-500",
           bgColor: "bg-purple-500/10",
           borderColor: "border-purple-500/20",
-          threat: "UNKNOWN",
+          signalText: "GODLIKE",
+          signalValue: 100,
           label: "GOD MODE",
           glitch: false
       }
@@ -102,47 +108,56 @@ export default function HomePage() {
       {/* Main Content Area */}
       <main className="p-6 space-y-6">
         
-        {/* Security Status Widget */}
+        {/* Signal Strength Widget (Replaces Security Status) */}
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} relative overflow-hidden`}
         >
              <div className="absolute top-0 right-0 p-4 opacity-10">
-                 {tier === 'free' ? <AlertTriangle className={`w-24 h-24 ${config.color}`} /> : <Shield className={`w-24 h-24 ${config.color}`} />}
+                 <Wifi className={`w-24 h-24 ${config.color}`} />
              </div>
              
              <div className="relative z-10">
-                 <div className="flex items-center gap-2 mb-1">
-                     <Activity className={`w-5 h-5 ${config.color} ${tier === 'free' ? 'animate-pulse' : ''}`} />
-                     <h2 className={`text-3xl font-bold ${config.color} tracking-tighter`}>{config.label}</h2>
+                 <div className="flex items-center gap-2 mb-4">
+                     <Signal className={`w-5 h-5 ${config.color} ${tier === 'free' ? 'animate-pulse' : ''}`} />
+                     <h2 className={`text-xl font-bold ${config.color} tracking-tight uppercase`}>Signal Strength</h2>
                  </div>
-                 <p className="text-sm text-secondary-text mb-4 font-mono">
-                     Threat Level: <span className={config.color}>{config.threat}</span>
-                 </p>
                  
-                 {/* Tier-Specific Message */}
+                 {/* Visual Bar Graph */}
+                 <div className="flex items-end gap-1 h-12 mb-4">
+                     {[...Array(10)].map((_, i) => (
+                         <div 
+                            key={i} 
+                            className={`flex-1 rounded-sm transition-all duration-500 ${
+                                i < config.signalValue / 10 
+                                    ? (tier === 'free' ? 'bg-red-500 animate-pulse' : config.color.replace('text-', 'bg-')) 
+                                    : 'bg-secondary-bg/20'
+                            }`}
+                            style={{ height: `${(i + 1) * 10}%` }}
+                         />
+                     ))}
+                 </div>
+                 
+                 <div className="flex items-center justify-between">
+                     <span className={`font-mono text-2xl font-bold ${config.color}`}>{config.signalValue}%</span>
+                     <span className={`text-xs font-mono uppercase tracking-widest ${config.color} opacity-80`}>
+                         {config.signalText}
+                     </span>
+                 </div>
+                 
                  {tier === 'free' && (
-                     <div className="bg-red-500/20 border border-red-500/30 p-2 rounded text-xs text-red-200 animate-pulse">
-                         WARNING: Connection unencrypted. Data leakage detected.
-                     </div>
-                 )}
-                 {tier === 'premium' && (
-                     <div className="flex items-center gap-2 text-xs text-cyan-200/80">
-                         <Lock className="w-3 h-3" />
-                         Standard E2EE Protocol Active.
-                     </div>
-                 )}
-                 {tier === 'gold' && (
-                     <div className="flex items-center gap-2 text-xs text-amber-200/80">
-                         <Eye className="w-3 h-3" />
-                         Ghost Mode Available. Monitoring active.
-                     </div>
+                     <p className="mt-4 text-xs text-red-300 border-t border-red-500/20 pt-2">
+                         WARNING: Bandwidth throttled. Upload link unstable.
+                     </p>
                  )}
              </div>
         </motion.div>
 
-        {/* Quick Actions Grid (Changes by Tier) */}
+        {/* The Signal Grid (Social Feed) */}
+        <SignalGrid />
+
+        {/* Quick Actions Grid */}
         <div className="grid grid-cols-2 gap-4">
             
             {/* 1. Vortex Access (All Tiers) */}
@@ -173,7 +188,6 @@ export default function HomePage() {
                      <Radio className={`w-8 h-8 mb-3 ${config.color}`} />
                      <h3 className="font-bold text-lg">Scanner</h3>
                      <p className="text-xs text-secondary-text mt-1">Local signals.</p>
-                     {/* Fake Scanning Animation */}
                      <div className={`absolute top-2 right-2 w-2 h-2 rounded-full ${config.color.replace('text', 'bg')} animate-ping`} />
                 </div>
             )}
@@ -185,37 +199,16 @@ export default function HomePage() {
                      <p className="text-xs text-secondary-text mt-1">Secure Storage.</p>
                 </div>
             )}
-            
-            {/* 3. Global Stats (Gold+) */}
-            {['gold', 'platinum', 'ultimate'].includes(tier) && (
-                 <div className="col-span-2 p-4 rounded-2xl bg-secondary-bg/30 border border-border-color flex items-center justify-between">
-                     <div className="flex items-center gap-3">
-                         <Globe className="w-5 h-5 text-secondary-text" />
-                         <div>
-                             <p className="text-xs text-secondary-text uppercase">Global Signals</p>
-                             <p className="font-mono font-bold">8,492</p>
-                         </div>
-                     </div>
-                     <div className="h-8 w-[1px] bg-border-color" />
-                     <div className="flex items-center gap-3">
-                         <Activity className="w-5 h-5 text-secondary-text" />
-                         <div>
-                             <p className="text-xs text-secondary-text uppercase">Net Stability</p>
-                             <p className="font-mono font-bold text-green-400">98.4%</p>
-                         </div>
-                     </div>
-                 </div>
-            )}
 
-             {/* 4. Upgrade Prompt (Free Only) */}
+             {/* 3. Upgrade Prompt (Free Only) */}
              {tier === 'free' && (
                  <div className="col-span-2 p-4 rounded-2xl bg-gradient-to-r from-accent-1/20 to-purple-500/20 border border-accent-1/30 flex items-center justify-between group cursor-pointer hover:border-accent-1/60 transition-colors">
                      <div>
-                         <h3 className="font-bold text-accent-1">Upgrade Protocol</h3>
-                         <p className="text-xs text-secondary-text">Secure your connection now.</p>
+                         <h3 className="font-bold text-accent-1">Boost Signal</h3>
+                         <p className="text-xs text-secondary-text">Unlock HD feeds & full speed.</p>
                      </div>
                      <div className="px-4 py-2 bg-accent-1 text-primary-bg font-bold rounded-lg text-xs group-hover:scale-105 transition-transform">
-                         GET ACCESS
+                         UPGRADE
                      </div>
                  </div>
              )}

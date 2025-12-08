@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X, ChevronRight, ChevronLeft } from "lucide-react";
+import { Plus, X, ChevronRight, ChevronLeft, Lock } from "lucide-react";
 import { collection, query, where, getDocs, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
@@ -76,18 +76,21 @@ export function StoriesTray() {
   const stories = realStories.length > 0 ? realStories : mockStories;
   const hasStories = stories.length > 0;
   
-  // If no stories, we can show a placeholder or nothing.
-  // The user requested it strictly "present on the home screen".
-  // So we show it even if empty (maybe as a "Create" trigger?).
-  // But strictly, let's show it as a "Portal" to stories.
+  const isFree = user?.tier === 'free';
 
   const handleOpen = () => {
+    if (isFree) {
+        // Just play a sound, deny access
+        playClick(150, 0.2, 'sawtooth');
+        if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
+        alert("OPTICAL SENSORS OFFLINE. UPGRADE REQUIRED.");
+        return;
+    }
+
     if (stories.length > 0) {
         setIsOpen(true);
         playClick(600, 0.1, 'sine');
     } else {
-        // Maybe trigger creation? But creation is via the main Plus button usually.
-        // Let's just play a "void" sound if empty.
         playClick(100, 0.2, 'sawtooth');
     }
   };
@@ -116,13 +119,27 @@ export function StoriesTray() {
         className="relative w-10 h-10 rounded-full flex items-center justify-center z-50"
       >
         {hasStories ? (
-            <div className="w-full h-full rounded-full p-[2px] bg-gradient-to-tr from-accent-1 to-purple-500 animate-spin-slow">
-                <img 
-                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${stories[0].userAvatar}`} 
-                    className="w-full h-full rounded-full bg-black object-cover border-2 border-black"
-                    alt="Story"
-                />
-                <div className="absolute inset-0 rounded-full shadow-[0_0_15px_var(--color-accent-1)] animate-pulse" />
+            <div className={`w-full h-full rounded-full p-[2px] animate-spin-slow ${isFree ? 'bg-gradient-to-tr from-red-500/50 to-transparent' : 'bg-gradient-to-tr from-accent-1 to-purple-500'}`}>
+                {isFree ? (
+                    // Ghost/Shadow Orb for Free Users
+                    <div className="w-full h-full rounded-full bg-black border-2 border-red-500/30 flex items-center justify-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
+                        <span className="font-mono font-bold text-[10px] text-red-500 relative z-10">
+                            {stories.length}
+                        </span>
+                        <Lock className="w-3 h-3 text-red-500/50 absolute bottom-1 right-1" />
+                    </div>
+                ) : (
+                    // Full Avatar for Premium+
+                    <div className="w-full h-full rounded-full relative">
+                        <img 
+                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${stories[0].userAvatar}`} 
+                            className="w-full h-full rounded-full bg-black object-cover border-2 border-black"
+                            alt="Story"
+                        />
+                        <div className="absolute inset-0 rounded-full shadow-[0_0_15px_var(--color-accent-1)] animate-pulse" />
+                    </div>
+                )}
             </div>
         ) : (
              // Empty State: Just a ghostly orb
