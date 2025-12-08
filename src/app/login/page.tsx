@@ -15,7 +15,7 @@ export default function LoginPage() {
   useEffect(() => {
     // Redirect if already logged in
     if (firebaseUser && !loading) {
-      router.push("/vortex");
+      router.push("/home");
     }
   }, [firebaseUser, loading, router]);
 

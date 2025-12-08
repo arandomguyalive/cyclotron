@@ -10,7 +10,7 @@ import { useSonic } from "@/lib/SonicContext";
 import { CreatePostModal } from "@/components/feed/CreatePostModal";
 
 const navItems = [
-  { name: "Home", href: "/", icon: Home },
+  { name: "Home", href: "/home", icon: Home },
   { name: "Vortex", href: "/vortex", icon: Aperture },
   { name: "Transmit", href: "#", icon: Plus, isAction: true }, // Special Action Item
   { name: "Profile", href: "/profile", icon: User },

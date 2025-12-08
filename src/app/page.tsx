@@ -1,20 +1,26 @@
 "use client";
 
-import { useUser } from "@/lib/UserContext";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useUser } from "@/lib/UserContext";
 
-export default function Home() {
+export default function IntroPage() {
   const { firebaseUser, loading } = useUser();
   const router = useRouter();
 
-  const handleAction = () => {
-    if (firebaseUser) {
-      router.push("/vortex");
-    } else {
-      router.push("/login");
+  useEffect(() => {
+    // Wait for the auth check to complete
+    if (!loading) {
+      if (firebaseUser) {
+        // If logged in, go to the new Dashboard
+        router.push("/home");
+      } else {
+        // If not logged in, go to Login
+        router.push("/login");
+      }
     }
-  };
+  }, [loading, firebaseUser, router]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-primary-bg relative overflow-hidden">
@@ -23,9 +29,9 @@ export default function Home() {
       
       <div className="z-10 text-center flex flex-col items-center gap-6">
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, repeat: Infinity, repeatType: "reverse" }}
         >
             <h1 className="text-6xl md:text-9xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-accent-1 to-transparent tracking-tighter">
                 ABHED
@@ -35,27 +41,15 @@ export default function Home() {
         <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 1 }}
-            className="text-primary-text/80 text-xl font-light tracking-wide max-w-lg"
+            transition={{ delay: 0.2 }}
+            className="text-primary-text/80 text-sm font-mono tracking-widest uppercase animate-pulse"
         >
-            The Impenetrable Digital Sanctum.
-            <br />
-            <span className="text-xs uppercase tracking-[0.3em] text-accent-2/80 mt-4 inline-block">A KM18 Production</span>
+            System Initializing...
         </motion.p>
-
-        <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1, type: "spring" }}
-            onClick={handleAction}
-            className="mt-8 px-12 py-4 bg-accent-1 text-primary-bg font-bold text-lg rounded-full hover:bg-accent-1/90 hover:scale-105 transition-all shadow-[0_0_20px_var(--color-accent-1)]"
-        >
-            {loading ? "SCANNING..." : (firebaseUser ? "RESUME SESSION" : "INITIALIZE")}
-        </motion.button>
       </div>
       
-      <div className="absolute bottom-8 text-secondary-text text-xs font-mono">
-        SYSTEM STATUS: ONLINE
+      <div className="absolute bottom-8 text-secondary-text text-[10px] font-mono opacity-50">
+        SECURE CONNECTION // ENCRYPTED
       </div>
     </main>
   );
