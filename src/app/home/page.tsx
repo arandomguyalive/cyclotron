@@ -6,6 +6,9 @@ import { useUser } from "@/lib/UserContext";
 import { motion } from "framer-motion";
 import { StoriesTray } from "@/components/feed/StoriesTray";
 import { SignalGrid } from "@/components/home/SignalGrid";
+import { FrequencyTuner } from "@/components/home/widgets/FrequencyTuner";
+import { DailyDirective } from "@/components/home/widgets/DailyDirective";
+import { SystemTerminal } from "@/components/home/widgets/SystemTerminal";
 import { Activity, Zap, Shield, Globe, Lock, AlertTriangle, Eye, Server, Radio, Signal, Wifi } from "lucide-react";
 
 export default function HomePage() {
@@ -154,11 +157,19 @@ export default function HomePage() {
              </div>
         </motion.div>
 
+        {/* Frequency Tuner (Interactive Widget) */}
+        <FrequencyTuner />
+
         {/* The Signal Grid (Social Feed) */}
         <SignalGrid />
 
         {/* Quick Actions Grid */}
         <div className="grid grid-cols-2 gap-4">
+            
+            {/* Daily Directive (Gamified Task) - Spans 2 cols */}
+            <div className="col-span-2">
+                <DailyDirective />
+            </div>
             
             {/* 1. Vortex Access (All Tiers) */}
             <button 
@@ -216,6 +227,9 @@ export default function HomePage() {
         </div>
 
       </main>
+
+      {/* System Terminal Footer */}
+      <SystemTerminal />
     </div>
   );
 }
