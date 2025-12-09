@@ -1,13 +1,14 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Moon, Shield, Database, LogOut, ChevronRight, ChevronLeft, User, EyeOff, Clock, Fingerprint, CameraOff, Lock } from "lucide-react";
+import { X, Moon, Shield, Database, LogOut, ChevronRight, ChevronLeft, User, EyeOff, Clock, Fingerprint, CameraOff, Lock, Crown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useSonic } from "@/lib/SonicContext";
 import { EditProfileModal } from "./EditProfileModal";
 import { ThemeSelectorModal } from "./ThemeSelectorModal";
 import { useUser } from "@/lib/UserContext";
+import { useRouter } from "next/navigation";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
   const [currentView, setCurrentView] = useState<SettingsView>('main');
+  const router = useRouter();
 
   // Privacy Settings States
   const [ghostMode, setGhostMode] = useState(false);
@@ -123,6 +125,15 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     handleButtonClick();
                                     setIsEditProfileOpen(true);
                                 }} 
+                            />
+                            <SettingItem 
+                                icon={Crown} 
+                                label="Upgrade Account" 
+                                onClick={() => {
+                                    handleButtonClick();
+                                    router.push("/upgrade");
+                                }} 
+                                isPaid={user?.tier !== 'free'} // Indicate if already paid
                             />
                         </Section>
 

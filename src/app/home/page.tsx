@@ -217,15 +217,21 @@ export default function HomePage() {
 
              {/* 3. Upgrade Prompt (Free Only) */}
              {tier === 'free' && (
-                 <div className="col-span-2 p-4 rounded-2xl bg-gradient-to-r from-accent-1/20 to-purple-500/20 border border-accent-1/30 flex items-center justify-between group cursor-pointer hover:border-accent-1/60 transition-colors">
+                 <motion.div
+                     initial={{ opacity: 0, y: 20 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     transition={{ delay: 0.5 }}
+                     onClick={() => router.push("/upgrade")}
+                     className="col-span-2 p-4 rounded-2xl bg-gradient-to-r from-accent-1/20 to-purple-500/20 border border-accent-1/30 flex items-center justify-between group cursor-pointer hover:border-accent-1/60 transition-colors"
+                 >
                      <div>
-                         <h3 className="font-bold text-accent-1">Boost Signal</h3>
-                         <p className="text-xs text-secondary-text">Unlock HD feeds & full speed.</p>
+                         <h3 className="font-bold text-accent-1">Upgrade Protocol</h3>
+                         <p className="text-xs text-secondary-text">Secure your connection now.</p>
                      </div>
                      <div className="px-4 py-2 bg-accent-1 text-primary-bg font-bold rounded-lg text-xs group-hover:scale-105 transition-transform">
-                         UPGRADE
+                         GET ACCESS
                      </div>
-                 </div>
+                 </motion.div>
              )}
 
         </div>
