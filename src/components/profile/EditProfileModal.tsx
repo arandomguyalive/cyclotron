@@ -80,9 +80,14 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
         updateUser(userData);
         
         onClose();
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error updating profile:", error);
-        alert("Failed to update profile. Neural link unstable.");
+        // Show specific error if possible
+        if (error.code === 'storage/unauthorized') {
+            alert("Permission denied: Check Storage Rules.");
+        } else {
+            alert(`Failed to update profile: ${error.message || "Neural link unstable."}`);
+        }
     } finally {
         setIsSaving(false);
     }

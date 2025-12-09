@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Settings, Grid, Film, Heart, MessageCircle } from "lucide-react";
 import { SettingsModal } from "@/components/profile/SettingsModal";
 import { useSonic } from "@/lib/SonicContext";
@@ -14,6 +14,11 @@ export default function ProfilePage() {
   const { playClick } = useSonic();
   const { user, loading, firebaseUser } = useUser();
   const router = useRouter();
+  
+  // Parallax Scroll Logic
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 300], [0, 150]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0.5]);
 
   useEffect(() => {
     if (!loading && !firebaseUser) {
@@ -39,21 +44,25 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-primary-bg text-primary-text pb-24">
       {/* Header / Cover */}
-      <div className="h-40 relative bg-gradient-to-r from-accent-2 via-primary-bg to-accent-1 opacity-50 overflow-hidden">
+      <div className="h-64 relative bg-gradient-to-r from-accent-2 via-primary-bg to-accent-1 opacity-50 overflow-hidden">
         {user.coverImage ? (
-            <img 
+            <motion.img 
+                style={{ y, opacity }}
                 src={user.coverImage} 
                 alt="Cover" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover scale-110"
             />
         ) : (
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40 mix-blend-overlay" />
+            <motion.div 
+                style={{ y, opacity }}
+                className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40 mix-blend-overlay scale-110" 
+            />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary-bg/90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-bg/20 to-primary-bg" />
       </div>
 
       {/* Holo-Profile Card Container */}
-      <div className="px-4 -mt-12 relative z-10">
+      <div className="px-4 -mt-20 relative z-10">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -77,11 +86,11 @@ export default function ProfilePage() {
               <motion.div 
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="w-24 h-24 rounded-full border-4 border-primary-bg bg-primary-bg overflow-hidden shadow-lg"
+                className="w-28 h-28 rounded-full border-4 border-primary-bg bg-primary-bg overflow-hidden shadow-lg -mb-4"
               >
                 <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.avatarSeed}`} alt="Profile" className="w-full h-full" />
               </motion.div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 mb-2">
                 <Link 
                   href="/chat" 
                   onClick={handleButtonClick}
@@ -101,9 +110,9 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="mt-4 relative z-30">
+            <div className="mt-8 relative z-30">
               <h1 className="text-2xl font-bold drop-shadow-md">{user.displayName}</h1>
-              <p className="text-accent-1 drop-shadow-sm">@{user.handle}</p>
+              <p className="text-accent-1 drop-shadow-sm font-mono text-sm">@{user.handle}</p>
               <p className="mt-2 text-sm text-secondary-text leading-relaxed whitespace-pre-wrap">
                 {user.bio}
               </p>
