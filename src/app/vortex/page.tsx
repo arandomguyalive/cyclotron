@@ -7,6 +7,7 @@ import { ChevronUp, Box, Loader2, WifiOff } from "lucide-react";
 import { useSonic } from "@/lib/SonicContext";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useUser } from "@/lib/UserContext";
 
 const GAP = 1200; // Distance between items on Z axis
 
@@ -72,6 +73,7 @@ const mockPosts: Post[] = [
 export default function VortexPage() {
   const [realPosts, setRealPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useUser(); // Get user from context
   
   const displayPosts = realPosts.length > 0 ? realPosts : mockPosts;
   const isSimulation = realPosts.length === 0 && !loading;
@@ -82,6 +84,9 @@ export default function VortexPage() {
   const lastWheelTime = useRef(0);
   const { playClick, playHum } = useSonic();
   
+  // Determine watermark text
+  const watermarkText = (user && user.tier !== 'free') ? user.handle.toUpperCase() : undefined;
+
   // Spring physics for smooth movement through the void
   const smoothZ = useSpring(zPosition, {
       stiffness: 120,
@@ -242,6 +247,7 @@ export default function VortexPage() {
                 parentZ={smoothZ} 
                 activeIndex={activeIndex}
                 onCollect={() => setCycles(prev => prev + 100)} 
+                watermarkText={watermarkText} // Pass watermarkText
             />
         ))}
       </div>
@@ -252,7 +258,7 @@ export default function VortexPage() {
   );
 }
 
-function TunnelItem({ index, post, parentZ, activeIndex, onCollect }: { index: number, post: Post, parentZ: any, activeIndex: number, onCollect: () => void }) {
+function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkText }: { index: number, post: Post, parentZ: any, activeIndex: number, onCollect: () => void, watermarkText?: string }) {
     // Base Z position for this item
     const baseZ = index * GAP;
     
@@ -294,7 +300,7 @@ function TunnelItem({ index, post, parentZ, activeIndex, onCollect }: { index: n
             className="origin-center p-4"
         >
              {/* The Card Content */}
-             <VortexItem post={post} index={index} />
+             <VortexItem post={post} index={index} watermarkText={watermarkText} />
 
              {/* Scavenger Hunt Artifact */}
              {hasArtifact && (
