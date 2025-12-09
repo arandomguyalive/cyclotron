@@ -96,36 +96,31 @@ export function SignalGrid() {
                             <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-black">
                                 <img 
                                     src={post.mediaUrl} 
-                                    className={`w-full h-full object-cover ${isFree ? 'blur-[4px] opacity-50 grayscale' : ''}`}
+                                    className={`w-full h-full object-cover ${isFree ? 'opacity-80 sepia-[.3]' : ''}`}
                                     alt="Signal"
                                 />
-                                {isFree && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                                        <Lock className="w-6 h-6 text-red-500/80" />
-                                    </div>
-                                )}
                             </div>
 
                             {/* Content */}
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className={`text-xs font-bold ${isFree ? 'text-red-400 font-mono' : 'text-primary-text'}`}>
-                                        @{isFree ? 'UNKNOWN' : post.userHandle}
+                                    <span className={`text-xs font-bold ${isFree ? 'text-secondary-text' : 'text-primary-text'}`}>
+                                        @{post.userHandle}
                                     </span>
                                     <span className="text-[10px] text-secondary-text/50">
                                         {new Date(post.createdAt?.toDate ? post.createdAt.toDate() : new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'})}
                                     </span>
                                 </div>
                                 
-                                <p className={`text-sm ${isFree ? 'text-secondary-text/50 font-mono tracking-tighter' : 'text-secondary-text'}`}>
-                                    {isFree ? redactText(post.caption) : post.caption}
+                                <p className="text-sm text-secondary-text line-clamp-2">
+                                    {post.caption}
                                 </p>
                             </div>
                         </div>
 
-                        {/* Upgrade Overlay for Free Users */}
+                        {/* Upgrade Overlay for Free Users - Subtle Interaction Lock */}
                         {isFree && (
-                            <div className="absolute inset-0 bg-transparent z-10 cursor-not-allowed group" />
+                            <div className="absolute inset-0 bg-transparent z-10 cursor-pointer" onClick={() => alert("Upgrade to interact (Like/Comment).")} />
                         )}
                     </div>
                 ))}
@@ -134,9 +129,3 @@ export function SignalGrid() {
     );
 }
 
-// Helper to scramble text
-function redactText(text: string) {
-    // Keep first 5 chars, scramble the rest
-    const visible = text.substring(0, 8);
-    return `${visible}... [DATA CORRUPTED]`;
-}

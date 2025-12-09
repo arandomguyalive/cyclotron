@@ -27,12 +27,12 @@ export function DailyDirective() {
             </div>
 
             <h3 className={`font-bold text-lg mb-1 ${isFree ? 'text-secondary-text' : 'text-primary-text'}`}>
-                {isFree ? "Daily Task" : "CLASSIFIED DIRECTIVE"}
+                {isFree ? "Daily Drop" : "CLASSIFIED DIRECTIVE"}
             </h3>
 
             <p className={`text-xs mb-4 ${isFree ? 'text-secondary-text/60' : 'text-accent-2/80 font-mono'}`}>
                 {isFree 
-                    ? "Upload a photo to the public feed."
+                    ? "Post a photo."
                     : "Capture a neon sign in Sector 7. Stealth required."
                 }
             </p>

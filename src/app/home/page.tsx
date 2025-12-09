@@ -29,13 +29,13 @@ export default function HomePage() {
   // Tier-Specific Config
   const config = {
       free: {
-          color: "text-red-500",
-          bgColor: "bg-red-500/10",
-          borderColor: "border-red-500/20",
-          signalText: "WEAK",
-          signalValue: 20,
-          label: "UNSECURED",
-          glitch: true
+          color: "text-secondary-text",
+          bgColor: "bg-secondary-bg/10",
+          borderColor: "border-border-color",
+          signalText: "BASIC",
+          signalValue: 40,
+          label: "STANDARD",
+          glitch: false
       },
       premium: {
           color: "text-cyan-400",
@@ -79,7 +79,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-primary-bg text-primary-text pb-20 relative overflow-hidden">
       {/* Dynamic Background */}
       <div className={`absolute inset-0 pointer-events-none opacity-10 blur-3xl transition-colors duration-1000 ${
-          tier === 'free' ? 'bg-[radial-gradient(circle_at_top_right,red_0%,transparent_40%)]' :
+          tier === 'free' ? 'bg-[radial-gradient(circle_at_top_right,var(--color-secondary-text)_0%,transparent_40%)]' :
           tier === 'premium' ? 'bg-[radial-gradient(circle_at_top_right,cyan_0%,transparent_40%)]' :
           tier === 'gold' ? 'bg-[radial-gradient(circle_at_top_right,amber_0%,transparent_40%)]' :
           tier === 'platinum' ? 'bg-[radial-gradient(circle_at_top_right,white_0%,transparent_40%)]' :
@@ -87,7 +87,7 @@ export default function HomePage() {
       }`} />
       
       {/* Noise Overlay (Intense for Free tier) */}
-      <div className={`absolute inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-screen ${tier === 'free' ? 'opacity-20' : 'opacity-5'}`} />
+      <div className={`absolute inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-screen ${tier === 'free' ? 'opacity-5' : 'opacity-5'}`} />
 
       {/* Header */}
       <header className="px-6 py-4 pt-safe-area-top flex items-center justify-between sticky top-0 z-50 bg-primary-bg/80 backdrop-blur-md border-b border-border-color/50">
@@ -124,7 +124,7 @@ export default function HomePage() {
              <div className="relative z-10">
                  <div className="flex items-center gap-2 mb-4">
                      <Signal className={`w-5 h-5 ${config.color} ${tier === 'free' ? 'animate-pulse' : ''}`} />
-                     <h2 className={`text-xl font-bold ${config.color} tracking-tight uppercase`}>Signal Strength</h2>
+                     <h2 className={`text-xl font-bold ${config.color} tracking-tight uppercase`}>Privacy Score</h2>
                  </div>
                  
                  {/* Visual Bar Graph */}
@@ -134,7 +134,7 @@ export default function HomePage() {
                             key={i} 
                             className={`flex-1 rounded-sm transition-all duration-500 ${
                                 i < config.signalValue / 10 
-                                    ? (tier === 'free' ? 'bg-red-500 animate-pulse' : config.color.replace('text-', 'bg-')) 
+                                    ? config.color.replace('text-', 'bg-') 
                                     : 'bg-secondary-bg/20'
                             }`}
                             style={{ height: `${(i + 1) * 10}%` }}
@@ -150,8 +150,8 @@ export default function HomePage() {
                  </div>
                  
                  {tier === 'free' && (
-                     <p className="mt-4 text-xs text-red-300 border-t border-red-500/20 pt-2">
-                         WARNING: Bandwidth throttled. Upload link unstable.
+                     <p className="mt-4 text-xs text-secondary-text border-t border-border-color pt-2 flex items-center gap-2">
+                         <span className="font-bold text-accent-1">TIP:</span> Your digital footprint is visible. Upgrade to mask it.
                      </p>
                  )}
              </div>

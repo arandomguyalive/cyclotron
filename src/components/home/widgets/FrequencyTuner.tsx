@@ -16,11 +16,10 @@ export function FrequencyTuner() {
     
     const isFree = user?.tier === 'free';
     const width = 300; // Mock width of container
-    
+    const ALLOWED_FREE = [0, 3]; // PUBLIC, NEON
+
     // Calculate which channel is active based on X position
     const handleDrag = (event: any, info: PanInfo) => {
-        if (isFree) return; // Locked for free users
-
         const newX = x.get();
         // Simple snapping logic
         const index = Math.min(Math.max(Math.round(-newX / 60), 0), CHANNELS.length - 1);
@@ -33,10 +32,14 @@ export function FrequencyTuner() {
     };
 
     const handleDragEnd = () => {
-        if (isFree) {
-            // Snap back
-            x.set(0);
-            playClick(100, 0.1, 'sawtooth');
+        if (isFree && !ALLOWED_FREE.includes(activeChannel)) {
+            // Snap to nearest allowed
+            const nearest = ALLOWED_FREE.reduce((prev, curr) => 
+                Math.abs(curr - activeChannel) < Math.abs(prev - activeChannel) ? curr : prev
+            );
+            setActiveChannel(nearest);
+            x.set(-nearest * 60);
+            playClick(150, 0.1, 'sawtooth'); // Denied sound
             return;
         }
         
@@ -51,12 +54,11 @@ export function FrequencyTuner() {
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <Radio className={`w-4 h-4 ${isFree ? 'text-secondary-text' : 'text-accent-1'}`} />
-                    <span className="text-xs font-bold tracking-wider uppercase text-secondary-text">Frequency Tuner</span>
+                    <span className="text-xs font-bold tracking-wider uppercase text-secondary-text">Vibe Switch</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    {isFree && <Lock className="w-3 h-3 text-red-500" />}
-                    <span className={`font-mono text-xs font-bold ${isFree ? 'text-red-500' : 'text-accent-1'}`}>
-                        {isFree ? "LOCKED" : `${104.5 + activeChannel * 2.5} MHz`}
+                    <span className={`font-mono text-xs font-bold ${isFree ? 'text-secondary-text' : 'text-accent-1'}`}>
+                        {isFree && !ALLOWED_FREE.includes(activeChannel) ? "LOCKED" : `${104.5 + activeChannel * 2.5} FM`}
                     </span>
                 </div>
             </div>
@@ -65,7 +67,7 @@ export function FrequencyTuner() {
             <div className="relative h-12 bg-black/40 rounded-xl overflow-hidden flex items-center cursor-grab active:cursor-grabbing">
                 
                 {/* Center Line Indicator */}
-                <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-red-500 z-20 shadow-[0_0_10px_red]" />
+                <div className={`absolute left-1/2 top-0 bottom-0 w-0.5 z-20 shadow-[0_0_10px] ${isFree ? 'bg-white shadow-white/50' : 'bg-red-500 shadow-red-500'}`} />
                 
                 {/* Draggable Scale */}
                 <motion.div 
@@ -80,21 +82,17 @@ export function FrequencyTuner() {
                         <div key={channel} className="w-[60px] flex flex-col items-center justify-center shrink-0 opacity-50 data-[active=true]:opacity-100 transition-opacity" data-active={i === activeChannel}>
                             <div className="h-4 w-0.5 bg-secondary-text mb-2" />
                             <span className="text-[10px] font-mono tracking-widest">{channel}</span>
+                            {isFree && !ALLOWED_FREE.includes(i) && <Lock className="w-3 h-3 text-secondary-text mt-1 opacity-50" />}
                         </div>
                     ))}
                     {/* Extra spacing at end */}
                     <div className="w-[50%]" />
                 </motion.div>
-
-                {/* Static Noise Overlay for Free Users */}
-                {isFree && (
-                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
-                )}
             </div>
 
             {isFree ? (
-                 <p className="mt-2 text-[10px] text-red-400 font-mono text-center">
-                     Bandwidth Restricted. Locked to Public Channel.
+                 <p className="mt-2 text-[10px] text-secondary-text font-mono text-center">
+                     Explore Public & Neon. Upgrade for Deep/Void.
                  </p>
             ) : (
                  <p className="mt-2 text-[10px] text-accent-1/70 font-mono text-center">
