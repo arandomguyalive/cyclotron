@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, Share2, Disc, Music, Plus, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SecurePlayer } from "./SecurePlayer";
 
 export interface Post {
   id: string;
@@ -46,14 +47,7 @@ export function VortexItem({ post, index, watermarkText }: VortexProps) {
       {/* Media Layer */}
       <div className="absolute inset-0 bg-black">
           {post.mediaType === 'video' ? (
-              <video 
-                src={post.mediaUrl} 
-                className="w-full h-full object-cover opacity-80"
-                autoPlay 
-                muted 
-                loop 
-                playsInline
-              />
+              <SecurePlayer src={post.mediaUrl} />
           ) : (
               <img 
                 src={post.mediaUrl} 

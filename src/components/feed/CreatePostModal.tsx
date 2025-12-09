@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Upload, Send, Image as ImageIcon, Film, Mic, Loader2, CheckCircle2 } from "lucide-react";
+import { X, Upload, Send, Image as ImageIcon, Film, Mic, Loader2, CheckCircle2, Globe, MapPin } from "lucide-react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { storage, db } from "@/lib/firebase";
@@ -21,6 +21,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
   const [caption, setCaption] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [region, setRegion] = useState("global"); // New: Geo-Fence State
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [mode, setMode] = useState<"post" | "story">("post"); // New: Mode State
@@ -60,6 +61,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
         userId: firebaseUser.uid,
         userHandle: user?.handle || "ghost_user",
         userAvatar: user?.avatarSeed || "default",
+        region: region, // Save Geo-Fence Data
         likes: 0,
         createdAt: serverTimestamp(),
         // Stories auto-expire in 24h
@@ -177,13 +179,36 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
                </div>
 
                {/* Caption Input */}
-               <div className="flex-1">
+               <div className="flex-1 flex flex-col gap-4">
                    <textarea 
                       value={caption}
                       onChange={(e) => setCaption(e.target.value)}
                       placeholder="Enter transmission data..."
-                      className="w-full h-full bg-transparent border-none text-lg text-primary-text placeholder:text-secondary-text/50 focus:ring-0 resize-none font-light"
+                      className="w-full flex-1 bg-transparent border-none text-lg text-primary-text placeholder:text-secondary-text/50 focus:ring-0 resize-none font-light"
                    />
+
+                   {/* Geo-Fencing (Gold+) */}
+                   {['gold', 'platinum', 'ultimate'].includes(user?.tier || 'free') && (
+                       <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-2/10 border border-accent-2/20 text-accent-2 text-xs whitespace-nowrap">
+                               <MapPin className="w-3 h-3" />
+                               <span className="font-bold uppercase tracking-wider">Geo-Fence:</span>
+                           </div>
+                           {(['global', 'na', 'eu', 'asia'] as const).map((r) => (
+                               <button
+                                   key={r}
+                                   onClick={() => setRegion(r)}
+                                   className={`px-3 py-1.5 rounded-full text-xs font-mono border transition-colors ${
+                                       region === r 
+                                       ? "bg-accent-2 text-primary-bg border-accent-2 font-bold" 
+                                       : "bg-transparent text-secondary-text border-border-color hover:border-accent-2/50"
+                                   }`}
+                               >
+                                   {r.toUpperCase()}
+                               </button>
+                           ))}
+                       </div>
+                   )}
                </div>
             </div>
 
