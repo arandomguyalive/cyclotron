@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Save, RefreshCw, Loader2 } from "lucide-react";
+import { X, Save, RefreshCw, Loader2, Image as ImageIcon, Camera } from "lucide-react";
 import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
 import { doc, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -22,6 +23,11 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   const [handle, setHandle] = useState(user?.handle || "");
   const [bio, setBio] = useState(user?.bio || "");
   const [avatarSeed, setAvatarSeed] = useState(user?.avatarSeed || "default");
+  
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState(user?.coverImage || null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -30,8 +36,17 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
       setHandle(user.handle);
       setBio(user.bio);
       setAvatarSeed(user.avatarSeed);
+      setCoverPreview(user.coverImage || null);
     }
   }, [user]);
+
+  const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        setCoverFile(file);
+        setCoverPreview(URL.createObjectURL(file));
+    }
+  }
 
   const handleSave = async () => {
     if (!firebaseUser) return;
@@ -40,13 +55,23 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     playClick(440, 0.1, 'sine');
 
     try {
+        let coverImageUrl = user?.coverImage;
+
+        // Upload Cover Image if changed
+        if (coverFile) {
+            const storageRef = ref(storage, `covers/${firebaseUser.uid}_${Date.now()}`);
+            const snapshot = await uploadBytes(storageRef, coverFile);
+            coverImageUrl = await getDownloadURL(snapshot.ref);
+        }
+
         // Save to Firestore
         const userRef = doc(db, "users", firebaseUser.uid);
         const userData = {
             displayName: name,
             handle,
             bio,
-            avatarSeed
+            avatarSeed,
+            coverImage: coverImageUrl
         };
         
         await setDoc(userRef, userData, { merge: true });
@@ -99,8 +124,33 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               {/* Content */}
               <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
                 
+                {/* Cover Image Upload */}
+                <div 
+                    onClick={() => coverInputRef.current?.click()}
+                    className="relative w-full h-32 rounded-xl bg-secondary-bg border-2 border-dashed border-border-color hover:border-accent-1 overflow-hidden cursor-pointer group"
+                >
+                    {coverPreview ? (
+                        <img src={coverPreview} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" alt="Cover Preview" />
+                    ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-secondary-text">
+                            <ImageIcon className="w-8 h-8 mb-2" />
+                            <span className="text-xs font-mono uppercase">Upload Cover</span>
+                        </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <Camera className="w-6 h-6 text-white" />
+                    </div>
+                    <input 
+                        type="file" 
+                        ref={coverInputRef} 
+                        onChange={handleCoverSelect} 
+                        accept="image/*" 
+                        className="hidden" 
+                    />
+                </div>
+
                 {/* Avatar Section */}
-                <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-4 -mt-12 relative z-10">
                   <div className="w-24 h-24 rounded-full border-4 border-accent-1 bg-primary-bg overflow-hidden relative group">
                     <img 
                       src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`} 

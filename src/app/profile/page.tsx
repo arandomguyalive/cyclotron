@@ -39,8 +39,17 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-primary-bg text-primary-text pb-24">
       {/* Header / Cover */}
-      <div className="h-40 bg-gradient-to-r from-accent-2 via-primary-bg to-accent-1 opacity-50 relative">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40 mix-blend-overlay" />
+      <div className="h-40 relative bg-gradient-to-r from-accent-2 via-primary-bg to-accent-1 opacity-50 overflow-hidden">
+        {user.coverImage ? (
+            <img 
+                src={user.coverImage} 
+                alt="Cover" 
+                className="w-full h-full object-cover"
+            />
+        ) : (
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40 mix-blend-overlay" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary-bg/90" />
       </div>
 
       {/* Holo-Profile Card Container */}

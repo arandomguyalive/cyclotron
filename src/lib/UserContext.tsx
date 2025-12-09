@@ -15,6 +15,7 @@ interface UserProfile {
   handle: string;
   bio: string;
   avatarSeed: string;
+  coverImage?: string;
   faction: "Netrunner" | "Drifter" | "Corp" | "Ghost";
   tier: "free" | "premium" | "gold" | "platinum" | "ultimate";
   stats: {
