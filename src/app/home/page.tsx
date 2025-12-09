@@ -89,89 +89,93 @@ export default function HomePage() {
       {/* Noise Overlay (Intense for Free tier) */}
       <div className={`absolute inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-screen ${tier === 'free' ? 'opacity-5' : 'opacity-5'}`} />
 
-      {/* Header */}
-      <header className="px-6 py-4 pt-safe-area-top flex items-center justify-between sticky top-0 z-50 bg-primary-bg/80 backdrop-blur-md border-b border-border-color/50">
-        <div>
-           <h1 className="text-xl font-bold tracking-tight text-primary-text">TERMINAL</h1>
-           <div className="flex items-center gap-2">
-               <span className="text-xs text-secondary-text font-mono uppercase tracking-widest">
-                  {user?.handle}
-               </span>
-               <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${config.bgColor} ${config.color} border ${config.borderColor}`}>
-                   {tier}
-               </span>
-           </div>
-        </div>
-        
-        <div className="pointer-events-auto">
-             <StoriesTray />
-        </div>
-      </header>
+            {/* Header */}
 
-      {/* Main Content Area */}
-      <main className="p-6 space-y-6">
-        
-        {/* Signal Strength Widget (Replaces Security Status) */}
-        <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} relative overflow-hidden`}
-        >
-             <div className="absolute top-0 right-0 p-4 opacity-10">
-                 <Wifi className={`w-24 h-24 ${config.color}`} />
-             </div>
-             
-             <div className="relative z-10">
-                 <div className="flex items-center gap-2 mb-4">
-                     <Signal className={`w-5 h-5 ${config.color} ${tier === 'free' ? 'animate-pulse' : ''}`} />
-                     <h2 className={`text-xl font-bold ${config.color} tracking-tight uppercase`}>Privacy Score</h2>
-                 </div>
-                 
-                 {/* Visual Bar Graph */}
-                 <div className="flex items-end gap-1 h-12 mb-4">
-                     {[...Array(10)].map((_, i) => (
-                         <div 
-                            key={i} 
-                            className={`flex-1 rounded-sm transition-all duration-500 ${
-                                i < config.signalValue / 10 
-                                    ? config.color.replace('text-', 'bg-') 
-                                    : 'bg-secondary-bg/20'
-                            }`}
-                            style={{ height: `${(i + 1) * 10}%` }}
-                         />
-                     ))}
-                 </div>
-                 
-                 <div className="flex items-center justify-between">
-                     <span className={`font-mono text-2xl font-bold ${config.color}`}>{config.signalValue}%</span>
-                     <span className={`text-xs font-mono uppercase tracking-widest ${config.color} opacity-80`}>
-                         {config.signalText}
+            <header className="px-6 py-4 pt-safe-area-top flex items-center justify-between sticky top-0 z-50 bg-primary-bg/80 backdrop-blur-md border-b border-border-color/50">
+
+              <div>
+
+                 <h1 className="text-xl font-bold tracking-tight text-primary-text">TERMINAL</h1>
+
+                 <div className="flex items-center gap-2">
+
+                     <span className="text-xs text-secondary-text font-mono uppercase tracking-widest">
+
+                        {user?.handle}
+
                      </span>
+
+                     {/* Compact Privacy Badge */}
+
+                     <div className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${config.bgColor} ${config.color} border ${config.borderColor}`}>
+
+                         <Shield className="w-3 h-3" />
+
+                         <span>{config.label}</span>
+
+                     </div>
+
                  </div>
-                 
-                 {tier === 'free' && (
-                     <p className="mt-4 text-xs text-secondary-text border-t border-border-color pt-2 flex items-center gap-2">
-                         <span className="font-bold text-accent-1">TIP:</span> Your digital footprint is visible. Upgrade to mask it.
-                     </p>
-                 )}
-             </div>
-        </motion.div>
 
-        {/* Frequency Tuner (Interactive Widget) */}
-        <FrequencyTuner />
+              </div>
 
-        {/* The Signal Grid (Social Feed) */}
-        <SignalGrid />
+              
 
-        {/* Quick Actions Grid */}
-        <div className="grid grid-cols-2 gap-4">
-            
-            {/* Daily Directive (Gamified Task) - Spans 2 cols */}
-            <div className="col-span-2">
-                <DailyDirective />
-            </div>
-            
-            {/* 1. Vortex Access (All Tiers) */}
+              <div className="pointer-events-auto">
+
+                   <StoriesTray />
+
+              </div>
+
+            </header>
+
+      
+
+            {/* Main Content Area */}
+
+            <main className="p-6 space-y-6">
+
+              
+
+              {/* Feed Filter (Frequency Tuner) */}
+
+              <div className="relative">
+
+                  <span className="absolute -top-3 left-2 text-[10px] bg-primary-bg px-2 text-secondary-text uppercase tracking-widest z-10">
+
+                      Feed Filter
+
+                  </span>
+
+                  <FrequencyTuner />
+
+              </div>
+
+      
+
+              {/* The Signal Grid (Social Feed) */}
+
+              <SignalGrid />
+
+      
+
+              {/* Quick Actions Grid */}
+
+              <div className="grid grid-cols-2 gap-4">
+
+                  
+
+                  {/* Daily Directive (Gamified Task) - Spans 2 cols */}
+
+                  <div className="col-span-2">
+
+                      <DailyDirective />
+
+                  </div>
+
+                  
+
+                  {/* 1. Vortex Access (All Tiers) */}
             <button 
                 onClick={() => router.push("/vortex")}
                 className={`p-6 rounded-3xl border transition-all group text-left ${

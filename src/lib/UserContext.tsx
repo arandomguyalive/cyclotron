@@ -62,18 +62,24 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         // Try to fetch real profile from Firestore
         try {
           const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          let userData: UserProfile;
+
           if (userDoc.exists()) {
-            setUser(userDoc.data() as UserProfile);
+            userData = userDoc.data() as UserProfile;
           } else {
-            // Fallback to default/mock user if no profile exists (e.g. Anonymous)
-            // We check localStorage first to persist changes in "Ghost" mode
+            // Fallback to default/mock user
             const saved = localStorage.getItem("oblivion_user");
-            if (saved) {
-               setUser(JSON.parse(saved));
-            } else {
-               setUser(defaultUser);
-            }
+            userData = saved ? JSON.parse(saved) : defaultUser;
           }
+
+          // Apply Simulated Tier Override
+          const simulatedTier = localStorage.getItem("simulated_tier");
+          if (simulatedTier) {
+              userData = { ...userData, tier: simulatedTier as any };
+          }
+
+          setUser(userData);
+
         } catch (error) {
           console.error("Error fetching user profile:", error);
           setUser(defaultUser);
@@ -91,6 +97,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setUser((prev) => {
       if (!prev) return null;
       const newState = { ...prev, ...updates };
+      
+      // Persist simulation
+      if (updates.tier) {
+          localStorage.setItem("simulated_tier", updates.tier);
+      }
+
       // If we are anonymous/testing, save to local storage
       if (firebaseUser?.isAnonymous) {
           localStorage.setItem("oblivion_user", JSON.stringify(newState));

@@ -51,11 +51,7 @@ export function FrequencyTuner() {
     return (
         <div className={`p-4 rounded-3xl border relative overflow-hidden ${isFree ? 'bg-secondary-bg/20 border-border-color' : 'bg-secondary-bg/50 border-accent-1/20'}`}>
             
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                    <Radio className={`w-4 h-4 ${isFree ? 'text-secondary-text' : 'text-accent-1'}`} />
-                    <span className="text-xs font-bold tracking-wider uppercase text-secondary-text">Vibe Switch</span>
-                </div>
+            <div className="flex items-center justify-end mb-2">
                 <div className="flex items-center gap-2">
                     <span className={`font-mono text-xs font-bold ${isFree ? 'text-secondary-text' : 'text-accent-1'}`}>
                         {isFree && !ALLOWED_FREE.includes(activeChannel) ? "LOCKED" : `${104.5 + activeChannel * 2.5} FM`}

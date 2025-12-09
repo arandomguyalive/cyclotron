@@ -49,8 +49,9 @@ export default function LoginPage() {
             <Fingerprint className="w-8 h-8 text-accent-1" />
           </div>
           <div className="mb-2">
-              <span className="block text-[10px] font-mono tracking-[0.3em] text-accent-1/80 uppercase mb-1">KM18 Presents</span>
+              <span className="block text-[10px] font-mono tracking-[0.3em] text-secondary-text uppercase mb-1">A KM18 Production</span>
               <h1 className="text-4xl font-bold text-primary-text tracking-tighter">ABHED</h1>
+              <span className="block text-[10px] font-light tracking-[0.5em] text-accent-1 uppercase mt-1">Privacy Unleashed</span>
           </div>
           <p className="text-secondary-text text-sm font-mono mt-2">
             Secure connection required.
