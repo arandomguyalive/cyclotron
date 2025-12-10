@@ -2,21 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@/lib/UserContext";
+import { motion } from "framer-motion";
 
 const LOGS_FREE = [
-    "Basic Protection Active",
-    "Location: Visible to Public",
-    "Data Stream: Unencrypted",
-    "Upgrade to mask your digital footprint...",
-    "Status: Online (Public IP)"
+    "Standard Encryption Active",
+    "Public IP Visible",
+    "Masking: Off",
+    "Connection: Standard",
+    "Digital Footprint: Detected"
 ];
 
 const LOGS_PREMIUM = [
-    "Encryption handshake complete.",
-    "Route optimized: <12ms latency.",
-    "Scanning local subnet...",
-    "Threat neutralized in Sector 9.",
-    "System nominal."
+    "Enhanced Encryption Active",
+    "Location: Masked",
+    "VPN: Tunnel Established",
+    "Connection: Optimized",
+    "Digital Footprint: Hidden"
 ];
 
 export function SystemTerminal() {
@@ -30,20 +31,25 @@ export function SystemTerminal() {
         const interval = setInterval(() => {
             const randomLog = logs[Math.floor(Math.random() * logs.length)];
             setCurrentLog(randomLog);
-        }, 3000);
+        }, 4000);
         return () => clearInterval(interval);
     }, [logs]);
 
     return (
-        <div className="w-full py-2 px-4 border-t border-border-color bg-black/40 backdrop-blur-md fixed bottom-0 left-0 right-0 z-40 pb-safe-area-inset-bottom">
-            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider overflow-hidden">
-                <span className={`shrink-0 font-bold ${isFree ? 'text-secondary-text' : 'text-green-500'}`}>
-                    {isFree ? "> STATUS:" : "> SYSTEM:"}
+        <div className="w-full py-3 px-6 border-t border-border-color bg-primary-bg/80 backdrop-blur-xl fixed bottom-0 left-0 right-0 z-40 pb-safe-area-inset-bottom">
+            <div className="flex items-center justify-between text-xs">
+                <span className={`font-bold ${isFree ? 'text-secondary-text' : 'text-emerald-500'}`}>
+                    Privacy Status
                 </span>
-                <span className="text-secondary-text truncate">
+                <motion.span 
+                    key={currentLog}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    className="text-secondary-text font-medium"
+                >
                     {currentLog}
-                </span>
-                <span className="animate-blink ml-1 block w-1.5 h-3 bg-secondary-text/50" />
+                </motion.span>
             </div>
         </div>
     );

@@ -39,128 +39,367 @@ export default function HomePage() {
 
   const tier = user.tier || "free";
 
-  // Tier-Specific Config
-  const config = {
-      free: {
-          color: "text-secondary-text",
-          bgColor: "bg-secondary-bg/10",
-          borderColor: "border-border-color",
-          signalText: "BASIC",
-          signalValue: 40,
-          label: "STANDARD",
-          glitch: false
-      },
-      premium: {
-          color: "text-cyan-400",
-          bgColor: "bg-cyan-400/10",
-          borderColor: "border-cyan-400/20",
-          signalText: "STRONG",
-          signalValue: 85,
-          label: "SECURED",
-          glitch: false
-      },
-      gold: {
-          color: "text-amber-400",
-          bgColor: "bg-amber-400/10",
-          borderColor: "border-amber-400/20",
-          signalText: "OPTIMAL",
-          signalValue: 98,
-          label: "FORTIFIED",
-          glitch: false
-      },
-      platinum: {
-          color: "text-white",
-          bgColor: "bg-white/10",
-          borderColor: "border-white/20",
-          signalText: "MAXIMUM",
-          signalValue: 100,
-          label: "IMPERVIOUS",
-          glitch: false
-      },
-      ultimate: {
-          color: "text-purple-500",
-          bgColor: "bg-purple-500/10",
-          borderColor: "border-purple-500/20",
-          signalText: "GODLIKE",
-          signalValue: 100,
-          label: "GOD MODE",
-          glitch: false
-      }
-  }[tier];
+    // Tier-Specific Config
 
-  return (
-    <div className="min-h-screen bg-primary-bg text-primary-text pb-20 relative overflow-hidden">
-      {/* Dynamic Background */}
-      <div className={`absolute inset-0 pointer-events-none opacity-10 blur-3xl transition-colors duration-1000 ${
-          tier === 'free' ? 'bg-[radial-gradient(circle_at_top_right,var(--color-secondary-text)_0%,transparent_40%)]' :
-          tier === 'premium' ? 'bg-[radial-gradient(circle_at_top_right,cyan_0%,transparent_40%)]' :
-          tier === 'gold' ? 'bg-[radial-gradient(circle_at_top_right,amber_0%,transparent_40%)]' :
-          tier === 'platinum' ? 'bg-[radial-gradient(circle_at_top_right,white_0%,transparent_40%)]' :
-          'bg-[radial-gradient(circle_at_top_right,purple_0%,transparent_40%)]'
-      }`} />
+    const config = {
+
+        free: {
+
+            color: "text-rose-500",
+
+            bgColor: "bg-rose-500/5",
+
+            borderColor: "border-rose-500/20",
+
+            signalText: "BASIC",
+
+            signalValue: 40,
+
+            label: "STANDARD",
+
+        },
+
+        premium: {
+
+            color: "text-sky-400",
+
+            bgColor: "bg-sky-400/10",
+
+            borderColor: "border-sky-400/20",
+
+            signalText: "STRONG",
+
+            signalValue: 85,
+
+            label: "SECURED",
+
+        },
+
+        gold: {
+
+            color: "text-amber-400",
+
+            bgColor: "bg-amber-400/10",
+
+            borderColor: "border-amber-400/20",
+
+            signalText: "OPTIMAL",
+
+            signalValue: 98,
+
+            label: "FORTIFIED",
+
+        },
+
+        platinum: {
+
+            color: "text-white",
+
+            bgColor: "bg-white/10",
+
+            borderColor: "border-white/20",
+
+            signalText: "MAXIMUM",
+
+            signalValue: 100,
+
+            label: "IMPERVIOUS",
+
+        },
+
+        ultimate: {
+
+            color: "text-purple-400",
+
+            bgColor: "bg-purple-500/10",
+
+            borderColor: "border-purple-500/20",
+
+            signalText: "GODLIKE",
+
+            signalValue: 100,
+
+            label: "GOD MODE",
+
+        }
+
+    }[tier];
+
+  
+
+    return (
+
+      <div className="min-h-screen bg-primary-bg text-primary-text pb-20 relative overflow-hidden font-sans">
+
+        {/* Dynamic Background */}
+
+        <div className={`absolute inset-0 pointer-events-none opacity-20 blur-3xl transition-colors duration-1000 ${
+
+            tier === 'free' ? 'bg-[radial-gradient(circle_at_top_right,var(--color-secondary-text)_0%,transparent_40%)]' :
+
+            tier === 'premium' ? 'bg-[radial-gradient(circle_at_top_right,sky_0%,transparent_40%)]' :
+
+            tier === 'gold' ? 'bg-[radial-gradient(circle_at_top_right,amber_0%,transparent_40%)]' :
+
+            tier === 'platinum' ? 'bg-[radial-gradient(circle_at_top_right,white_0%,transparent_40%)]' :
+
+            'bg-[radial-gradient(circle_at_top_right,purple_0%,transparent_40%)]'
+
+        }`} />
+
+        
+
+        {/* Noise Overlay (Subtle) */}
+
+        <div className="absolute inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-screen opacity-[0.03]" />
+
+  
+
+        {/* Header */}
+
+        <header className="px-6 py-4 pt-safe-area-top flex items-center justify-between sticky top-0 z-50 bg-primary-bg/80 backdrop-blur-md border-b border-border-color/50">
+
+          <div>
+
+             <h1 className="text-xl font-bold tracking-tight text-primary-text">HOME</h1>
+
+             <div className="flex items-center gap-2">
+
+                 {ghostMode ? (
+
+                     <div className="flex items-center gap-1 text-accent-1 animate-pulse">
+
+                         <Ghost className="w-3 h-3" />
+
+                         <span className="text-xs font-medium uppercase tracking-widest">UNTRACEABLE</span>
+
+                     </div>
+
+                 ) : (
+
+                     <span className="text-xs text-secondary-text font-medium uppercase tracking-widest">
+
+                        {user?.handle}
+
+                     </span>
+
+                 )}
+
+                 {/* Compact Privacy Badge */}
+
+                 <div className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${config.bgColor} ${config.color} border ${config.borderColor}`}>
+
+                     <Shield className="w-3 h-3" />
+
+                     <span>{config.label}</span>
+
+                 </div>
+
+             </div>
+
+          </div>
+
+          
+
+          <div className="pointer-events-auto">
+
+               <StoriesTray />
+
+          </div>
+
+        </header>
+
       
-      {/* Noise Overlay (Intense for Free tier) */}
-      <div className={`absolute inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-screen ${tier === 'free' ? 'opacity-5' : 'opacity-5'}`} />
 
-                  {/* Header */}
+                  {/* Main Content Area */}
 
-                  <header className="px-6 py-4 pt-safe-area-top flex items-center justify-between sticky top-0 z-50 bg-primary-bg/80 backdrop-blur-md border-b border-border-color/50">
+      
 
-                    <div>
+                  <main className="p-6 space-y-8">
 
-                       <h1 className="text-xl font-bold tracking-tight text-primary-text">TERMINAL</h1>
-
-                       <div className="flex items-center gap-2">
-
-                           {ghostMode ? (
-
-                               <div className="flex items-center gap-1 text-accent-1 animate-pulse">
-
-                                   <Ghost className="w-3 h-3" />
-
-                                   <span className="text-xs font-mono uppercase tracking-widest">UNTRACEABLE</span>
-
-                               </div>
-
-                           ) : (
-
-                               <span className="text-xs text-secondary-text font-mono uppercase tracking-widest">
-
-                                  {user?.handle}
-
-                               </span>
-
-                           )}
-
-                           {/* Compact Privacy Badge */}
-
-                           <div className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${config.bgColor} ${config.color} border ${config.borderColor}`}>
-
-                               <Shield className="w-3 h-3" />
-
-                               <span>{config.label}</span>
-
-                           </div>
-
-                       </div>
-
-                    </div>
+      
 
                     
 
-                    <div className="pointer-events-auto">
+      
 
-                         <StoriesTray />
-
-                    </div>
-
-                  </header>
+                    {/* Privacy Score Widget (Replaces Security Status) */}
 
       
 
-            {/* Main Content Area */}
+                    <motion.div 
 
-            <main className="p-6 space-y-6">
+      
+
+                        initial={{ opacity: 0, y: 20 }}
+
+      
+
+                        animate={{ opacity: 1, y: 0 }}
+
+      
+
+                        className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} relative overflow-hidden`}
+
+      
+
+                    >
+
+      
+
+                         <div className="absolute top-0 right-0 p-4 opacity-10">
+
+      
+
+                             <Shield className={`w-24 h-24 ${config.color}`} />
+
+      
+
+                         </div>
+
+      
+
+                         
+
+      
+
+                         <div className="relative z-10">
+
+      
+
+                             <div className="flex items-center gap-2 mb-4">
+
+      
+
+                                 <Activity className={`w-5 h-5 ${config.color}`} />
+
+      
+
+                                 <h2 className={`text-xl font-bold ${config.color} tracking-tight`}>Privacy Score</h2>
+
+      
+
+                             </div>
+
+      
+
+                             
+
+      
+
+                             {/* Visual Bar Graph */}
+
+      
+
+                             <div className="flex items-end gap-1 h-12 mb-4">
+
+      
+
+                                 {[...Array(10)].map((_, i) => (
+
+      
+
+                                     <div 
+
+      
+
+                                        key={i} 
+
+      
+
+                                        className={`flex-1 rounded-sm transition-all duration-500 ${
+
+      
+
+                                            i < config.signalValue / 10 
+
+      
+
+                                                ? config.color.replace('text-', 'bg-') 
+
+      
+
+                                                : 'bg-secondary-bg/20'
+
+      
+
+                                        }`}
+
+      
+
+                                        style={{ height: `${(i + 1) * 10}%` }}
+
+      
+
+                                     />
+
+      
+
+                                 ))}
+
+      
+
+                             </div>
+
+      
+
+                             
+
+      
+
+                             <div className="flex items-center justify-between">
+
+      
+
+                                 <span className={`text-2xl font-bold ${config.color}`}>{config.signalValue}%</span>
+
+      
+
+                                 <span className={`text-xs font-medium uppercase tracking-widest ${config.color} opacity-80`}>
+
+      
+
+                                     {config.signalText}
+
+      
+
+                                 </span>
+
+      
+
+                             </div>
+
+      
+
+                             
+
+      
+
+                             {tier === 'free' && (
+
+      
+
+                                 <p className="mt-4 text-xs text-secondary-text border-t border-border-color pt-2 flex items-center gap-2">
+
+      
+
+                                     <span className="font-bold text-accent-1">TIP:</span> Your digital footprint is visible. Upgrade to mask it.
+
+      
+
+                                 </p>
+
+      
+
+                             )}
+
+      
+
+                         </div>
+
+      
+
+                    </motion.div>
 
               
 
