@@ -126,8 +126,7 @@ export default function UpgradePage() {
                         <Lock className="w-8 h-8 text-amber-500 mx-auto mb-4" />
                         <h2 className="text-2xl font-bold text-amber-100 mb-2 tracking-widest uppercase">The Sovereign</h2>
                         <p className="text-amber-500/60 text-sm mb-6 max-w-lg mx-auto">
-                            For Governments, Whistleblowers, and Architects. 
-                            <br/>Bespoke Infrastructure. Total Isolation. God Mode.
+                            For those who operate beyond the grid. Bespoke Infrastructure. Total Isolation. Absolute Dominion.
                         </p>
                         
                         <div className="inline-block border border-amber-500/50 rounded-xl p-1">
