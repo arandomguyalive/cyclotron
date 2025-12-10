@@ -80,10 +80,19 @@ export function SignalGrid() {
     const { user } = useUser();
     const [posts, setPosts] = useState<(Post | MockAd)[]>([]); // Allow MockAd type
     const [loading, setLoading] = useState(true);
+    const [dataSaver, setDataSaver] = useState(false);
 
     const isFree = user?.tier === 'free';
 
     useEffect(() => {
+        // Check data saver setting
+        setDataSaver(localStorage.getItem('oblivion_dataSaver') === 'true');
+        
+        const handleStorageChange = () => {
+            setDataSaver(localStorage.getItem('oblivion_dataSaver') === 'true');
+        };
+        window.addEventListener("storage", handleStorageChange);
+
         const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(4)); // Fetch more posts to insert ad
         const unsubscribe = onSnapshot(q, (snapshot) => {
             let fetchedPosts: (Post | MockAd)[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), type: "post" })) as Post[];
@@ -104,7 +113,10 @@ export function SignalGrid() {
             setPosts(mockPosts); // Fallback
             setLoading(false);
         });
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            window.removeEventListener("storage", handleStorageChange);
+        };
     }, [isFree]); // Re-run effect if tier changes
 
     if (loading) return <div className="h-40 flex items-center justify-center text-xs text-secondary-text animate-pulse">Scanning frequencies...</div>;
@@ -159,7 +171,7 @@ export function SignalGrid() {
                                     <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-black">
                                         <img 
                                             src={post.mediaUrl} 
-                                            className={`w-full h-full object-cover ${isFree ? 'opacity-80 sepia-[.3]' : ''}`}
+                                            className={`w-full h-full object-cover ${isFree || dataSaver ? 'opacity-80 sepia-[.3]' : ''}`}
                                             alt="Signal"
                                         />
                                         {!isFree && user?.handle && (

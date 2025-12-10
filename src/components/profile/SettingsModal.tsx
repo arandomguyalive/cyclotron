@@ -29,6 +29,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [ghostMode, setGhostMode] = useState(false);
   const [bioLock, setBioLock] = useState(false);
   const [screenshotAlert, setScreenshotAlert] = useState(false);
+  const [dataSaver, setDataSaver] = useState(false);
   const [selfDestructTimer, setSelfDestructTimer] = useState("24h"); // Default
 
   // Load privacy settings from localStorage
@@ -36,9 +37,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     setGhostMode(localStorage.getItem('oblivion_ghostMode') === 'true');
     setBioLock(localStorage.getItem('oblivion_bioLock') === 'true');
     setScreenshotAlert(localStorage.getItem('oblivion_screenshotAlert') === 'true');
+    setDataSaver(localStorage.getItem('oblivion_dataSaver') === 'true');
     const savedTimer = localStorage.getItem('oblivion_selfDestructTimer');
     if (savedTimer) setSelfDestructTimer(savedTimer);
-  }, []);
+  }, [isOpen]); // Reload when opened to sync
 
   // Handlers to update state and localStorage
   const handleToggle = (key: string, currentState: boolean, setter: React.Dispatch<React.SetStateAction<boolean>>) => {
@@ -46,6 +48,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     setter(newState);
     localStorage.setItem(key, String(newState));
     playClick(newState ? 660 : 440, 0.05, 'sine');
+    
+    // Force a storage event for other components to pick up
+    window.dispatchEvent(new Event("storage"));
   };
 
   const handleButtonClick = () => {
@@ -65,6 +70,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       handleButtonClick();
       setCurrentView(view);
   }
+
+  // Tier Access Helpers
+  const canAccessGhost = ['gold', 'platinum', 'ultimate'].includes(user?.tier || '');
+  const canAccessHardening = ['platinum', 'ultimate'].includes(user?.tier || '');
 
   return (
     <>
@@ -249,13 +258,24 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 {currentView === 'privacy' && (
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
                         <Section title="Anonymity">
-                            <SettingItem 
-                                icon={EyeOff} 
-                                label="Ghost Mode" 
-                                toggle 
-                                isEnabled={ghostMode} 
-                                onClick={() => handleToggle('oblivion_ghostMode', ghostMode, setGhostMode)} 
-                            />
+                            {canAccessGhost ? (
+                                <SettingItem 
+                                    icon={EyeOff} 
+                                    label="Ghost Mode" 
+                                    toggle 
+                                    isEnabled={ghostMode} 
+                                    onClick={() => handleToggle('oblivion_ghostMode', ghostMode, setGhostMode)} 
+                                />
+                            ) : (
+                                <div className="p-4 rounded-2xl border border-dashed border-border-color flex items-center justify-between opacity-50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-secondary-bg rounded-full text-secondary-text"><EyeOff className="w-5 h-5"/></div>
+                                        <span className="text-sm font-bold text-secondary-text">Ghost Mode (Locked)</span>
+                                    </div>
+                                    <Lock className="w-4 h-4 text-secondary-text" />
+                                </div>
+                            )}
+                            
                             <SettingItem 
                                 icon={Clock} 
                                 label="Default Message TTL" 
@@ -263,29 +283,39 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 onClick={() => handleButtonClick()} 
                             />
                         </Section>
+                        
                         <Section title="Hardening">
-                            <SettingItem 
-                                icon={Fingerprint} 
-                                label="Bio-Lock" 
-                                toggle 
-                                isEnabled={bioLock} 
-                                onClick={() => handleToggle('oblivion_bioLock', bioLock, setBioLock)} 
-                                isPaid 
-                            />
-                            <SettingItem 
-                                icon={CameraOff} 
-                                label="Screenshot Alert" 
-                                toggle 
-                                isEnabled={screenshotAlert} 
-                                onClick={() => handleToggle('oblivion_screenshotAlert', screenshotAlert, setScreenshotAlert)} 
-                            />
-                            <SettingItem 
-                                icon={Lock} 
-                                label="Burner Key" 
-                                value="Active"
-                                onClick={() => handleButtonClick()} 
-                                isPaid
-                            />
+                            {canAccessHardening ? (
+                                <>
+                                    <SettingItem 
+                                        icon={Fingerprint} 
+                                        label="Bio-Lock" 
+                                        toggle 
+                                        isEnabled={bioLock} 
+                                        onClick={() => handleToggle('oblivion_bioLock', bioLock, setBioLock)} 
+                                        isPaid 
+                                    />
+                                    <SettingItem 
+                                        icon={CameraOff} 
+                                        label="Screenshot Alert" 
+                                        toggle 
+                                        isEnabled={screenshotAlert} 
+                                        onClick={() => handleToggle('oblivion_screenshotAlert', screenshotAlert, setScreenshotAlert)} 
+                                    />
+                                    <SettingItem 
+                                        icon={Lock} 
+                                        label="Burner Key" 
+                                        value="Active"
+                                        onClick={() => handleButtonClick()} 
+                                        isPaid
+                                    />
+                                </>
+                            ) : (
+                                <div className="p-4 rounded-2xl bg-secondary-bg/10 border border-border-color text-center">
+                                    <p className="text-xs text-secondary-text mb-2">Advanced Security Protocols require Platinum clearance.</p>
+                                    <button onClick={() => router.push("/upgrade")} className="text-xs font-bold text-accent-1 hover:underline">UPGRADE NOW</button>
+                                </div>
+                            )}
                         </Section>
                     </motion.div>
                 )}
@@ -301,7 +331,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     setIsThemeSelectorOpen(true);
                                 }} 
                             />
-                            <SettingItem icon={Database} label="Data Saver" toggle onClick={handleButtonClick} />
+                            <SettingItem 
+                                icon={Database} 
+                                label="Data Saver" 
+                                toggle 
+                                isEnabled={dataSaver}
+                                onClick={() => handleToggle('oblivion_dataSaver', dataSaver, setDataSaver)} 
+                            />
                         </Section>
                     </motion.div>
                 )}

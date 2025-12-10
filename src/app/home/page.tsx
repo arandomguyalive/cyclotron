@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/UserContext";
 import { motion } from "framer-motion";
@@ -9,17 +9,30 @@ import { SignalGrid } from "@/components/home/SignalGrid";
 import { FrequencyTuner } from "@/components/home/widgets/FrequencyTuner";
 import { DailyDirective } from "@/components/home/widgets/DailyDirective";
 import { SystemTerminal } from "@/components/home/widgets/SystemTerminal";
-import { Activity, Zap, Shield, Globe, Lock, AlertTriangle, Eye, Server, Radio, Signal, Wifi } from "lucide-react";
+import { Activity, Zap, Shield, Globe, Lock, AlertTriangle, Eye, Server, Radio, Signal, Wifi, Ghost } from "lucide-react";
 
 export default function HomePage() {
   const { user, firebaseUser, loading } = useUser();
   const router = useRouter();
+  const [ghostMode, setGhostMode] = useState(false);
 
-  // Protect the route
+  // Protect the route and sync Ghost Mode
   useEffect(() => {
     if (!loading && !firebaseUser) {
       router.push("/login");
     }
+
+    // Initial check
+    setGhostMode(localStorage.getItem('oblivion_ghostMode') === 'true');
+
+    // Listener for changes from SettingsModal
+    const handleStorageChange = () => {
+        setGhostMode(localStorage.getItem('oblivion_ghostMode') === 'true');
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+
   }, [loading, firebaseUser, router]);
 
   if (loading || !firebaseUser || !user) return null;
@@ -89,45 +102,59 @@ export default function HomePage() {
       {/* Noise Overlay (Intense for Free tier) */}
       <div className={`absolute inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-screen ${tier === 'free' ? 'opacity-5' : 'opacity-5'}`} />
 
-            {/* Header */}
+                  {/* Header */}
 
-            <header className="px-6 py-4 pt-safe-area-top flex items-center justify-between sticky top-0 z-50 bg-primary-bg/80 backdrop-blur-md border-b border-border-color/50">
+                  <header className="px-6 py-4 pt-safe-area-top flex items-center justify-between sticky top-0 z-50 bg-primary-bg/80 backdrop-blur-md border-b border-border-color/50">
 
-              <div>
+                    <div>
 
-                 <h1 className="text-xl font-bold tracking-tight text-primary-text">TERMINAL</h1>
+                       <h1 className="text-xl font-bold tracking-tight text-primary-text">TERMINAL</h1>
 
-                 <div className="flex items-center gap-2">
+                       <div className="flex items-center gap-2">
 
-                     <span className="text-xs text-secondary-text font-mono uppercase tracking-widest">
+                           {ghostMode ? (
 
-                        {user?.handle}
+                               <div className="flex items-center gap-1 text-accent-1 animate-pulse">
 
-                     </span>
+                                   <Ghost className="w-3 h-3" />
 
-                     {/* Compact Privacy Badge */}
+                                   <span className="text-xs font-mono uppercase tracking-widest">UNTRACEABLE</span>
 
-                     <div className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${config.bgColor} ${config.color} border ${config.borderColor}`}>
+                               </div>
 
-                         <Shield className="w-3 h-3" />
+                           ) : (
 
-                         <span>{config.label}</span>
+                               <span className="text-xs text-secondary-text font-mono uppercase tracking-widest">
 
-                     </div>
+                                  {user?.handle}
 
-                 </div>
+                               </span>
 
-              </div>
+                           )}
 
-              
+                           {/* Compact Privacy Badge */}
 
-              <div className="pointer-events-auto">
+                           <div className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${config.bgColor} ${config.color} border ${config.borderColor}`}>
 
-                   <StoriesTray />
+                               <Shield className="w-3 h-3" />
 
-              </div>
+                               <span>{config.label}</span>
 
-            </header>
+                           </div>
+
+                       </div>
+
+                    </div>
+
+                    
+
+                    <div className="pointer-events-auto">
+
+                         <StoriesTray />
+
+                    </div>
+
+                  </header>
 
       
 
