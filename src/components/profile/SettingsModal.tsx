@@ -208,9 +208,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
                                         alert("Test users seeded! 'admin-two' UID copied to clipboard.");
                                         navigator.clipboard.writeText("admin-two");
-                                    } catch (e) {
+                                    } catch (e: any) {
                                         console.error(e);
-                                        alert("Failed to seed users.");
+                                        alert(`Failed to seed users: ${e.message}`);
                                     }
                                 }}
                                 className="w-full py-4 flex items-center justify-center gap-2 text-accent-2 bg-accent-2/10 rounded-xl border border-accent-2/20 hover:bg-accent-2/20 transition-colors"
