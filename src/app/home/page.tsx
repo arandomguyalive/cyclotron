@@ -442,7 +442,9 @@ export default function HomePage() {
                   
 
                   {/* 1. Vortex Access (All Tiers) */}
-            <button 
+            <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => router.push("/vortex")}
                 className={`p-6 rounded-3xl border transition-all group text-left ${
                     tier === 'free' 
@@ -453,7 +455,7 @@ export default function HomePage() {
                 <Zap className={`w-8 h-8 mb-3 group-hover:scale-110 transition-transform ${config.color}`} />
                 <h3 className="font-bold text-lg">Vortex</h3>
                 <p className="text-xs text-secondary-text mt-1">Global Feed.</p>
-            </button>
+            </motion.button>
 
             {/* 2. Tier Specific Widget */}
             {tier === 'free' && (
@@ -469,6 +471,7 @@ export default function HomePage() {
                      <Radio className={`w-8 h-8 mb-3 ${config.color}`} />
                      <h3 className="font-bold text-lg">Scanner</h3>
                      <p className="text-xs text-secondary-text mt-1">Local signals.</p>
+                     {/* Fake Scanning Animation */}
                      <div className={`absolute top-2 right-2 w-2 h-2 rounded-full ${config.color.replace('text', 'bg')} animate-ping`} />
                 </div>
             )}
@@ -481,11 +484,34 @@ export default function HomePage() {
                 </div>
             )}
 
-             {/* 3. Upgrade Prompt (Free Only) */}
+            {/* 3. Global Stats (Gold+) */}
+            {['gold', 'platinum', 'ultimate'].includes(tier) && (
+                 <div className="col-span-2 p-4 rounded-2xl bg-secondary-bg/30 border border-border-color flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                         <Globe className="w-5 h-5 text-secondary-text" />
+                         <div>
+                             <p className="text-xs text-secondary-text uppercase">Global Signals</p>
+                             <p className="font-mono font-bold">8,492</p>
+                         </div>
+                     </div>
+                     <div className="h-8 w-[1px] bg-border-color" />
+                     <div className="flex items-center gap-3">
+                         <Activity className="w-5 h-5 text-secondary-text" />
+                         <div>
+                             <p className="text-xs text-secondary-text uppercase">Net Stability</p>
+                             <p className="font-mono font-bold text-green-400">98.4%</p>
+                         </div>
+                     </div>
+                 </div>
+            )}
+
+             {/* 4. Upgrade Prompt (Free Only) */}
              {tier === 'free' && (
                  <motion.div
                      initial={{ opacity: 0, y: 20 }}
                      animate={{ opacity: 1, y: 0 }}
+                     whileHover={{ scale: 1.02 }}
+                     whileTap={{ scale: 0.98 }}
                      transition={{ delay: 0.5 }}
                      onClick={() => router.push("/upgrade")}
                      className="col-span-2 p-4 rounded-2xl bg-gradient-to-r from-accent-1/20 to-purple-500/20 border border-accent-1/30 flex items-center justify-between group cursor-pointer hover:border-accent-1/60 transition-colors"

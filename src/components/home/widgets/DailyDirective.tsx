@@ -10,8 +10,8 @@ export function DailyDirective() {
     return (
         <div className={`p-6 rounded-3xl border relative overflow-hidden group cursor-pointer transition-all ${
             isFree 
-            ? 'bg-[#f0f0f0]/5 border-white/10' 
-            : 'bg-gradient-to-br from-accent-2/10 to-transparent border-accent-2/20 hover:border-accent-2/50'
+            ? 'bg-white/5 border-white/5 backdrop-blur-md' 
+            : 'bg-white/5 border-white/10 backdrop-blur-xl hover:bg-white/10 hover:border-accent-2/30'
         }`}>
             
             <div className="flex items-start justify-between mb-2">

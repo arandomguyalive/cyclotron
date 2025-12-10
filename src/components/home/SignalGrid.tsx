@@ -144,7 +144,7 @@ export function SignalGrid() {
                                 key={ad.id}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className={`relative rounded-2xl overflow-hidden border border-${ad.color}/20 bg-${ad.color}/5 p-4`}
+                                className={`relative rounded-2xl overflow-hidden border border-${ad.color}/20 bg-${ad.color}/5 p-4 backdrop-blur-md`}
                             >
                                 <div className="flex items-center gap-4">
                                     <img src={ad.imageUrl} alt={ad.title} className="w-16 h-16 object-cover rounded-lg" />
@@ -164,7 +164,11 @@ export function SignalGrid() {
                         return (
                             <div 
                                 key={post.id}
-                                className={`relative rounded-2xl overflow-hidden border ${isFree ? 'border-border-color bg-secondary-bg/30' : 'border-border-color bg-secondary-bg/30'}`}
+                                className={`relative rounded-2xl overflow-hidden border transition-all ${
+                                    isFree 
+                                        ? 'border-white/5 bg-white/5 backdrop-blur-md' 
+                                        : 'border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10'
+                                }`}
                             >
                                 <div className="flex p-3 gap-4 items-center">
                                     {/* Media Preview */}

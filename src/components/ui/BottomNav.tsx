@@ -47,13 +47,15 @@ export function BottomNav() {
 
             if (item.isAction) {
                 return (
-                    <button
+                    <motion.button
                         key={item.name}
                         onClick={() => handleClick(true)}
-                        className="relative -top-5 flex items-center justify-center w-14 h-14 rounded-full bg-accent-1 text-primary-bg shadow-[0_0_20px_var(--color-accent-1)] hover:scale-110 transition-transform active:scale-95"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="relative -top-5 flex items-center justify-center w-14 h-14 rounded-full bg-accent-1 text-primary-bg shadow-[0_0_20px_var(--color-accent-1)]"
                     >
                         <Icon className="w-8 h-8" />
-                    </button>
+                    </motion.button>
                 )
             }
 
@@ -80,12 +82,14 @@ export function BottomNav() {
                   />
                 )}
 
-                <Icon
-                  className={cn(
-                    "w-6 h-6 transition-colors duration-300 z-10",
-                    isActive ? "text-accent-1 drop-shadow-[0_0_5px_rgba(0,240,255,0.8)]" : "text-secondary-text group-hover:text-primary-text"
-                  )}
-                />
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                    <Icon
+                    className={cn(
+                        "w-6 h-6 transition-colors duration-300 z-10",
+                        isActive ? "text-accent-1 drop-shadow-[0_0_5px_rgba(0,240,255,0.8)]" : "text-secondary-text group-hover:text-primary-text"
+                    )}
+                    />
+                </motion.div>
               </Link>
             );
           })}

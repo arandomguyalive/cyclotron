@@ -36,7 +36,7 @@ export function FrequencyTuner() {
 
     return (
         <div className="w-full overflow-x-auto pb-2 scrollbar-hide">
-            <div className="flex items-center gap-2 p-1 bg-secondary-bg/40 backdrop-blur-md rounded-full border border-border-color w-max mx-auto">
+            <div className="flex items-center gap-2 p-1 bg-white/5 backdrop-blur-xl rounded-full border border-white/10 w-max mx-auto">
                 {CHANNELS.map((tab) => {
                     const isActive = activeTab === tab.id;
                     const isLocked = isFree && LOCKED_TABS.includes(tab.id);
@@ -50,14 +50,14 @@ export function FrequencyTuner() {
                                 isActive 
                                     ? "text-primary-bg" 
                                     : isLocked 
-                                        ? "text-secondary-text/50 cursor-not-allowed" 
-                                        : "text-secondary-text hover:text-primary-text"
+                                        ? "text-white/30 cursor-not-allowed" 
+                                        : "text-white/70 hover:text-white"
                             }`}
                         >
                             {isActive && (
                                 <motion.div
                                     layoutId="activeTab"
-                                    className="absolute inset-0 bg-primary-text rounded-full"
+                                    className="absolute inset-0 bg-white rounded-full"
                                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                 />
                             )}
@@ -65,7 +65,7 @@ export function FrequencyTuner() {
                             <span className="relative z-10 flex items-center gap-2">
                                 <Icon className="w-3 h-3" />
                                 {tab.label}
-                                {isLocked && <Lock className="w-2 h-2" />}
+                                {isLocked && <Lock className="w-2 h-2 opacity-50" />}
                             </span>
                         </button>
                     );

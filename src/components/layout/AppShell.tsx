@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useUser } from "@/lib/UserContext";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { motion, AnimatePresence } from "framer-motion";
+import { BackgroundMesh } from "@/components/ui/BackgroundMesh";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { firebaseUser, loading } = useUser();
@@ -23,6 +24,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <AnimatePresence mode="wait">
         {showSplash && <SplashScreen key="splash" />}
       </AnimatePresence>
+
+      <BackgroundMesh />
 
       <main className={`min-h-screen pb-20 relative z-0 transition-opacity duration-1000 ${showSplash ? 'opacity-0' : 'opacity-100'}`}>
         {children}
