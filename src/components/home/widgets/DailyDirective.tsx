@@ -27,7 +27,7 @@ export function DailyDirective() {
             </div>
 
             <h3 className={`font-bold text-lg mb-1 ${isFree ? 'text-secondary-text' : 'text-primary-text'}`}>
-                {isFree ? "Daily Drop" : "CLASSIFIED DIRECTIVE"}
+                {isFree ? "The Drop" : "CLASSIFIED DIRECTIVE"}
             </h3>
 
             <p className={`text-xs mb-4 ${isFree ? 'text-secondary-text/60' : 'text-accent-2/80 font-mono'}`}>

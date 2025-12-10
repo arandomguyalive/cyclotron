@@ -39,7 +39,7 @@ export function SystemTerminal() {
         <div className="w-full py-3 px-6 border-t border-border-color bg-primary-bg/80 backdrop-blur-xl fixed bottom-0 left-0 right-0 z-40 pb-safe-area-inset-bottom">
             <div className="flex items-center justify-between text-xs">
                 <span className={`font-bold ${isFree ? 'text-secondary-text' : 'text-emerald-500'}`}>
-                    Privacy Status
+                    Status
                 </span>
                 <motion.span 
                     key={currentLog}

@@ -409,7 +409,7 @@ export default function HomePage() {
 
                   <span className="absolute -top-3 left-2 text-[10px] bg-primary-bg px-2 text-secondary-text uppercase tracking-widest z-10">
 
-                      Feed Filter
+                      Frequency
 
                   </span>
 

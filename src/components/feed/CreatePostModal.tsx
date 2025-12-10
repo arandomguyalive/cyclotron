@@ -118,14 +118,14 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
                   onClick={() => setMode("post")}
                   className={`text-xl font-bold tracking-wider uppercase transition-colors ${mode === "post" ? "text-accent-1" : "text-secondary-text"}`}
                 >
-                  Transmit
+                  Post
                 </button>
                 <div className="w-[1px] h-6 bg-border-color" />
                 <button 
                   onClick={() => setMode("story")}
                   className={`text-xl font-bold tracking-wider uppercase transition-colors ${mode === "story" ? "text-accent-1" : "text-secondary-text"}`}
                 >
-                  Flux
+                  Signals
                 </button>
               </div>
               <button onClick={handleClose} className="p-2 bg-secondary-bg/50 rounded-full text-secondary-text hover:text-primary-text hover:bg-secondary-bg">
@@ -183,7 +183,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
                    <textarea 
                       value={caption}
                       onChange={(e) => setCaption(e.target.value)}
-                      placeholder="Enter transmission data..."
+                      placeholder="Enter signal data..."
                       className="w-full flex-1 bg-transparent border-none text-lg text-primary-text placeholder:text-secondary-text/50 focus:ring-0 resize-none font-light"
                    />
 
@@ -244,7 +244,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
                     {isUploading ? (
                         <>
                             <Loader2 className="w-5 h-5 animate-spin" />
-                            <span>TRANSMITTING...</span>
+                            <span>POSTING...</span>
                         </>
                     ) : isSuccess ? (
                         <>
@@ -254,7 +254,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
                     ) : (
                         <>
                             <Send className="w-5 h-5" />
-                            <span>INITIATE UPLOAD</span>
+                            <span>SEND SIGNAL</span>
                         </>
                     )}
                  </button>

@@ -31,7 +31,7 @@ const mockStories: Story[] = [
         userAvatar: "Felix",
         createdAt: { toDate: () => new Date() },
         expiresAt: { toDate: () => new Date(Date.now() + 86400000) },
-        caption: "System override initiated. #flux"
+        caption: "System override initiated. #signals"
     },
     {
         id: "mock-s2",
