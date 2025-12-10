@@ -76,7 +76,7 @@ function SplashScreen() {
                     className="mt-6 overflow-hidden whitespace-nowrap"
                 >
                     <span className="text-sm md:text-lg font-light tracking-[0.6em] text-accent-1 uppercase border-t border-accent-1/30 pt-4 px-4 block">
-                        Privacy Unleashed
+                        Your Digital Fortress
                     </span>
                 </motion.div>
             </div>

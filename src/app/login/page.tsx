@@ -51,7 +51,7 @@ export default function LoginPage() {
           <div className="mb-2">
               <span className="block text-[10px] font-mono tracking-[0.3em] text-secondary-text uppercase mb-1">A KM18 Production</span>
               <h1 className="text-4xl font-bold text-primary-text tracking-tighter">ABHED</h1>
-              <span className="block text-[10px] font-light tracking-[0.5em] text-accent-1 uppercase mt-1">Privacy Unleashed</span>
+              <span className="block text-[10px] font-light tracking-[0.5em] text-accent-1 uppercase mt-1">Your Digital Fortress</span>
           </div>
           <p className="text-secondary-text text-sm font-mono mt-2">
             Secure connection required.
