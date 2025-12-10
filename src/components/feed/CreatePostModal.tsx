@@ -223,17 +223,6 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
                     <span className="text-xs font-mono text-secondary-text">{caption.length} / 280</span>
                  </div>
 
-                 {user?.tier === 'free' && (
-                     <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-accent-1/10 border border-accent-1/20 text-accent-1 text-xs font-mono p-2 rounded-lg mb-3 flex items-center justify-between"
-                     >
-                        <span>KM18 Tax: <span className="font-bold">30%</span> on Transactions.</span>
-                        <span className="text-[10px] bg-accent-1/30 px-1 rounded-sm">LOBBY</span>
-                     </motion.div>
-                 )}
-
                  <button 
                     disabled={!file || isUploading || isSuccess}
                     onClick={handleSubmit}
