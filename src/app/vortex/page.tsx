@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, useMotionValue, useTransform, useSpring, PanInfo, AnimatePresence } from "framer-motion";
-import { VortexItem, Post } from "@/components/feed/VortexItem";
+import { VortexItem, Post, Ad } from "@/components/feed/VortexItem";
 import { ChevronUp, Box, Loader2, WifiOff } from "lucide-react";
 import { useSonic } from "@/lib/SonicContext";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
@@ -70,13 +70,22 @@ const mockPosts: Post[] = [
     }
 ];
 
+const mockAd: Ad = {
+    id: "ad-vortex-upgrade",
+    type: "ad",
+    title: "SIGNAL INTERFERENCE",
+    description: "Your connection is throttled. Upgrade to Shield Tier for unlimited bandwidth.",
+    cta: "BOOST SIGNAL",
+    color: "red-500"
+};
+
 export default function VortexPage() {
-  const [realPosts, setRealPosts] = useState<Post[]>([]);
+  const [items, setItems] = useState<(Post | Ad)[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useUser(); // Get user from context
   
-  const displayPosts = realPosts.length > 0 ? realPosts : mockPosts;
-  const isSimulation = realPosts.length === 0 && !loading;
+  const isFree = user?.tier === 'free';
+  const isSimulation = items.length === 0 && !loading;
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [cycles, setCycles] = useState(0); // Score for collecting artifacts
@@ -85,7 +94,7 @@ export default function VortexPage() {
   const { playClick, playHum } = useSonic();
   
   // Determine watermark text
-  const watermarkText = (user && user.tier !== 'free') ? user.handle.toUpperCase() : undefined;
+  const watermarkText = (user && !isFree) ? user.handle.toUpperCase() : undefined;
 
   // Spring physics for smooth movement through the void
   const smoothZ = useSpring(zPosition, {
@@ -94,22 +103,39 @@ export default function VortexPage() {
       mass: 1.2
   });
 
-  // Subscribe to Posts
+  // Subscribe to Posts and Inject Ads
   useEffect(() => {
     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-        const newPosts = snapshot.docs.map(doc => ({
+        let newItems: (Post | Ad)[] = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         })) as Post[];
-        setRealPosts(newPosts);
+        
+        if (newItems.length === 0) {
+            newItems = mockPosts;
+        }
+
+        // Inject Ads for Free Users
+        if (isFree) {
+            const itemsWithAds: (Post | Ad)[] = [];
+            newItems.forEach((item, index) => {
+                itemsWithAds.push(item);
+                if ((index + 1) % 3 === 0) { // Every 3rd post
+                    itemsWithAds.push({ ...mockAd, id: `ad-${index}` });
+                }
+            });
+            newItems = itemsWithAds;
+        }
+
+        setItems(newItems);
         setLoading(false);
     }, (error) => {
         console.error("Firestore error, falling back to mock", error);
         setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [isFree]); // Re-run when tier changes
 
   // Manage background hum
   useEffect(() => {
@@ -149,7 +175,7 @@ export default function VortexPage() {
 
     // Swipe Up (drag y negative) -> Go Forward (Next Item)
     if (info.offset.y < -threshold || velocity < -300) {
-       newIndex = Math.min(activeIndex + 1, displayPosts.length - 1);
+       newIndex = Math.min(activeIndex + 1, items.length - 1);
     } 
     // Swipe Down (drag y positive) -> Go Backward (Prev Item)
     else if (info.offset.y > threshold || velocity > 300) {
@@ -168,7 +194,7 @@ export default function VortexPage() {
       if (Math.abs(e.deltaY) > 30) {
           if (e.deltaY > 0) {
                // Scroll Down -> Next Item
-               newIndex = Math.min(activeIndex + 1, displayPosts.length - 1);
+               newIndex = Math.min(activeIndex + 1, items.length - 1);
           } else {
                // Scroll Up -> Prev Item
                newIndex = Math.max(activeIndex - 1, 0);
@@ -239,15 +265,16 @@ export default function VortexPage() {
 
       {/* The 3D Tunnel World */}
       <div className="relative w-full h-full md:max-w-md md:aspect-[9/16] preserve-3d flex items-center justify-center pointer-events-none">
-        {displayPosts.map((post, i) => (
+        {items.map((item, i) => (
             <TunnelItem 
-                key={post.id} 
+                key={item.id} 
                 index={i}
-                post={post}
+                post={item}
                 parentZ={smoothZ} 
                 activeIndex={activeIndex}
                 onCollect={() => setCycles(prev => prev + 100)} 
                 watermarkText={watermarkText} // Pass watermarkText
+                isFree={isFree} // Pass isFree
             />
         ))}
       </div>
@@ -258,7 +285,7 @@ export default function VortexPage() {
   );
 }
 
-function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkText }: { index: number, post: Post, parentZ: any, activeIndex: number, onCollect: () => void, watermarkText?: string }) {
+function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkText, isFree }: { index: number, post: Post | Ad, parentZ: any, activeIndex: number, onCollect: () => void, watermarkText?: string, isFree?: boolean }) {
     // Base Z position for this item
     const baseZ = index * GAP;
     
@@ -276,8 +303,8 @@ function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkTex
     // Optimization: Hide items far off-screen
     const display = useTransform(z, (currentZ) => (currentZ < -GAP*2 || currentZ > GAP*5) ? "none" : "flex");
 
-    // Random Artifact Spawning Logic (Deterministic based on index)
-    const hasArtifact = index % 3 === 0; // Every 3rd item has an artifact
+    // Random Artifact Spawning Logic (Deterministic based on index) - Only for posts
+    const hasArtifact = post.type !== 'ad' && index % 3 === 0; 
     const artifactX = (index % 2 === 0 ? 1 : -1) * 150; // Alternate left/right
     const artifactY = -200; // Float above
 
@@ -300,7 +327,7 @@ function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkTex
             className="origin-center p-4"
         >
              {/* The Card Content */}
-             <VortexItem post={post} index={index} watermarkText={watermarkText} />
+             <VortexItem post={post} index={index} watermarkText={watermarkText} isFree={isFree} />
 
              {/* Scavenger Hunt Artifact */}
              {hasArtifact && (
