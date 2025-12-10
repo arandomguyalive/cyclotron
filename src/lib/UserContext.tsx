@@ -17,7 +17,7 @@ interface UserProfile {
   avatarSeed: string;
   coverImage?: string;
   faction: "Netrunner" | "Drifter" | "Corp" | "Ghost";
-  tier: "free" | "premium" | "gold" | "platinum" | "ultimate";
+  tier: "free" | "premium" | "gold" | "platinum" | "sovereign";
   stats: {
     following: string;
     followers: string;

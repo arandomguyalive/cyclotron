@@ -92,61 +92,61 @@ export default function HomePage() {
 
         },
 
-        platinum: {
+              platinum: {
 
-            color: "text-white",
+                  color: "text-white",
 
-            bgColor: "bg-white/10",
+                  bgColor: "bg-white/10",
 
-            borderColor: "border-white/20",
+                  borderColor: "border-white/20",
 
-            signalText: "MAXIMUM",
+                  signalText: "MAXIMUM",
 
-            signalValue: 100,
+                  signalValue: 100,
 
-            label: "IMPERVIOUS",
+                  label: "IMPERVIOUS",
 
-        },
+              },
 
-        ultimate: {
+              sovereign: {
 
-            color: "text-purple-400",
+                  color: "text-amber-200", // Soft Gold
 
-            bgColor: "bg-purple-500/10",
+                  bgColor: "bg-black",
 
-            borderColor: "border-purple-500/20",
+                  borderColor: "border-amber-500/50",
 
-            signalText: "GODLIKE",
+                  signalText: "OMNIPOTENT",
 
-            signalValue: 100,
+                  signalValue: 100,
 
-            label: "GOD MODE",
+                  label: "SOVEREIGN",
 
-        }
+              }
 
-    }[tier];
+          }[tier];
 
-  
+        
 
-    return (
+          return (
 
-      <div className="min-h-screen bg-primary-bg text-primary-text pb-20 relative overflow-hidden font-sans">
+            <div className="min-h-screen bg-primary-bg text-primary-text pb-20 relative overflow-hidden font-sans">
 
-        {/* Dynamic Background */}
+              {/* Dynamic Background */}
 
-        <div className={`absolute inset-0 pointer-events-none opacity-20 blur-3xl transition-colors duration-1000 ${
+              <div className={`absolute inset-0 pointer-events-none opacity-20 blur-3xl transition-colors duration-1000 ${
 
-            tier === 'free' ? 'bg-[radial-gradient(circle_at_top_right,var(--color-secondary-text)_0%,transparent_40%)]' :
+                  tier === 'free' ? 'bg-[radial-gradient(circle_at_top_right,var(--color-secondary-text)_0%,transparent_40%)]' :
 
-            tier === 'premium' ? 'bg-[radial-gradient(circle_at_top_right,sky_0%,transparent_40%)]' :
+                  tier === 'premium' ? 'bg-[radial-gradient(circle_at_top_right,sky_0%,transparent_40%)]' :
 
-            tier === 'gold' ? 'bg-[radial-gradient(circle_at_top_right,amber_0%,transparent_40%)]' :
+                  tier === 'gold' ? 'bg-[radial-gradient(circle_at_top_right,amber_0%,transparent_40%)]' :
 
-            tier === 'platinum' ? 'bg-[radial-gradient(circle_at_top_right,white_0%,transparent_40%)]' :
+                  tier === 'platinum' ? 'bg-[radial-gradient(circle_at_top_right,white_0%,transparent_40%)]' :
 
-            'bg-[radial-gradient(circle_at_top_right,purple_0%,transparent_40%)]'
+                  'bg-[radial-gradient(circle_at_top_right,#000000_0%,transparent_40%)]' // Sovereign: Deep Black/Void
 
-        }`} />
+              }`} />
 
         
 
@@ -391,20 +391,19 @@ export default function HomePage() {
                 </div>
             )}
 
-            {(tier === 'platinum' || tier === 'ultimate') && (
-                <div className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left`}>
-                     <Server className={`w-8 h-8 mb-3 ${config.color}`} />
-                     <h3 className="font-bold text-lg">The Vault</h3>
-                     <p className="text-xs text-secondary-text mt-1">Secure Storage.</p>
-                </div>
-            )}
-
-            {/* 3. Global Stats (Gold+) */}
-            {['gold', 'platinum', 'ultimate'].includes(tier) && (
-                 <div className="col-span-2 p-4 rounded-2xl bg-secondary-bg/30 border border-border-color flex items-center justify-between">
-                     <div className="flex items-center gap-3">
-                         <Globe className="w-5 h-5 text-secondary-text" />
-                         <div>
+                        {(tier === 'platinum' || tier === 'sovereign') && (
+                            <div className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left`}>
+                                 <Server className={`w-8 h-8 mb-3 ${config.color}`} />
+                                 <h3 className="font-bold text-lg">The Vault</h3>
+                                 <p className="text-xs text-secondary-text mt-1">Secure Storage.</p>
+                            </div>
+                        )}
+                        
+                        {/* 3. Global Stats (Gold+) */}
+                        {['gold', 'platinum', 'sovereign'].includes(tier) && (
+                             <div className="col-span-2 p-4 rounded-2xl bg-secondary-bg/30 border border-border-color flex items-center justify-between">
+                                 <div className="flex items-center gap-3">
+                                     <Globe className="w-5 h-5 text-secondary-text" />                         <div>
                              <p className="text-xs text-secondary-text uppercase">Global Signals</p>
                              <p className="font-mono font-bold">8,492</p>
                          </div>

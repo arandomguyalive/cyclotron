@@ -8,7 +8,7 @@ import { useUser } from "@/lib/UserContext";
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  upgradeToTier: "premium" | "gold" | "ultimate";
+  upgradeToTier: "premium" | "gold" | "platinum" | "sovereign";
 }
 
 export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalProps) {
@@ -33,9 +33,10 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalPro
 
   const tierDetails = {
     premium: { name: "The Shield", price: "₹999/mo", color: "text-cyan-400" },
-    gold: { name: "The Professional", price: "₹9999/mo", color: "text-amber-400" },
-    ultimate: { name: "The Ultra Elite", price: "₹99999/mo", color: "text-purple-500" },
-  }[upgradeToTier];
+    gold: { name: "The Professional", price: "₹9,999/mo", color: "text-amber-400" },
+    platinum: { name: "The Ultra Elite", price: "₹99,999/mo", color: "text-white" },
+    sovereign: { name: "The Sovereign", price: "₹10,00,000", color: "text-amber-200" },
+  }[upgradeToTier] || { name: "Unknown", price: "0", color: "text-gray-500" }; // Fallback
 
   return (
     <AnimatePresence>
