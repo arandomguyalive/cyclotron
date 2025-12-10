@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Save, RefreshCw, Palette, Lock } from "lucide-react";
+import { X, Save, RefreshCw, Palette, Lock, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
@@ -14,7 +14,7 @@ interface ThemeSelectorModalProps {
 }
 
 export function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps) {
-    const { theme, setTheme, availableThemes } = useTheme();
+    const { theme, setTheme, availableThemes, colorMode, toggleColorMode } = useTheme();
     const { playClick } = useSonic();
 
     const premiumThemes = ['akira', 'vaporwave', 'solar', 'km18_gold'];
@@ -28,6 +28,11 @@ export function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps)
         setTheme(selectedTheme as any);
         playClick(selectedTheme === theme ? 200 : 500, 0.05, 'triangle'); 
         if (navigator.vibrate) navigator.vibrate(20);
+    };
+
+    const handleToggleMode = () => {
+        toggleColorMode();
+        playClick(600, 0.1, 'sine');
     };
 
     const handleClose = () => {
@@ -64,41 +69,85 @@ export function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps)
                             </div>
 
                             {/* Content */}
-                            <div className="p-6 space-y-8 overflow-y-auto flex-1">
+                            <div className="p-6 space-y-8 overflow-y-auto flex-1 relative">
                                 
-                                {/* Free Section */}
+                                {/* Color Mode Switcher */}
                                 <div>
-                                    <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider mb-4 ml-1">Standard Issue</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {availableThemes.filter(t => !premiumThemes.includes(t.name)).map((t) => (
-                                            <ThemeCard 
-                                                key={t.name} 
-                                                theme={t} 
-                                                isActive={t.name === theme} 
-                                                onClick={() => handleThemeSelect(t.name)} 
-                                            />
-                                        ))}
+                                    <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider mb-4 ml-1">System Mode</h3>
+                                    <button 
+                                        onClick={handleToggleMode}
+                                        className="w-full flex items-center justify-between p-4 rounded-2xl bg-primary-bg border border-border-color hover:border-accent-1/50 transition-colors group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2 rounded-full ${colorMode === 'light' ? 'bg-amber-100 text-amber-500' : 'bg-indigo-900/30 text-indigo-400'}`}>
+                                                {colorMode === 'light' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                                            </div>
+                                            <div className="flex flex-col items-start">
+                                                <span className="font-bold text-primary-text">
+                                                    {colorMode === 'light' ? "Light Interface" : "Dark Ops"}
+                                                </span>
+                                                <span className="text-xs text-secondary-text">
+                                                    {colorMode === 'light' ? "Clean, high visibility." : "Stealth, low light."}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className={`w-12 h-6 rounded-full relative transition-colors ${colorMode === 'light' ? "bg-amber-400" : "bg-secondary-text/30"}`}>
+                                            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${colorMode === 'light' ? "left-7" : "left-1"}`} />
+                                        </div>
+                                    </button>
+                                </div>
+
+                                {/* Themes Grid */}
+                                <div className={cn("transition-opacity", colorMode === 'light' ? "opacity-50 pointer-events-none filter blur-sm" : "")}>
+                                    
+                                    {/* Free Section */}
+                                    <div className="mb-8">
+                                        <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider mb-4 ml-1">Standard Skins</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {availableThemes.filter(t => !premiumThemes.includes(t.name)).map((t) => (
+                                                <ThemeCard 
+                                                    key={t.name} 
+                                                    theme={t} 
+                                                    isActive={t.name === theme} 
+                                                    onClick={() => handleThemeSelect(t.name)} 
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Premium Section */}
+                                    <div>
+                                        <h3 className="text-xs font-bold text-accent-1 uppercase tracking-wider mb-4 ml-1 flex items-center gap-2">
+                                            High Clearance
+                                            <span className="bg-accent-1/20 text-accent-1 px-1.5 rounded text-[10px]">PRO</span>
+                                        </h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {availableThemes.filter(t => premiumThemes.includes(t.name)).map((t) => (
+                                                <ThemeCard 
+                                                    key={t.name} 
+                                                    theme={t} 
+                                                    isActive={t.name === theme} 
+                                                    onClick={() => handleThemeSelect(t.name)}
+                                                    isPremium
+                                                />
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Premium Section */}
-                                <div>
-                                    <h3 className="text-xs font-bold text-accent-1 uppercase tracking-wider mb-4 ml-1 flex items-center gap-2">
-                                        High Clearance
-                                        <span className="bg-accent-1/20 text-accent-1 px-1.5 rounded text-[10px]">PRO</span>
-                                    </h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {availableThemes.filter(t => premiumThemes.includes(t.name)).map((t) => (
-                                            <ThemeCard 
-                                                key={t.name} 
-                                                theme={t} 
-                                                isActive={t.name === theme} 
-                                                onClick={() => handleThemeSelect(t.name)}
-                                                isPremium
-                                            />
-                                        ))}
+                                {/* Light Mode Overlay Warning */}
+                                {colorMode === 'light' && (
+                                    <div className="absolute inset-x-0 bottom-0 top-32 flex items-center justify-center z-10">
+                                        <div className="bg-secondary-bg/90 backdrop-blur-md border border-border-color p-4 rounded-xl text-center shadow-2xl max-w-[80%]">
+                                            <Moon className="w-8 h-8 text-secondary-text mx-auto mb-2" />
+                                            <h4 className="font-bold text-primary-text">Themes Disabled</h4>
+                                            <p className="text-xs text-secondary-text mt-1">
+                                                Custom skins are only available in Dark Ops mode. Switch back to enable.
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                             </div>
                         </div>

@@ -2,25 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* Oblivion Theme (Default) */
-    --color-primary-bg: #0A0A0A;
-    --color-secondary-bg: #1A1A1A;
-    --color-primary-text: #F0F0F0;
-    --color-secondary-text: #A0A0A0;
-    --color-accent-1: #00F0FF; /* Cyber Blue */
-    --color-accent-2: #FF00FF; /* Cyber Pink */
-    --color-border: rgba(255,255,255,0.1);
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  
+  /* Default Dark Mode (Cyber) */
+  --color-primary-bg: #050505;
+  --color-secondary-bg: #121212;
+  --color-primary-text: #F0F0F0;
+  --color-secondary-text: #888888;
+  --color-accent-1: #00F0FF;
+  --color-accent-2: #FF00FF;
+  --color-border: #333333;
+}
 
-    /* Original colors still defined for fallback or non-themed elements */
-    --cyber-black: #0A0A0A;
-    --cyber-white: #F0F0F0;
-    --cyber-blue: #00F0FF;
-    --cyber-purple: #8A2BE2;
-    --cyber-pink: #FF00FF;
-    --cyber-red: #FF4500;
-    --cyber-green: #00FF7F;
+[data-theme='light'] {
+  /* Light Mode (Clean/Apple) */
+  --color-primary-bg: #F5F5F7;
+  --color-secondary-bg: #FFFFFF;
+  --color-primary-text: #1D1D1F;
+  --color-secondary-text: #86868B;
+  --color-accent-1: #007AFF; /* Apple Blue */
+  --color-accent-2: #AF52DE; /* Apple Purple */
+  --color-border: #D2D2D7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
   }
 }
 

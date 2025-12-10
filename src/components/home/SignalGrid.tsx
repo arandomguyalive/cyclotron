@@ -175,9 +175,18 @@ export function SignalGrid() {
                                     <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-black">
                                         <img 
                                             src={post.mediaUrl} 
-                                            className={`w-full h-full object-cover ${isFree || dataSaver ? 'opacity-80 sepia-[.3]' : ''}`}
+                                            className={`w-full h-full object-cover ${isFree || dataSaver ? 'grayscale contrast-125 blur-[1px] opacity-70' : ''}`}
                                             alt="Signal"
                                         />
+                                        
+                                        {/* Free User Lock Badge */}
+                                        {isFree && (
+                                            <div className="absolute top-0 right-0 bg-red-600 text-white text-[6px] font-bold px-1 py-0.5 rounded-bl-md z-10">
+                                                LOCKED
+                                            </div>
+                                        )}
+
+                                        {/* Premium Watermark */}
                                         {!isFree && user?.handle && (
                                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                                 <motion.span 

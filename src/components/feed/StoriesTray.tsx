@@ -78,21 +78,17 @@ export function StoriesTray() {
   
   const isFree = user?.tier === 'free';
 
-  const handleOpen = () => {
+  const handleOpen = (index: number) => {
     if (isFree) {
-        // Just play a sound, deny access
         playClick(150, 0.2, 'sawtooth');
         if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
         alert("OPTICAL SENSORS OFFLINE. UPGRADE REQUIRED.");
         return;
     }
 
-    if (stories.length > 0) {
-        setIsOpen(true);
-        playClick(600, 0.1, 'sine');
-    } else {
-        playClick(100, 0.2, 'sawtooth');
-    }
+    setCurrentIndex(index);
+    setIsOpen(true);
+    playClick(600, 0.1, 'sine');
   };
 
   const handleNext = () => {
@@ -112,46 +108,51 @@ export function StoriesTray() {
 
   return (
     <>
-      {/* The Glowing Ball Trigger */}
-      <motion.button
-        onClick={handleOpen}
-        whileTap={{ scale: 0.9 }}
-        className="relative w-10 h-10 rounded-full flex items-center justify-center z-50"
-      >
-        {hasStories ? (
-            <div className={`w-full h-full rounded-full p-[2px] animate-spin-slow ${isFree ? 'bg-gradient-to-tr from-red-500/50 to-transparent' : 'bg-gradient-to-tr from-accent-1 to-purple-500'}`}>
-                {isFree ? (
-                    // Ghost/Shadow Orb for Free Users
-                    <div className="w-full h-full rounded-full bg-black border-2 border-red-500/30 flex items-center justify-center relative overflow-hidden">
-                        <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
-                        <span className="font-mono font-bold text-[10px] text-red-500 relative z-10">
-                            {stories.length}
-                        </span>
-                        <Lock className="w-3 h-3 text-red-500/50 absolute bottom-1 right-1" />
+      {/* Horizontal Story Tray */}
+      <div className="w-full overflow-x-auto pb-4 pt-2 scrollbar-hide">
+          <div className="flex gap-4 px-1">
+              
+              {/* Add Story Button */}
+              <div className="flex flex-col items-center gap-1 shrink-0">
+                  <div className="w-14 h-14 rounded-full border-2 border-dashed border-secondary-text/50 flex items-center justify-center cursor-pointer hover:border-accent-1 hover:text-accent-1 text-secondary-text transition-colors">
+                      <Plus className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] text-secondary-text">Add</span>
+              </div>
+
+              {/* Story Items */}
+              {hasStories && stories.map((story, i) => (
+                  <motion.button
+                    key={story.id}
+                    onClick={() => handleOpen(i)}
+                    whileTap={{ scale: 0.9 }}
+                    className="flex flex-col items-center gap-1 shrink-0 relative"
+                  >
+                    <div className={`w-14 h-14 rounded-full p-[2px] ${isFree ? 'bg-red-500/50' : 'bg-gradient-to-tr from-accent-1 to-purple-500'}`}>
+                        <div className="w-full h-full rounded-full bg-black p-[2px] relative overflow-hidden">
+                            <img 
+                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${story.userAvatar}`} 
+                                className={`w-full h-full rounded-full object-cover ${isFree ? 'grayscale opacity-50' : ''}`}
+                                alt={story.userHandle}
+                            />
+                            {isFree && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                    <Lock className="w-4 h-4 text-red-500" />
+                                </div>
+                            )}
+                        </div>
                     </div>
-                ) : (
-                    // Full Avatar for Premium+
-                    <div className="w-full h-full rounded-full relative">
-                        <img 
-                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${stories[0].userAvatar}`} 
-                            className="w-full h-full rounded-full bg-black object-cover border-2 border-black"
-                            alt="Story"
-                        />
-                        <div className="absolute inset-0 rounded-full shadow-[0_0_15px_var(--color-accent-1)] animate-pulse" />
-                    </div>
-                )}
-            </div>
-        ) : (
-             // Empty State: Just a ghostly orb
-             <div className="w-full h-full rounded-full border border-secondary-text/30 bg-secondary-bg/20 backdrop-blur flex items-center justify-center group">
-                 <div className="w-2 h-2 rounded-full bg-secondary-text/50 group-hover:bg-accent-1 transition-colors shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
-             </div>
-        )}
-      </motion.button>
+                    <span className="text-[10px] text-secondary-text max-w-[60px] truncate">
+                        {story.userHandle}
+                    </span>
+                  </motion.button>
+              ))}
+          </div>
+      </div>
 
       {/* Fullscreen Viewer */}
       <AnimatePresence>
-        {isOpen && hasStories && (
+        {isOpen && hasStories && !isFree && (
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}

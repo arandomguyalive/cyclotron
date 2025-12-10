@@ -9,6 +9,7 @@ import { SignalGrid } from "@/components/home/SignalGrid";
 import { FrequencyTuner } from "@/components/home/widgets/FrequencyTuner";
 import { DailyDirective } from "@/components/home/widgets/DailyDirective";
 import { SystemTerminal } from "@/components/home/widgets/SystemTerminal";
+import { TrendingTags } from "@/components/home/widgets/TrendingTags";
 import { Activity, Zap, Shield, Globe, Lock, AlertTriangle, Eye, Server, Radio, Signal, Wifi, Ghost } from "lucide-react";
 
 export default function HomePage() {
@@ -185,237 +186,151 @@ export default function HomePage() {
 
                  )}
 
-                 {/* Compact Privacy Badge */}
+                                {/* Compact Privacy Badge */}
 
-                 <div className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${config.bgColor} ${config.color} border ${config.borderColor}`}>
+                                <div className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${config.bgColor} ${config.color} border ${config.borderColor}`}>
 
-                     <Shield className="w-3 h-3" />
+                                    <Shield className="w-3 h-3" />
 
-                     <span>{config.label}</span>
+                                    <span>{config.label}</span>
 
-                 </div>
+                                </div>
 
-             </div>
-
-          </div>
-
-          
-
-          <div className="pointer-events-auto">
-
-               <StoriesTray />
-
-          </div>
-
-        </header>
-
-      
-
-                  {/* Main Content Area */}
-
-      
-
-                  <main className="p-6 space-y-8">
-
-      
-
-                    
-
-      
-
-                    {/* Privacy Score Widget (Replaces Security Status) */}
-
-      
-
-                    <motion.div 
-
-      
-
-                        initial={{ opacity: 0, y: 20 }}
-
-      
-
-                        animate={{ opacity: 1, y: 0 }}
-
-      
-
-                        className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} relative overflow-hidden`}
-
-      
-
-                    >
-
-      
-
-                         <div className="absolute top-0 right-0 p-4 opacity-10">
-
-      
-
-                             <Shield className={`w-24 h-24 ${config.color}`} />
-
-      
+                            </div>
 
                          </div>
 
-      
+                       </header>
+
+                 
+
+                       {/* Main Content Area */}
+
+                       <main className="p-6 space-y-8">
 
                          
 
-      
+                         {/* Stories Tray (Expanded) */}
 
-                         <div className="relative z-10">
+                         <StoriesTray />
 
-      
+                 
 
-                             <div className="flex items-center gap-2 mb-4">
+                         {/* Privacy Score Widget (Replaces Security Status) */}
 
-      
+                         <motion.div 
 
-                                 <Activity className={`w-5 h-5 ${config.color}`} />
+                             initial={{ opacity: 0, y: 20 }}
 
-      
+                             animate={{ opacity: 1, y: 0 }}
 
-                                 <h2 className={`text-xl font-bold ${config.color} tracking-tight`}>Privacy Score</h2>
+                             className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} relative overflow-hidden`}
 
-      
+                         >
 
-                             </div>
+                              <div className="absolute top-0 right-0 p-4 opacity-10">
 
-      
+                                  <Shield className={`w-24 h-24 ${config.color}`} />
 
-                             
+                              </div>
 
-      
+                              
 
-                             {/* Visual Bar Graph */}
+                              <div className="relative z-10">
 
-      
+                                  <div className="flex items-center gap-2 mb-4">
 
-                             <div className="flex items-end gap-1 h-12 mb-4">
+                                      <Activity className={`w-5 h-5 ${config.color}`} />
 
-      
+                                      <h2 className={`text-xl font-bold ${config.color} tracking-tight`}>Privacy Score</h2>
 
-                                 {[...Array(10)].map((_, i) => (
+                                  </div>
 
-      
+                                  
 
-                                     <div 
+                                  {/* Visual Bar Graph */}
 
-      
+                                  <div className="flex items-end gap-1 h-12 mb-4">
 
-                                        key={i} 
+                                      {[...Array(10)].map((_, i) => (
 
-      
+                                          <div 
 
-                                        className={`flex-1 rounded-sm transition-all duration-500 ${
+                                             key={i} 
 
-      
+                                             className={`flex-1 rounded-sm transition-all duration-500 ${
 
-                                            i < config.signalValue / 10 
+                                                 i < config.signalValue / 10 
 
-      
+                                                     ? config.color.replace('text-', 'bg-') 
 
-                                                ? config.color.replace('text-', 'bg-') 
+                                                     : 'bg-secondary-bg/20'
 
-      
+                                             }`}
 
-                                                : 'bg-secondary-bg/20'
+                                             style={{ height: `${(i + 1) * 10}%` }}
 
-      
+                                          />
 
-                                        }`}
+                                      ))}
 
-      
+                                  </div>
 
-                                        style={{ height: `${(i + 1) * 10}%` }}
+                                  
 
-      
+                                  <div className="flex items-center justify-between">
 
-                                     />
+                                      <span className={`text-2xl font-bold ${config.color}`}>{config.signalValue}%</span>
 
-      
+                                      <span className={`text-xs font-medium uppercase tracking-widest ${config.color} opacity-80`}>
 
-                                 ))}
+                                          {config.signalText}
 
-      
+                                      </span>
 
-                             </div>
+                                  </div>
 
-      
+                                  
 
-                             
+                                  {tier === 'free' && (
 
-      
+                                      <p className="mt-4 text-xs text-secondary-text border-t border-border-color pt-2 flex items-center gap-2">
 
-                             <div className="flex items-center justify-between">
+                                          <span className="font-bold text-accent-1">TIP:</span> Your digital footprint is visible. Upgrade to mask it.
 
-      
+                                      </p>
 
-                                 <span className={`text-2xl font-bold ${config.color}`}>{config.signalValue}%</span>
+                                  )}
 
-      
+                              </div>
 
-                                 <span className={`text-xs font-medium uppercase tracking-widest ${config.color} opacity-80`}>
+                         </motion.div>
 
-      
+                 
 
-                                     {config.signalText}
+                         {/* Feed Filter (Frequency Tuner) */}
 
-      
+                         <div className="space-y-4">
+
+                             <div className="relative">
+
+                                 <span className="absolute -top-3 left-2 text-[10px] bg-primary-bg px-2 text-secondary-text uppercase tracking-widest z-10">
+
+                                     Frequency
 
                                  </span>
 
-      
+                                 <FrequencyTuner />
 
                              </div>
 
-      
-
                              
 
-      
+                             {/* Trending Tags */}
 
-                             {tier === 'free' && (
-
-      
-
-                                 <p className="mt-4 text-xs text-secondary-text border-t border-border-color pt-2 flex items-center gap-2">
-
-      
-
-                                     <span className="font-bold text-accent-1">TIP:</span> Your digital footprint is visible. Upgrade to mask it.
-
-      
-
-                                 </p>
-
-      
-
-                             )}
-
-      
+                             <TrendingTags />
 
                          </div>
-
-      
-
-                    </motion.div>
-
-              
-
-              {/* Feed Filter (Frequency Tuner) */}
-
-              <div className="relative">
-
-                  <span className="absolute -top-3 left-2 text-[10px] bg-primary-bg px-2 text-secondary-text uppercase tracking-widest z-10">
-
-                      Frequency
-
-                  </span>
-
-                  <FrequencyTuner />
-
-              </div>
 
       
 
