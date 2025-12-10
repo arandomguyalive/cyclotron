@@ -13,7 +13,7 @@ export function BackgroundMesh() {
     premium: "from-sky-900/20 via-black to-black",
     gold: "from-amber-900/20 via-black to-black",
     platinum: "from-gray-100/10 via-black to-black",
-    sovereign: "from-amber-500/10 via-black to-black", // New Sovereign color
+    sovereign: "from-amber-500/10 via-black to-black", // Vantablack effect (subtle gold glow)
   };
 
   return (
