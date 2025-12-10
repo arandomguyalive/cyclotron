@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "@/lib/UserContext";
 import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Lock, Signal, Image as ImageIcon } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Bookmark } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface Post {
@@ -122,12 +122,9 @@ export function SignalGrid() {
     if (loading) return <div className="h-40 flex items-center justify-center text-xs text-secondary-text animate-pulse">Scanning frequencies...</div>;
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between px-1">
-                <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider flex items-center gap-2">
-                    <Signal className={`w-4 h-4 ${isFree ? 'text-secondary-text' : 'text-accent-1'}`} />
-                    Intercepted Signals
-                </h3>
+        <div className="space-y-4 pb-20">
+            <div className="flex items-center justify-between px-4">
+                <h3 className="text-xl font-bold text-primary-text tracking-tight">Live Feed</h3>
                 {isFree && (
                     <span className="text-[10px] bg-secondary-bg/10 text-secondary-text px-2 py-0.5 rounded border border-border-color">
                         PUBLIC CHANNEL
@@ -135,7 +132,7 @@ export function SignalGrid() {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 gap-3">
+            <div className="flex flex-col gap-8">
                 {posts.map((item) => {
                     if (item.type === "ad") {
                         const ad = item as MockAd;
@@ -144,85 +141,75 @@ export function SignalGrid() {
                                 key={ad.id}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className={`relative rounded-2xl overflow-hidden border border-${ad.color}/20 bg-${ad.color}/5 p-4 backdrop-blur-md`}
+                                className={`relative mx-4 rounded-2xl overflow-hidden border border-${ad.color}/20 bg-${ad.color}/5 p-6 backdrop-blur-md text-center`}
                             >
-                                <div className="flex items-center gap-4">
-                                    <img src={ad.imageUrl} alt={ad.title} className="w-16 h-16 object-cover rounded-lg" />
-                                    <div>
-                                        <h4 className={`text-sm font-bold text-${ad.color}`}>{ad.title}</h4>
-                                        <p className="text-xs text-secondary-text">{ad.description}</p>
-                                    </div>
-                                </div>
-                                <button className={`mt-3 w-full py-2 bg-${ad.color} text-primary-bg rounded-lg text-xs font-bold`}>
+                                <img src={ad.imageUrl} alt={ad.title} className="w-full h-48 object-cover rounded-xl mb-4" />
+                                <h4 className={`text-lg font-bold text-${ad.color} mb-2`}>{ad.title}</h4>
+                                <p className="text-sm text-secondary-text mb-6">{ad.description}</p>
+                                <button className={`w-full py-3 bg-${ad.color} text-primary-bg rounded-xl font-bold`}>
                                     {ad.cta}
                                 </button>
-                                <div className="absolute inset-0 bg-transparent z-10 cursor-pointer" onClick={() => alert("Redirect to Upgrade Page (Mock)")} />
                             </motion.div>
                         );
                     } else {
                         const post = item as Post;
                         return (
-                            <div 
-                                key={post.id}
-                                className={`relative rounded-2xl overflow-hidden border transition-all ${
-                                    isFree 
-                                        ? 'border-white/5 bg-white/5 backdrop-blur-md' 
-                                        : 'border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10'
-                                }`}
-                            >
-                                <div className="flex p-3 gap-4 items-center">
-                                    {/* Media Preview */}
-                                    <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-black">
-                                        <img 
-                                            src={post.mediaUrl} 
-                                            className={`w-full h-full object-cover ${isFree || dataSaver ? 'grayscale contrast-125 blur-[1px] opacity-70' : ''}`}
-                                            alt="Signal"
-                                        />
-                                        
-                                        {/* Free User Lock Badge */}
-                                        {isFree && (
-                                            <div className="absolute top-0 right-0 bg-red-600 text-white text-[6px] font-bold px-1 py-0.5 rounded-bl-md z-10">
-                                                LOCKED
-                                            </div>
-                                        )}
-
-                                        {/* Premium Watermark */}
-                                        {!isFree && user?.handle && (
-                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                                <motion.span 
-                                                    initial={{ opacity: 0.05, rotate: -30 }}
-                                                    animate={{ opacity: 0.08, rotate: -30 }}
-                                                    transition={{ repeat: Infinity, duration: 8, ease: "linear", repeatType: "reverse" }}
-                                                    className="text-white text-[10px] font-extrabold tracking-widest uppercase opacity-5"
-                                                    style={{ textShadow: '0 0 5px rgba(255,255,255,0.2)' }}
-                                                >
-                                                    {user.handle.toUpperCase()}
-                                                </motion.span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Content */}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <span className={`text-xs font-bold ${isFree ? 'text-secondary-text' : 'text-primary-text'}`}>
-                                                @{post.userHandle}
-                                            </span>
-                                            <span className="text-[10px] text-secondary-text/50">
-                                                {new Date(post.createdAt?.toDate ? post.createdAt.toDate() : new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'})}
-                                            </span>
+                            <div key={post.id} className="w-full border-b border-white/5 pb-6">
+                                {/* Header */}
+                                <div className="px-4 flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-secondary-bg overflow-hidden">
+                                            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userHandle}`} className="w-full h-full" />
                                         </div>
-                                        
-                                        <p className="text-sm text-secondary-text line-clamp-2">
-                                            {post.caption}
-                                        </p>
+                                        <span className={`text-sm font-bold ${isFree ? 'text-secondary-text' : 'text-primary-text'}`}>
+                                            @{post.userHandle}
+                                        </span>
                                     </div>
+                                    <MoreHorizontal className="w-5 h-5 text-secondary-text" />
                                 </div>
 
-                                {/* Upgrade Overlay for Free Users - Subtle Interaction Lock */}
-                                {isFree && (
-                                    <div className="absolute inset-0 bg-transparent z-10 cursor-pointer" onClick={() => alert("Upgrade to interact (Like/Comment).")} />
-                                )}
+                                {/* Media */}
+                                <div className="relative w-full aspect-[4/5] bg-black overflow-hidden">
+                                    <img 
+                                        src={post.mediaUrl} 
+                                        className={`w-full h-full object-cover transition-all duration-500 ${isFree || dataSaver ? 'grayscale contrast-125 blur-[1px] opacity-70' : ''}`}
+                                        alt="Signal"
+                                    />
+                                    
+                                    {isFree && (
+                                        <div className="absolute top-4 right-4 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md z-10 shadow-lg">
+                                            LOCKED
+                                        </div>
+                                    )}
+
+                                    {!isFree && user?.handle && (
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
+                                            <span className="text-white text-4xl font-black -rotate-45 uppercase tracking-widest">{user.handle}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Actions */}
+                                <div className="px-4 mt-3 flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <Heart className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" />
+                                        <MessageCircle className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" />
+                                        <Share2 className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" />
+                                    </div>
+                                    <Bookmark className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" />
+                                </div>
+
+                                {/* Content */}
+                                <div className="px-4 mt-2 space-y-1">
+                                    <p className="text-sm font-bold text-primary-text">2,492 likes</p>
+                                    <p className="text-sm text-secondary-text line-clamp-2">
+                                        <span className="font-bold text-primary-text mr-2">@{post.userHandle}</span>
+                                        {post.caption}
+                                    </p>
+                                    <p className="text-[10px] text-secondary-text/50 uppercase tracking-wide mt-1">
+                                        {new Date(post.createdAt?.toDate ? post.createdAt.toDate() : new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'})} • Encrypted
+                                    </p>
+                                </div>
                             </div>
                         );
                     }
@@ -231,4 +218,3 @@ export function SignalGrid() {
         </div>
     );
 }
-
