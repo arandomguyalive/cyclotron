@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Lock, ChevronLeft, Loader2 } from "lucide-react";
+import { Send, Lock, ChevronLeft, Loader2, AlertTriangle, Paperclip } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import AES from "crypto-js/aes";
 import encUtf8 from "crypto-js/enc-utf8";
@@ -28,6 +28,8 @@ export default function ChatPage() {
   const { firebaseUser, user: currentUserProfile, loading: userLoading } = useUser();
   const { playClick } = useSonic();
   const router = useRouter();
+
+  const isFree = currentUserProfile?.tier === 'free';
 
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -200,10 +202,17 @@ export default function ChatPage() {
         </div>
         <div>
           <h2 className="font-bold text-primary-text">{chatPartner?.handle || "Agent Zero"}</h2>
-          <div className="flex items-center gap-1 text-xs text-accent-1/80">
-            <Lock className="w-3 h-3" />
-            <span>E2EE Active</span>
-          </div>
+          {isFree ? (
+              <div className="flex items-center gap-1 text-xs text-red-500 animate-pulse">
+                <AlertTriangle className="w-3 h-3" />
+                <span>UNSECURED LINE</span>
+              </div>
+          ) : (
+              <div className="flex items-center gap-1 text-xs text-accent-1/80">
+                <Lock className="w-3 h-3" />
+                <span>E2EE Active</span>
+              </div>
+          )}
         </div>
       </div>
 
@@ -224,6 +233,19 @@ export default function ChatPage() {
       {/* Input Area */}
       <div className="p-4 bg-primary-bg border-t border-border-color sticky bottom-0 z-50 pb-safe-area-inset-bottom">
         <div className="flex items-center gap-2 relative">
+          <button 
+            onClick={() => {
+                if (isFree) {
+                    alert("Upgrade to Shield Tier to transmit files.");
+                } else {
+                    alert("Secure file channel open. (Mock)");
+                }
+            }}
+            className={`p-2 rounded-full transition-colors ${isFree ? 'text-secondary-text/50 cursor-not-allowed' : 'text-accent-1 hover:bg-accent-1/10'}`}
+          >
+              <Paperclip className="w-5 h-5" />
+          </button>
+
           <input
             type="text"
             value={input}
