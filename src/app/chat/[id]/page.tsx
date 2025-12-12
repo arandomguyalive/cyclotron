@@ -10,6 +10,7 @@ import { useSonic } from "@/lib/SonicContext";
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
+import { useToast } from "@/lib/ToastContext";
 
 interface ChatMessage {
   id: string;
@@ -27,6 +28,7 @@ export default function ChatPage() {
   const { id: chatId } = useParams<{ id: string }>();
   const { firebaseUser, user: currentUserProfile, loading: userLoading } = useUser();
   const { playClick } = useSonic();
+  const { toast } = useToast();
   const router = useRouter();
 
   const isFree = currentUserProfile?.tier === 'free';
@@ -166,7 +168,7 @@ export default function ChatPage() {
 
     } catch (error) {
       console.error("Error sending message:", error);
-      alert("Failed to send transmission. Connection unstable.");
+      toast("Transmission failed. Connection unstable.", "error");
     }
   };
 
@@ -236,9 +238,9 @@ export default function ChatPage() {
           <button 
             onClick={() => {
                 if (isFree) {
-                    alert("Upgrade to Shield Tier to transmit files.");
+                    toast("File Channel Restricted. Upgrade to Shield.", "warning");
                 } else {
-                    alert("Secure file channel open. (Mock)");
+                    toast("Secure file channel open. (Mock)", "success");
                 }
             }}
             className={`p-2 rounded-full transition-colors ${isFree ? 'text-secondary-text/50 cursor-not-allowed' : 'text-accent-1 hover:bg-accent-1/10'}`}
@@ -269,6 +271,8 @@ export default function ChatPage() {
 function MessageBubble({ message, isMine, senderHandle, senderAvatar }: { message: ChatMessage, isMine: boolean, senderHandle: string, senderAvatar: string }) {
   const [isRevealed, setIsRevealed] = useState(isMine); // Sent messages are always revealed
   const [scratchProgress, setScratchProgress] = useState(0);
+  const [burnProgress, setBurnProgress] = useState(0);
+  const [isBurnt, setIsBurnt] = useState(false);
   const { playClick } = useSonic();
 
   // Decrypt message once revealed
@@ -282,6 +286,29 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar }: { messag
           decryptedText.current = "[DECRYPTION FAILED]";
       }
   }
+
+  // Burn Timer Simulation (Visual only, starts after reveal)
+  useEffect(() => {
+      if (!isRevealed || isBurnt) return;
+      
+      // Random burn time between 15s and 60s for demo
+      const burnDuration = 30000; 
+      const interval = 100;
+      const step = (100 * interval) / burnDuration;
+
+      const timer = setInterval(() => {
+          setBurnProgress(prev => {
+              if (prev >= 100) {
+                  clearInterval(timer);
+                  setIsBurnt(true);
+                  return 100;
+              }
+              return prev + step;
+          });
+      }, interval);
+
+      return () => clearInterval(timer);
+  }, [isRevealed, isBurnt]);
 
   const handleScratch = (e: React.PointerEvent) => {
     if (isRevealed || isMine) return; // Cannot scratch own messages or already revealed ones
@@ -301,6 +328,16 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar }: { messag
         return newProgress;
     });
   };
+
+  if (isBurnt) {
+      return (
+        <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+            <div className="text-[10px] text-secondary-text/30 font-mono border border-secondary-text/10 px-2 py-1 rounded">
+                [MESSAGE INCINERATED]
+            </div>
+        </div>
+      );
+  }
 
   return (
     <motion.div 
@@ -330,7 +367,7 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar }: { messag
              <p className="font-mono text-sm break-all opacity-50 blur-[1px]">
                 {message.encrypted.substring(0, Math.min(message.encrypted.length, 50))}
              </p>
-             {/* Progress Bar */}
+             {/* Scrub Progress Bar */}
              <div className="h-1 w-full bg-border-color rounded-full mt-1 overflow-hidden">
                  <motion.div 
                     className="h-full bg-accent-2"
@@ -339,13 +376,18 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar }: { messag
              </div>
            </div>
         ) : (
-          <motion.p 
-            initial={{ opacity: 0, filter: "blur(5px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            className="text-sm"
-          >
-            {decryptedText.current || message.text}
-          </motion.p>
+          <>
+            <motion.p 
+                initial={{ opacity: 0, filter: "blur(5px)" }}
+                animate={{ opacity: 1, filter: "blur(0px)" }}
+                className="text-sm relative z-10"
+            >
+                {decryptedText.current || message.text}
+            </motion.p>
+            
+            {/* Burn Fuse Visual */}
+            <div className="absolute bottom-0 left-0 h-[2px] bg-red-500/50 blur-[1px] transition-all duration-100" style={{ width: `${burnProgress}%` }} />
+          </>
         )}
         <span className={`block text-[10px] text-secondary-text/50 mt-1 ${isMine ? "text-right" : "text-left"}`}>
             {new Date(message.timestamp?.toDate()).toLocaleTimeString()}

@@ -6,6 +6,7 @@ import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestor
 import { db } from "@/lib/firebase";
 import { Heart, MessageCircle, Share2, MoreHorizontal, Bookmark } from "lucide-react";
 import { motion } from "framer-motion";
+import { useToast } from "@/lib/ToastContext";
 
 interface Post {
     id: string;
@@ -78,6 +79,7 @@ const mockAd: MockAd = {
 
 export function SignalGrid() {
     const { user } = useUser();
+    const { toast } = useToast();
     const [posts, setPosts] = useState<(Post | MockAd)[]>([]); // Allow MockAd type
     const [loading, setLoading] = useState(true);
     const [dataSaver, setDataSaver] = useState(false);
@@ -169,7 +171,14 @@ export function SignalGrid() {
                                 </div>
 
                                 {/* Media */}
-                                <div className="relative w-full aspect-[4/5] bg-black overflow-hidden">
+                                <div 
+                                    className="relative w-full aspect-[4/5] bg-black overflow-hidden cursor-pointer"
+                                    onClick={() => {
+                                        if (isFree) {
+                                            toast("Upgrade for High-Definition Access", "warning");
+                                        }
+                                    }}
+                                >
                                     <img 
                                         src={post.mediaUrl} 
                                         className={`w-full h-full object-cover transition-all duration-500 ${isFree || dataSaver ? 'grayscale contrast-125 blur-[1px] opacity-70' : ''}`}
@@ -192,11 +201,23 @@ export function SignalGrid() {
                                 {/* Actions */}
                                 <div className="px-4 mt-3 flex items-center justify-between">
                                     <div className="flex items-center gap-4">
-                                        <Heart className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" />
-                                        <MessageCircle className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" />
-                                        <Share2 className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" />
+                                        <Heart 
+                                            onClick={() => toast("Signal Acknowledged", "success")}
+                                            className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" 
+                                        />
+                                        <MessageCircle 
+                                            onClick={() => toast("Encrypted Channel Open", "info")}
+                                            className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" 
+                                        />
+                                        <Share2 
+                                            onClick={() => toast("Link Copied to Clipboard", "info")}
+                                            className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" 
+                                        />
                                     </div>
-                                    <Bookmark className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" />
+                                    <Bookmark 
+                                        onClick={() => toast("Signal Saved to Archive", "encrypted")}
+                                        className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" 
+                                    />
                                 </div>
 
                                 {/* Content */}

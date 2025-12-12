@@ -18,6 +18,14 @@ const config: Config = {
         "accent-2": "var(--color-accent-2)",
         "border-color": "var(--color-border)",
         
+        // KM18 Brand Palette
+        "brand-orange": "#EB7955",
+        "brand-pale-pink": "#FFCDEC",
+        "brand-hot-pink": "#FF53B2",
+        "brand-purple": "#6B0098",
+        "brand-blue": "#006096",
+        "brand-cyan": "#00D4E5",
+
         "cyber-black": "#0A0A0A",
         "cyber-white": "#F0F0F0",
         "cyber-blue": "#00F0FF",
