@@ -23,7 +23,7 @@ export default function UpgradePage() {
                     bgColor: "bg-brand-cyan/10",
                     borderColor: "border-brand-cyan/20",
                     textColor: "text-brand-cyan",
-                    buttonBgColor: "bg-brand-cyan"
+                    buttonBgColor: "bg-brand-cyan text-black"
                 },
                 {
                     id: "gold",
@@ -34,7 +34,7 @@ export default function UpgradePage() {
                     bgColor: "bg-brand-pale-pink/10",
                     borderColor: "border-brand-pale-pink/20",
                     textColor: "text-brand-pale-pink",
-                    buttonBgColor: "bg-brand-pale-pink"
+                    buttonBgColor: "bg-brand-pale-pink text-black"
                 },
                 {
                     id: "platinum",
@@ -45,7 +45,7 @@ export default function UpgradePage() {
                     bgColor: "bg-white/10",
                     borderColor: "border-white/20",
                     textColor: "text-white",
-                    buttonBgColor: "bg-white/70 text-black" // Special case for white button
+                    buttonBgColor: "bg-white text-black"
                 },
             ];
         

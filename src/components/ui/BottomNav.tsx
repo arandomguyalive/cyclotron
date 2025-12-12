@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Home, Aperture, User, Plus, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSonic } from "@/lib/SonicContext";
+import { useUser } from "@/lib/UserContext";
 import { CreatePostModal } from "@/components/feed/CreatePostModal";
 
 const navItems = [
@@ -19,7 +20,22 @@ const navItems = [
 export function BottomNav() {
   const pathname = usePathname();
   const { playClick } = useSonic();
+  const { user } = useUser();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  const tier = user?.tier || 'free';
+  const activeColor = {
+      free: "text-brand-orange bg-brand-orange border-brand-orange shadow-brand-orange",
+      premium: "text-brand-cyan bg-brand-cyan border-brand-cyan shadow-brand-cyan",
+      gold: "text-brand-pale-pink bg-brand-pale-pink border-brand-pale-pink shadow-brand-pale-pink",
+      platinum: "text-white bg-white border-white shadow-white",
+      sovereign: "text-brand-purple bg-brand-purple border-brand-purple shadow-brand-purple",
+  }[tier];
+
+  // Helper to get just the text color class
+  const textColor = activeColor.split(' ')[0];
+  const bgColor = activeColor.split(' ')[1];
+  const shadowColor = activeColor.split(' ')[3]; // A bit hacky but works for this mapping
 
   const handleClick = (isAction?: boolean) => {
     if (isAction) {
@@ -43,14 +59,14 @@ export function BottomNav() {
                 onClick={() => handleClick(true)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="flex items-center justify-center w-16 h-16 rounded-full bg-accent-1 text-primary-bg shadow-[0_0_20px_var(--color-accent-1)] border-4 border-primary-bg"
+                className={`flex items-center justify-center w-16 h-16 rounded-full ${bgColor} text-black shadow-[0_0_20px_currentColor] ${textColor.replace('text', 'shadow')} border-4 border-primary-bg`}
             >
                 <Plus className="w-8 h-8" />
             </motion.button>
         </div>
 
         {/* Glassmorphism Container */}
-        <div className="absolute inset-0 bg-primary-bg/80 backdrop-blur-xl border-t border-border-color shadow-[0_-4px_30px_rgba(0,0,0,0.5)] pointer-events-auto" />
+        <div className="absolute inset-0 bg-primary-bg/95 backdrop-blur-xl border-t border-border-color shadow-[0_-4px_30px_rgba(0,0,0,0.5)] pointer-events-auto" />
         
         <div className="relative flex h-full items-center justify-between px-6 pointer-events-auto max-w-lg mx-auto w-full">
           {navItems.map((item, index) => (
@@ -66,7 +82,7 @@ export function BottomNav() {
                     {pathname === item.href && (
                       <motion.div
                         layoutId="nav-indicator"
-                        className="absolute top-0 w-8 h-0.5 bg-accent-1 shadow-[0_0_10px_#00F0FF]"
+                        className={`absolute top-0 w-8 h-0.5 ${bgColor}`}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                       />
                     )}
@@ -75,7 +91,7 @@ export function BottomNav() {
                         <item.icon
                         className={cn(
                             "w-6 h-6 transition-colors duration-300 z-10",
-                            pathname === item.href ? "text-accent-1 drop-shadow-[0_0_5px_rgba(0,240,255,0.8)]" : "text-secondary-text group-hover:text-primary-text"
+                            pathname === item.href ? `${textColor} drop-shadow-[0_0_5px_currentColor]` : "text-secondary-text group-hover:text-primary-text"
                         )}
                         />
                     </motion.div>

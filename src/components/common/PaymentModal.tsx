@@ -59,9 +59,9 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalPro
             <div className="w-full max-w-md bg-secondary-bg border border-border-color rounded-3xl overflow-hidden pointer-events-auto shadow-2xl">
               
               {/* Header */}
-              <div className="px-6 py-4 border-b border-border-color flex items-center justify-between bg-primary-bg">
+              <div className="relative px-6 py-4 border-b border-border-color flex items-center justify-center bg-primary-bg">
                 <h2 className="text-lg font-bold text-primary-text">KM18 Protocol Payment</h2>
-                <button onClick={onClose} className="p-2 hover:bg-secondary-bg rounded-full transition-colors">
+                <button onClick={onClose} className="absolute right-4 p-2 hover:bg-secondary-bg rounded-full transition-colors">
                   <X className="w-5 h-5 text-secondary-text" />
                 </button>
               </div>

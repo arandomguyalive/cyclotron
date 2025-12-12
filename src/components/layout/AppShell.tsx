@@ -57,7 +57,7 @@ function SplashScreen() {
                     className="mb-8"
                 >
                     <span className="text-xs md:text-sm font-mono tracking-[0.4em] text-secondary-text uppercase">
-                        A <span className="text-white font-bold">KM18</span> Production
+                        A <span className="text-brand-cyan font-bold">KM18</span> Production
                     </span>
                 </motion.div>
 
@@ -78,7 +78,7 @@ function SplashScreen() {
                     transition={{ duration: 1, delay: 2.5, ease: "easeOut" }}
                     className="mt-6 overflow-hidden whitespace-nowrap"
                 >
-                    <span className="text-sm md:text-lg font-light tracking-[0.6em] text-accent-1 uppercase border-t border-accent-1/30 pt-4 px-4 block">
+                    <span className="text-sm md:text-lg font-light tracking-[0.6em] text-brand-pale-pink uppercase border-t border-brand-pale-pink/30 pt-4 px-4 block">
                         Your Digital Fortress
                     </span>
                 </motion.div>
