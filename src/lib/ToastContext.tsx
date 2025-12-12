@@ -62,11 +62,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 function HoloToast({ toast, onDismiss }: { toast: Toast, onDismiss: () => void }) {
   const colors = {
-    success: "border-green-500/50 bg-green-500/10 text-green-400",
-    error: "border-red-500/50 bg-red-500/10 text-red-400",
-    warning: "border-yellow-500/50 bg-yellow-500/10 text-yellow-400",
+    success: "border-brand-cyan/50 bg-brand-cyan/10 text-brand-cyan",
+    error: "border-brand-orange/50 bg-brand-orange/10 text-brand-orange",
+    warning: "border-brand-pale-pink/50 bg-brand-pale-pink/10 text-brand-pale-pink",
     info: "border-accent-1/50 bg-accent-1/10 text-accent-1",
-    encrypted: "border-accent-2/50 bg-accent-2/10 text-accent-2",
+    encrypted: "border-brand-purple/50 bg-brand-purple/10 text-brand-purple",
   };
 
   const icons = {

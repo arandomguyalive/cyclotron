@@ -74,9 +74,9 @@ export function VortexItem({ post, index, watermarkText, isFree }: VortexProps) 
 
   // Generate a unique cyberpunk gradient based on index (fallback)
   const gradients = [
-    "bg-gradient-to-br from-cyber-purple via-cyber-black to-cyber-blue",
-    "bg-gradient-to-bl from-cyber-red via-cyber-black to-cyber-purple",
-    "bg-gradient-to-tr from-cyber-green via-cyber-black to-cyber-blue",
+    "bg-gradient-to-br from-brand-purple via-cyber-black to-brand-blue",
+    "bg-gradient-to-bl from-brand-orange via-cyber-black to-brand-purple",
+    "bg-gradient-to-tr from-brand-cyan via-cyber-black to-brand-blue",
   ];
   const bgGradient = gradients[index % gradients.length];
 
@@ -97,9 +97,9 @@ export function VortexItem({ post, index, watermarkText, isFree }: VortexProps) 
 
       {/* Free Tier Overlay: Signal Weak */}
       {isFree && (
-          <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-red-500/20 backdrop-blur-md px-3 py-1 rounded border border-red-500/30">
-              <AlertTriangle className="w-4 h-4 text-red-500 animate-pulse" />
-              <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">Signal Weak</span>
+          <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-brand-orange/20 backdrop-blur-md px-3 py-1 rounded border border-brand-orange/30">
+              <AlertTriangle className="w-4 h-4 text-brand-orange animate-pulse" />
+              <span className="text-[10px] font-bold text-brand-orange uppercase tracking-wider">Signal Weak</span>
           </div>
       )}
 
@@ -137,7 +137,7 @@ export function VortexItem({ post, index, watermarkText, isFree }: VortexProps) 
              <div className="w-12 h-12 rounded-full border-2 border-cyber-white bg-gray-800 overflow-hidden">
                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${p.userAvatar}`} alt="User" className="w-full h-full" />
              </div>
-             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-cyber-pink rounded-full p-0.5">
+             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-brand-hot-pink rounded-full p-0.5">
                  <Plus className="w-3 h-3 text-white" />
              </div>
           </div>
@@ -150,7 +150,7 @@ export function VortexItem({ post, index, watermarkText, isFree }: VortexProps) 
                 transition={{ duration: 0.2 }}
               >
                 <Heart 
-                    className={cn("w-8 h-8 transition-colors", liked ? "fill-cyber-red text-cyber-red drop-shadow-[0_0_10px_#FF4500]" : "text-white")} 
+                    className={cn("w-8 h-8 transition-colors", liked ? "fill-brand-hot-pink text-brand-hot-pink drop-shadow-[0_0_10px_#FF53B2]" : "text-white")} 
                 />
               </motion.div>
             </button>
@@ -187,7 +187,7 @@ export function VortexItem({ post, index, watermarkText, isFree }: VortexProps) 
         <div className="max-w-[80%] space-y-2">
           <h3 className="font-bold text-lg text-white drop-shadow-md flex items-center gap-2">
             @{p.userHandle}
-            <span className="text-xs bg-cyber-blue/20 text-cyber-blue px-1.5 py-0.5 rounded border border-cyber-blue/50">PRO</span>
+            <span className="text-xs bg-brand-cyan/20 text-brand-cyan px-1.5 py-0.5 rounded border border-brand-cyan/50">PRO</span>
           </h3>
           <p className="text-sm text-gray-200 drop-shadow-sm line-clamp-2 whitespace-pre-wrap">
             {p.caption}

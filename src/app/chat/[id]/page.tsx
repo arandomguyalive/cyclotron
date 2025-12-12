@@ -205,7 +205,7 @@ export default function ChatPage() {
         <div>
           <h2 className="font-bold text-primary-text">{chatPartner?.handle || "Agent Zero"}</h2>
           {isFree ? (
-              <div className="flex items-center gap-1 text-xs text-red-500 animate-pulse">
+              <div className="flex items-center gap-1 text-xs text-brand-orange animate-pulse">
                 <AlertTriangle className="w-3 h-3" />
                 <span>UNSECURED LINE</span>
               </div>
@@ -386,7 +386,7 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar }: { messag
             </motion.p>
             
             {/* Burn Fuse Visual */}
-            <div className="absolute bottom-0 left-0 h-[2px] bg-red-500/50 blur-[1px] transition-all duration-100" style={{ width: `${burnProgress}%` }} />
+            <div className="absolute bottom-0 left-0 h-[2px] bg-brand-orange/50 blur-[1px] transition-all duration-100" style={{ width: `${burnProgress}%` }} />
           </>
         )}
         <span className={`block text-[10px] text-secondary-text/50 mt-1 ${isMine ? "text-right" : "text-left"}`}>

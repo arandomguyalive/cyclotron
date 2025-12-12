@@ -98,7 +98,7 @@ export default function LoginPage() {
         {/* Footer/Status */}
         <div className="mt-8 text-center">
             {error && (
-                <div className="flex items-center justify-center gap-2 text-red-500 text-xs font-mono mb-4 animate-pulse">
+                <div className="flex items-center justify-center gap-2 text-brand-orange text-xs font-mono mb-4 animate-pulse">
                     <AlertTriangle className="w-3 h-3" />
                     {error}
                 </div>

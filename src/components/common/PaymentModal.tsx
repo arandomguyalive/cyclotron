@@ -32,10 +32,10 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalPro
   };
 
   const tierDetails = {
-    premium: { name: "The Shield", price: "₹999/mo", color: "text-cyan-400" },
-    gold: { name: "The Professional", price: "₹9,999/mo", color: "text-amber-400" },
+    premium: { name: "The Shield", price: "₹999/mo", color: "text-brand-cyan" },
+    gold: { name: "The Professional", price: "₹9,999/mo", color: "text-brand-pale-pink" },
     platinum: { name: "The Ultra Elite", price: "₹99,999/mo", color: "text-white" },
-    sovereign: { name: "The Sovereign", price: "₹10,00,000", color: "text-amber-200" },
+    sovereign: { name: "The Sovereign", price: "₹10,00,000", color: "text-brand-purple" },
   }[upgradeToTier] || { name: "Unknown", price: "0", color: "text-gray-500" }; // Fallback
 
   return (
@@ -101,8 +101,8 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalPro
 
                 {paymentStep === "success" && (
                     <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center">
-                        <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
-                        <h3 className="text-xl font-bold text-green-500">Upgrade Complete!</h3>
+                        <CheckCircle2 className="w-16 h-16 text-brand-cyan mb-4" />
+                        <h3 className="text-xl font-bold text-brand-cyan">Upgrade Complete!</h3>
                         <p className="text-sm text-primary-text">Welcome to {tierDetails.name}.</p>
                     </motion.div>
                 )}

@@ -20,10 +20,10 @@ export default function UpgradePage() {
                     price: "₹999/mo",
                     features: ["Ad-Free Access", "Standard Encryption", "Digital Watermark", "Full Signal Bandwidth"],
                     buttonText: "Activate Shield",
-                    bgColor: "bg-sky-400/10",
-                    borderColor: "border-sky-400/20",
-                    textColor: "text-sky-400",
-                    buttonBgColor: "bg-sky-500"
+                    bgColor: "bg-brand-cyan/10",
+                    borderColor: "border-brand-cyan/20",
+                    textColor: "text-brand-cyan",
+                    buttonBgColor: "bg-brand-cyan"
                 },
                 {
                     id: "gold",
@@ -31,10 +31,10 @@ export default function UpgradePage() {
                     price: "₹9,999/mo",
                     features: ["All Shield Features", "Forensic Watermarking", "Geo-Fencing Control", "Priority Support"],
                     buttonText: "Go Professional",
-                    bgColor: "bg-amber-400/10",
-                    borderColor: "border-amber-400/20",
-                    textColor: "text-amber-400",
-                    buttonBgColor: "bg-amber-500"
+                    bgColor: "bg-brand-pale-pink/10",
+                    borderColor: "border-brand-pale-pink/20",
+                    textColor: "text-brand-pale-pink",
+                    buttonBgColor: "bg-brand-pale-pink"
                 },
                 {
                     id: "platinum",
@@ -119,26 +119,26 @@ export default function UpgradePage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="mt-12 p-8 rounded-3xl bg-black border border-amber-500/30 relative overflow-hidden text-center"
+                    className="mt-12 p-8 rounded-3xl bg-black border border-brand-purple/30 relative overflow-hidden text-center"
                 >
                     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none" />
                     <div className="relative z-10">
-                        <Lock className="w-8 h-8 text-amber-500 mx-auto mb-4" />
-                        <h2 className="text-2xl font-bold text-amber-100 mb-2 tracking-widest uppercase">The Sovereign</h2>
-                        <p className="text-amber-500/60 text-sm mb-6 max-w-lg mx-auto">
+                        <Lock className="w-8 h-8 text-brand-purple mx-auto mb-4" />
+                        <h2 className="text-2xl font-bold text-brand-pale-pink mb-2 tracking-widest uppercase">The Sovereign</h2>
+                        <p className="text-brand-purple/60 text-sm mb-6 max-w-lg mx-auto">
                             For those who operate beyond the grid. Bespoke Infrastructure. Total Isolation. Absolute Dominion.
                         </p>
                         
-                        <div className="inline-block border border-amber-500/50 rounded-xl p-1">
-                            <div className="px-6 py-3 bg-amber-500/10 rounded-lg">
-                                <span className="block text-[10px] text-amber-500 uppercase tracking-widest mb-1">Refundable Deposit</span>
-                                <span className="text-2xl font-mono text-amber-100 font-bold">₹10,00,000</span>
+                        <div className="inline-block border border-brand-purple/50 rounded-xl p-1">
+                            <div className="px-6 py-3 bg-brand-purple/10 rounded-lg">
+                                <span className="block text-[10px] text-brand-purple uppercase tracking-widest mb-1">Refundable Deposit</span>
+                                <span className="text-2xl font-mono text-brand-pale-pink font-bold">₹10,00,000</span>
                             </div>
                         </div>
 
                         <button 
                             onClick={() => alert("Connecting to Secure Handler... (Mock)")}
-                            className="block w-full max-w-xs mx-auto mt-6 py-3 bg-amber-600 hover:bg-amber-500 text-black font-bold rounded-xl transition-colors"
+                            className="block w-full max-w-xs mx-auto mt-6 py-3 bg-brand-purple hover:bg-brand-purple/80 text-white font-bold rounded-xl transition-colors"
                         >
                             REQUEST ENCRYPTED CHANNEL
                         </button>

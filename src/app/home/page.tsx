@@ -46,11 +46,11 @@ export default function HomePage() {
 
         free: {
 
-            color: "text-rose-500",
+            color: "text-brand-orange",
 
-            bgColor: "bg-rose-500/5",
+            bgColor: "bg-brand-orange/5",
 
-            borderColor: "border-rose-500/20",
+            borderColor: "border-brand-orange/20",
 
             signalText: "BASIC",
 
@@ -62,11 +62,11 @@ export default function HomePage() {
 
         premium: {
 
-            color: "text-sky-400",
+            color: "text-brand-cyan",
 
-            bgColor: "bg-sky-400/10",
+            bgColor: "bg-brand-cyan/10",
 
-            borderColor: "border-sky-400/20",
+            borderColor: "border-brand-cyan/20",
 
             signalText: "STRONG",
 
@@ -78,11 +78,11 @@ export default function HomePage() {
 
         gold: {
 
-            color: "text-amber-400",
+            color: "text-brand-pale-pink",
 
-            bgColor: "bg-amber-400/10",
+            bgColor: "bg-brand-pale-pink/10",
 
-            borderColor: "border-amber-400/20",
+            borderColor: "border-brand-pale-pink/20",
 
             signalText: "OPTIMAL",
 
@@ -110,11 +110,11 @@ export default function HomePage() {
 
               sovereign: {
 
-                  color: "text-amber-200", // Soft Gold
+                  color: "text-brand-purple", 
 
                   bgColor: "bg-black",
 
-                  borderColor: "border-amber-500/50",
+                  borderColor: "border-brand-purple/50",
 
                   signalText: "OMNIPOTENT",
 
@@ -136,11 +136,11 @@ export default function HomePage() {
 
               <div className={`absolute inset-0 pointer-events-none opacity-20 blur-3xl transition-colors duration-1000 ${
 
-                  tier === 'free' ? 'bg-[radial-gradient(circle_at_top_right,var(--color-secondary-text)_0%,transparent_40%)]' :
+                  tier === 'free' ? 'bg-[radial-gradient(circle_at_top_right,#EB7955_0%,transparent_40%)]' :
 
-                  tier === 'premium' ? 'bg-[radial-gradient(circle_at_top_right,sky_0%,transparent_40%)]' :
+                  tier === 'premium' ? 'bg-[radial-gradient(circle_at_top_right,#00D4E5_0%,transparent_40%)]' :
 
-                  tier === 'gold' ? 'bg-[radial-gradient(circle_at_top_right,amber_0%,transparent_40%)]' :
+                  tier === 'gold' ? 'bg-[radial-gradient(circle_at_top_right,#FFCDEC_0%,transparent_40%)]' :
 
                   tier === 'platinum' ? 'bg-[radial-gradient(circle_at_top_right,white_0%,transparent_40%)]' :
 

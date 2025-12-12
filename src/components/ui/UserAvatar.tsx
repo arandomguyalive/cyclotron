@@ -21,11 +21,11 @@ export function UserAvatar({ className, size = "md", showRing = true }: UserAvat
     };
 
     const ringColors = {
-        free: "border-rose-500",
-        premium: "border-sky-400",
-        gold: "border-amber-400",
+        free: "border-brand-orange",
+        premium: "border-brand-cyan",
+        gold: "border-brand-pale-pink",
         platinum: "border-white",
-        sovereign: "border-purple-500", // or gold for sovereign
+        sovereign: "border-brand-purple", // or gold for sovereign
     };
 
     return (

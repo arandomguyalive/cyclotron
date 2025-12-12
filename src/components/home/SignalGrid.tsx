@@ -186,7 +186,7 @@ export function SignalGrid() {
                                     />
                                     
                                     {isFree && (
-                                        <div className="absolute top-4 right-4 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md z-10 shadow-lg">
+                                        <div className="absolute top-4 right-4 bg-brand-orange text-white text-[10px] font-bold px-2 py-1 rounded-md z-10 shadow-lg">
                                             LOCKED
                                         </div>
                                     )}

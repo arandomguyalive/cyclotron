@@ -62,18 +62,23 @@ export function SecurePlayer({ src }: { src: string }) {
 
             <AnimatePresence>
                 {isLocked && (
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none"
-                    >
-                        <div className="p-4 rounded-full bg-red-500/20 border border-red-500/50 mb-4 animate-pulse">
-                            <EyeOff className="w-12 h-12 text-red-500" />
-                        </div>
-                        <h3 className="text-2xl font-bold text-red-500 tracking-widest uppercase">Focus Lost</h3>
-                        <p className="text-xs text-red-400 font-mono mt-2">KM18 Biometric Lock Active</p>
-                    </motion.div>
+            <div className="absolute inset-0 bg-black/90 backdrop-blur-xl z-50 flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
+                <div className="p-4 rounded-full bg-brand-orange/20 border border-brand-orange/50 mb-4 animate-pulse">
+                    <EyeOff className="w-12 h-12 text-brand-orange" />
+                </div>
+                <h3 className="text-2xl font-bold text-brand-orange tracking-widest uppercase">Focus Lost</h3>
+                <p className="text-xs text-brand-orange font-mono mt-2">KM18 Biometric Lock Active</p>
+                <button 
+                    onClick={() => {
+                        // In a real app, this would require re-authentication
+                        setIsLocked(false);
+                        if (videoRef.current) videoRef.current.play();
+                    }}
+                    className="mt-8 px-6 py-3 bg-white/10 hover:bg-white/20 rounded-full text-sm font-bold tracking-wider transition-colors"
+                >
+                    RESUME SESSION
+                </button>
+            </div>
                 )}
             </AnimatePresence>
         </div>
