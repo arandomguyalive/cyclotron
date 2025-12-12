@@ -17,13 +17,13 @@
 }
 
 [data-theme='light'] {
-  /* Light Mode (Clean/Apple) */
+  /* Light Mode (Clean/KM18) */
   --color-primary-bg: #F5F5F7;
   --color-secondary-bg: #FFFFFF;
   --color-primary-text: #1D1D1F;
   --color-secondary-text: #86868B;
-  --color-accent-1: #007AFF; /* Apple Blue */
-  --color-accent-2: #AF52DE; /* Apple Purple */
+  --color-accent-1: #006096; /* KM18 Blue (for contrast) */
+  --color-accent-2: #FF53B2; /* KM18 Hot Pink */
   --color-border: #D2D2D7;
 }
 

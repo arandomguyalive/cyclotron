@@ -8,6 +8,7 @@ import { Home, Aperture, User, Plus, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSonic } from "@/lib/SonicContext";
 import { useUser } from "@/lib/UserContext";
+import { useTheme } from "@/lib/ThemeContext";
 import { CreatePostModal } from "@/components/feed/CreatePostModal";
 
 const navItems = [
@@ -21,14 +22,21 @@ export function BottomNav() {
   const pathname = usePathname();
   const { playClick } = useSonic();
   const { user } = useUser();
+  const { colorMode } = useTheme();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const tier = user?.tier || 'free';
+  const isLight = colorMode === 'light';
+
   const activeColor = {
       free: "text-brand-orange bg-brand-orange border-brand-orange shadow-brand-orange",
-      premium: "text-brand-cyan bg-brand-cyan border-brand-cyan shadow-brand-cyan",
+      premium: isLight 
+          ? "text-brand-blue bg-brand-cyan border-brand-cyan shadow-brand-cyan" 
+          : "text-brand-cyan bg-brand-cyan border-brand-cyan shadow-brand-cyan",
       gold: "text-brand-pale-pink bg-brand-pale-pink border-brand-pale-pink shadow-brand-pale-pink",
-      platinum: "text-white bg-white border-white shadow-white",
+      platinum: isLight 
+          ? "text-black bg-white border-white shadow-gray-400" 
+          : "text-white bg-white border-white shadow-white",
       sovereign: "text-brand-purple bg-brand-purple border-brand-purple shadow-brand-purple",
   }[tier];
 
@@ -59,7 +67,7 @@ export function BottomNav() {
                 onClick={() => handleClick(true)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className={`flex items-center justify-center w-16 h-16 rounded-full ${bgColor} text-black shadow-[0_0_20px_currentColor] ${textColor.replace('text', 'shadow')} border-4 border-primary-bg`}
+                className={`flex items-center justify-center w-16 h-16 rounded-full ${bgColor} ${tier === 'platinum' && isLight ? 'text-black' : 'text-black'} shadow-[0_0_20px_currentColor] ${tier === 'platinum' && isLight ? 'shadow-gray-400' : textColor.replace('text', 'shadow')} border-4 border-primary-bg`}
             >
                 <Plus className="w-8 h-8" />
             </motion.button>
