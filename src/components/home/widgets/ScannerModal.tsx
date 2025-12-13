@@ -1,0 +1,153 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Radar, MapPin, User, ArrowRight } from "lucide-react";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useSonic } from "@/lib/SonicContext";
+
+interface ScannerModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  userRegion: string;
+}
+
+export function ScannerModal({ isOpen, onClose, userRegion = "global" }: ScannerModalProps) {
+  const [signals, setSignals] = useState<any[]>([]);
+  const [scanning, setScanning] = useState(true);
+  const { playClick } = useSonic();
+
+  useEffect(() => {
+    if (isOpen) {
+      setScanning(true);
+      setSignals([]);
+      playClick(800, 0.5, 'sine'); // Long scan sound
+
+      const scan = async () => {
+        // Simulate scanning delay
+        setTimeout(async () => {
+            try {
+                // Query posts matching the region (or global if not specific)
+                const q = query(
+                    collection(db, "posts"), 
+                    limit(5) 
+                    // In a real app, add: where("region", "==", userRegion)
+                );
+                const snapshot = await getDocs(q);
+                const found = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                setSignals(found);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setScanning(false);
+                playClick(440, 0.1, 'square'); // Scan complete
+            }
+        }, 2000);
+      };
+      scan();
+    }
+  }, [isOpen, userRegion, playClick]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100]"
+          />
+          
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4 pointer-events-none"
+          >
+            <div className="w-full max-w-md bg-secondary-bg/90 border border-brand-cyan/30 rounded-3xl overflow-hidden pointer-events-auto shadow-[0_0_50px_rgba(0,212,229,0.1)] relative">
+              
+              {/* Radar Background */}
+              <div className="absolute inset-0 overflow-hidden opacity-10 pointer-events-none">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-brand-cyan rounded-full" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-brand-cyan rounded-full" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] border border-brand-cyan rounded-full" />
+                  <motion.div 
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-1/2 left-1/2 w-[250px] h-[250px] bg-gradient-to-r from-brand-cyan/20 to-transparent origin-top-left -translate-y-1/2"
+                    style={{ borderBottom: '1px solid var(--color-brand-cyan)' }}
+                  />
+              </div>
+
+              {/* Header */}
+              <div className="relative px-6 py-4 border-b border-brand-cyan/20 flex items-center justify-between bg-black/50">
+                <div className="flex items-center gap-2 text-brand-cyan">
+                    <Radar className="w-5 h-5 animate-spin-slow" />
+                    <h2 className="text-lg font-bold tracking-widest uppercase">Local Scanner</h2>
+                </div>
+                <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 min-h-[300px] relative z-10">
+                {scanning ? (
+                    <div className="h-full flex flex-col items-center justify-center gap-4 text-brand-cyan">
+                        <div className="text-4xl font-mono font-bold animate-pulse">SCANNING...</div>
+                        <p className="text-xs font-mono tracking-widest opacity-70">TRIANGULATING SIGNALS IN SECTOR {userRegion.toUpperCase()}</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center text-xs text-secondary-text font-mono mb-2">
+                            <span>DETECTED: {signals.length} SIGNALS</span>
+                            <span>RANGE: 5KM</span>
+                        </div>
+                        
+                        {signals.map((signal, i) => (
+                            <motion.div 
+                                key={signal.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:border-brand-cyan/50 transition-colors group cursor-pointer"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-black border border-white/20 overflow-hidden relative">
+                                        <img src={signal.mediaUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            {signal.mediaType === 'video' ? <div className="w-2 h-2 bg-brand-cyan rounded-full animate-ping" /> : null}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-sm text-white group-hover:text-brand-cyan">@{signal.userHandle}</span>
+                                            <span className="text-[10px] text-brand-cyan/70 border border-brand-cyan/20 px-1 rounded">
+                                                {Math.floor(Math.random() * 1000)}m
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-secondary-text line-clamp-1">{signal.caption}</p>
+                                    </div>
+                                </div>
+                                <ArrowRight className="w-4 h-4 text-secondary-text group-hover:text-brand-cyan opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                            </motion.div>
+                        ))}
+
+                        {signals.length === 0 && (
+                            <div className="text-center text-secondary-text py-8">
+                                No signals detected in this sector.
+                            </div>
+                        )}
+                    </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}

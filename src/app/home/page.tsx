@@ -10,12 +10,14 @@ import { FrequencyTuner } from "@/components/home/widgets/FrequencyTuner";
 import { DailyDirective } from "@/components/home/widgets/DailyDirective";
 import { SystemTerminal } from "@/components/home/widgets/SystemTerminal";
 import { TrendingTags } from "@/components/home/widgets/TrendingTags";
+import { ScannerModal } from "@/components/home/widgets/ScannerModal";
 import { Activity, Zap, Shield, Globe, Lock, AlertTriangle, Eye, Server, Radio, Signal, Wifi, Ghost } from "lucide-react";
 
 export default function HomePage() {
   const { user, firebaseUser, loading } = useUser();
   const router = useRouter();
   const [ghostMode, setGhostMode] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   // Protect the route and sync Ghost Mode
   useEffect(() => {
@@ -338,7 +340,10 @@ export default function HomePage() {
             )}
 
             {(tier === 'premium' || tier === 'gold') && (
-                <div className={`col-span-2 p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left relative overflow-hidden`}>
+                <div 
+                    onClick={() => setIsScannerOpen(true)}
+                    className={`col-span-2 p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left relative overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform`}
+                >
                      <Radio className={`w-8 h-8 mb-3 ${config.color}`} />
                      <h3 className="font-bold text-lg">Scanner Active</h3>
                      <p className="text-xs text-secondary-text mt-1">Monitoring local signals...</p>
@@ -402,6 +407,8 @@ export default function HomePage() {
 
       {/* System Terminal Footer */}
       <SystemTerminal />
+      
+      <ScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} userRegion="na" />
     </div>
   );
 }
