@@ -5,10 +5,11 @@ import { auth, db } from "./firebase";
 import { 
   onAuthStateChanged, 
   signInAnonymously as firebaseSignInAnonymously, 
+  createUserWithEmailAndPassword,
   signOut as firebaseSignOut, 
   User 
 } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 interface UserProfile {
   displayName: string;
@@ -31,6 +32,7 @@ interface UserContextType {
   loading: boolean;
   updateUser: (updates: Partial<UserProfile>) => void;
   loginAnonymously: () => Promise<void>;
+  signup: (email: string, password: string, handle: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -123,6 +125,29 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signup = async (email: string, password: string, handle: string) => {
+      setLoading(true);
+      try {
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          // Create User Profile
+          const newUser: UserProfile = {
+              displayName: handle,
+              handle: handle,
+              bio: "New to the grid.",
+              avatarSeed: "Agent",
+              faction: "Drifter",
+              tier: "free",
+              stats: { following: "0", followers: "0", likes: "0" }
+          };
+          await setDoc(doc(db, "users", cred.user.uid), newUser);
+          setUser(newUser);
+      } catch (error) {
+          console.error("Signup failed", error);
+          setLoading(false);
+          throw error;
+      }
+  };
+
   const logout = async () => {
     try {
       await firebaseSignOut(auth);
@@ -133,7 +158,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <UserContext.Provider value={{ user, firebaseUser, loading, updateUser, loginAnonymously, logout }}>
+    <UserContext.Provider value={{ user, firebaseUser, loading, updateUser, loginAnonymously, signup, logout }}>
       {children}
     </UserContext.Provider>
   );
