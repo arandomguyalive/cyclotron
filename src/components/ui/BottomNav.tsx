@@ -37,7 +37,7 @@ export function BottomNav() {
       platinum: isLight 
           ? "text-black bg-white border-white shadow-gray-400" 
           : "text-white bg-white border-white shadow-white",
-      sovereign: "text-brand-purple bg-brand-purple border-brand-purple shadow-brand-purple",
+      sovereign: "text-brand-blue bg-brand-blue border-brand-blue shadow-brand-blue",
   }[tier];
 
   // Helper to get just the text color class

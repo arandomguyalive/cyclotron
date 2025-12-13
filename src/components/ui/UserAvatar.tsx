@@ -23,11 +23,10 @@ export function UserAvatar({ className, size = "md", showRing = true }: UserAvat
     const ringColors = {
         free: "border-brand-orange",
         premium: "border-brand-cyan",
-        gold: "border-brand-pale-pink",
-        platinum: "border-white",
-        sovereign: "border-brand-purple", // or gold for sovereign
-    };
-
+            gold: "border-brand-pale-pink",
+            platinum: "border-white",
+            sovereign: "border-brand-blue", // or gold for sovereign
+          };
     return (
         <div className={cn(
             "relative rounded-full overflow-hidden shrink-0",

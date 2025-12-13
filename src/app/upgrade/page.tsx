@@ -119,26 +119,26 @@ export default function UpgradePage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="mt-12 p-8 rounded-3xl bg-black border border-brand-purple/30 relative overflow-hidden text-center"
+                    className="mt-12 p-8 rounded-3xl bg-black border border-brand-blue/30 relative overflow-hidden text-center"
                 >
                     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none" />
                     <div className="relative z-10">
-                        <Lock className="w-8 h-8 text-brand-purple mx-auto mb-4" />
-                        <h2 className="text-2xl font-bold text-brand-pale-pink mb-2 tracking-widest uppercase">The Sovereign</h2>
-                        <p className="text-brand-purple/60 text-sm mb-6 max-w-lg mx-auto">
+                        <Lock className="w-8 h-8 text-brand-blue mx-auto mb-4" />
+                        <h2 className="text-2xl font-bold text-white mb-2 tracking-widest uppercase">The Sovereign</h2>
+                        <p className="text-brand-blue/60 text-sm mb-6 max-w-lg mx-auto">
                             For those who operate beyond the grid. Bespoke Infrastructure. Total Isolation. Absolute Dominion.
                         </p>
                         
-                        <div className="inline-block border border-brand-purple/50 rounded-xl p-1">
-                            <div className="px-6 py-3 bg-brand-purple/10 rounded-lg">
-                                <span className="block text-[10px] text-brand-purple uppercase tracking-widest mb-1">Refundable Deposit</span>
-                                <span className="text-2xl font-mono text-brand-pale-pink font-bold">₹10,00,000</span>
+                        <div className="inline-block border border-brand-blue/50 rounded-xl p-1">
+                            <div className="px-6 py-3 bg-brand-blue/10 rounded-lg">
+                                <span className="block text-[10px] text-brand-blue uppercase tracking-widest mb-1">Refundable Deposit</span>
+                                <span className="text-2xl font-mono text-white font-bold">₹10,00,000</span>
                             </div>
                         </div>
 
                         <button 
                             onClick={() => alert("Connecting to Secure Handler... (Mock)")}
-                            className="block w-full max-w-xs mx-auto mt-6 py-3 bg-brand-purple hover:bg-brand-purple/80 text-white font-bold rounded-xl transition-colors"
+                            className="block w-full max-w-xs mx-auto mt-6 py-3 bg-brand-blue hover:bg-brand-blue/80 text-white font-bold rounded-xl transition-colors"
                         >
                             REQUEST ENCRYPTED CHANNEL
                         </button>

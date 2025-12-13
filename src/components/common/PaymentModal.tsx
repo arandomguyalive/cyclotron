@@ -35,7 +35,7 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalPro
     premium: { name: "The Shield", price: "₹999/mo", color: "text-brand-cyan" },
     gold: { name: "The Professional", price: "₹9,999/mo", color: "text-brand-pale-pink" },
     platinum: { name: "The Ultra Elite", price: "₹99,999/mo", color: "text-white" },
-    sovereign: { name: "The Sovereign", price: "₹10,00,000", color: "text-brand-purple" },
+    sovereign: { name: "The Sovereign", price: "₹10,00,000", color: "text-brand-blue" },
   }[upgradeToTier] || { name: "Unknown", price: "0", color: "text-gray-500" }; // Fallback
 
   return (

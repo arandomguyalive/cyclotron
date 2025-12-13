@@ -298,7 +298,7 @@ function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkTex
     // Re-introduce Scale & Rotation using cheap transforms
     // We use a static rotation and dynamic scale calculated from Z
     // Logic: As Z gets closer (moves from negative to 0), scale increases
-    const scale = useTransform(z, [-GAP, 0, GAP*4], [2, 1, 0.2]);
+    const scale = useTransform(z, [-GAP, 0, GAP*4], [1.1, 1, 0.9]);
     
     // Optimization: Hide items far off-screen
     const display = useTransform(z, (currentZ) => (currentZ < -GAP*2 || currentZ > GAP*5) ? "none" : "flex");
@@ -315,7 +315,7 @@ function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkTex
                 scale,
                 opacity,
                 display,
-                rotateX: 10, // Static rotation for 3D effect
+                // rotateX: 0, // Flattened for mobile elegance
                 position: 'absolute',
                 width: '100%',
                 height: '100%',

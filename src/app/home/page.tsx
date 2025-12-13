@@ -110,11 +110,11 @@ export default function HomePage() {
 
               sovereign: {
 
-                  color: "text-brand-purple", 
+                  color: "text-brand-blue", 
 
                   bgColor: "bg-black",
 
-                  borderColor: "border-brand-purple/50",
+                  borderColor: "border-brand-blue/50",
 
                   signalText: "OMNIPOTENT",
 
@@ -308,94 +308,45 @@ export default function HomePage() {
 
                  
 
-                         {/* Feed Filter (Frequency Tuner) */}
-
-                         <div className="space-y-4">
-
-                             <div className="relative">
-
-                                 <span className="absolute -top-3 left-2 text-[10px] bg-primary-bg px-2 text-secondary-text uppercase tracking-widest z-10">
-
-                                     Frequency
-
-                                 </span>
-
-                                 <FrequencyTuner />
-
-                             </div>
-
-                             
-
-                             {/* Trending Tags */}
-
-                             <TrendingTags />
-
-                         </div>
-
+                         {/* Feed Filter (Frequency Tuner) - REMOVED */}
+                         {/* Trending Tags - REMOVED */}
       
-
-              {/* The Signal Grid (Social Feed) */}
-
-              <SignalGrid />
-
+              {/* The Signal Grid (Social Feed) - REMOVED */}
       
-
               {/* Quick Actions Grid */}
-
               <div className="grid grid-cols-2 gap-4">
-
                   
-
                   {/* Daily Directive (Gamified Task) - Spans 2 cols */}
-
                   <div className="col-span-2">
-
                       <DailyDirective />
-
                   </div>
-
                   
-
-                  {/* 1. Vortex Access (All Tiers) */}
-            <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => router.push("/vortex")}
-                className={`p-6 rounded-3xl border transition-all group text-left ${
-                    tier === 'free' 
-                    ? 'bg-secondary-bg/30 border-border-color' 
-                    : `bg-gradient-to-br from-${config.color.split('-')[1]}-500/10 to-transparent ${config.borderColor}`
-                }`}
-            >
-                <Zap className={`w-8 h-8 mb-3 group-hover:scale-110 transition-transform ${config.color}`} />
-                <h3 className="font-bold text-lg">Vortex</h3>
-                <p className="text-xs text-secondary-text mt-1">Global Feed.</p>
-            </motion.button>
+                  {/* Vortex Access Widget - REMOVED */}
 
             {/* 2. Tier Specific Widget */}
             {tier === 'free' && (
-                <div className="p-6 rounded-3xl bg-secondary-bg/30 border border-border-color flex flex-col justify-center items-center text-center">
+                <div className="p-6 rounded-3xl bg-secondary-bg/30 border border-border-color flex flex-col justify-center items-center text-center col-span-2">
                     <Lock className="w-8 h-8 text-secondary-text mb-3" />
-                    <h3 className="font-bold text-lg text-secondary-text">Locked</h3>
+                    <h3 className="font-bold text-lg text-secondary-text">Locked Modules</h3>
                     <p className="text-[10px] text-secondary-text mt-1 uppercase">Upgrade to Access</p>
                 </div>
             )}
 
             {(tier === 'premium' || tier === 'gold') && (
-                <div className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left relative overflow-hidden`}>
+                <div className={`col-span-2 p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left relative overflow-hidden`}>
                      <Radio className={`w-8 h-8 mb-3 ${config.color}`} />
-                     <h3 className="font-bold text-lg">Scanner</h3>
-                     <p className="text-xs text-secondary-text mt-1">Local signals.</p>
+                     <h3 className="font-bold text-lg">Scanner Active</h3>
+                     <p className="text-xs text-secondary-text mt-1">Monitoring local signals...</p>
                      {/* Fake Scanning Animation */}
                      <div className={`absolute top-2 right-2 w-2 h-2 rounded-full ${config.color.replace('text', 'bg')} animate-ping`} />
                 </div>
             )}
 
                         {(tier === 'platinum' || tier === 'sovereign') && (
-                            <div className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left`}>
+                            <div className={`col-span-2 p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left`}>
                                  <Server className={`w-8 h-8 mb-3 ${config.color}`} />
                                  <h3 className="font-bold text-lg">The Vault</h3>
-                                 <p className="text-xs text-secondary-text mt-1">Secure Storage.</p>
+                                 <p className="text-xs text-secondary-text mt-1">Secure Storage: 0% Used</p>
                             </div>
                         )}
                         

@@ -105,16 +105,13 @@ export function VortexItem({ post, index, watermarkText, isFree }: VortexProps) 
 
       {/* Watermark Overlay for Premium+ Users */}
       {watermarkText && !isFree && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-          <motion.span 
-            initial={{ opacity: 0.05, rotate: -30 }}
-            animate={{ opacity: 0.08, rotate: -30 }}
-            transition={{ repeat: Infinity, duration: 8, ease: "linear", repeatType: "reverse" }}
-            className="text-white text-5xl font-extrabold tracking-widest uppercase opacity-5"
-            style={{ textShadow: '0 0 10px rgba(255,255,255,0.2)' }}
+        <div className="absolute bottom-4 right-4 pointer-events-none z-10">
+          <span 
+            className="text-white text-xs font-mono tracking-widest uppercase opacity-30"
+            style={{ textShadow: '0 0 2px rgba(255,255,255,0.1)' }}
           >
             {watermarkText}
-          </motion.span>
+          </span>
         </div>
       )}
 
