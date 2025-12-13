@@ -91,7 +91,8 @@ export default function VortexPage() {
   const [cycles, setCycles] = useState(0); // Score for collecting artifacts
   const zPosition = useMotionValue(0);
   const lastWheelTime = useRef(0);
-  const { playClick, playHum } = useSonic();
+  const activeIndexRef = useRef(0); // Use ref for non-visual updates if needed
+  const { playClick } = useSonic();
   
   // Determine watermark text
   const watermarkText = (user && !isFree) ? user.handle.toUpperCase() : undefined;
@@ -137,21 +138,7 @@ export default function VortexPage() {
     return () => unsubscribe();
   }, [isFree]); // Re-run when tier changes
 
-  // Manage background hum
-  useEffect(() => {
-    playHum('start', 70, 0.05); // Start initial hum
-    return () => {
-      playHum('stop'); // Stop hum on unmount
-    };
-  }, [playHum]);
 
-  // Adjust hum frequency/gain based on activeIndex
-  useEffect(() => {
-    // Basic mapping: higher index -> slightly higher frequency
-    const humFreq = 70 + activeIndex * 5;
-    const humGain = 0.05 + activeIndex * 0.005; // Slightly increase gain
-    playHum('adjust', humFreq, humGain);
-  }, [activeIndex, playHum]);
 
 
   const handleNavigation = (newIndex: number) => {
@@ -278,9 +265,6 @@ export default function VortexPage() {
             />
         ))}
       </div>
-      
-      {/* Ambient Particles / Stars */}
-      <div className="absolute inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-screen" />
     </motion.div>
   );
 }

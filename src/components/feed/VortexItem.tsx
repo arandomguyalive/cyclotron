@@ -120,8 +120,7 @@ export function VortexItem({ post, index, watermarkText, isFree }: VortexProps) 
         className={cn("absolute inset-0 opacity-30 mix-blend-overlay", bgGradient)}
       />
       
-      {/* Noise Overlay for Texture */}
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay"></div>
+
 
       {/* Content Overlay */}
       <div className="absolute inset-0 flex flex-col justify-end p-4 pb-24 bg-gradient-to-t from-black/90 via-black/20 to-transparent">
