@@ -81,6 +81,36 @@
         *   Simplified the Home Dashboard to focus on content while keeping the "Digital Fortress" vibe.
     *   **Terminology:** Softened some hardcore sci-fi terms (e.g., "The Drop" -> "Posts") for better accessibility.
 
+### Recent Developments (December 11, 2025 - Present)
+
+*   **Security Update:** Upgraded Next.js and related dependencies to `16.0.10` to resolve security vulnerabilities.
+*   **KM18 Brand Palette Integration:**
+    *   Defined KM18 colors (`#EB7955`, `#FFCDEC`, `#FF53B2`, `#6B0098`, `#006096`, `#00D4E5`) in `tailwind.config.ts`.
+    *   Updated `globals.css` to map `accent-1` and `accent-2` to `brand-cyan` and `brand-hot-pink` for Dark Mode.
+    *   **Comprehensive Component Re-theming:** Applied brand colors to `ToastContext`, `HomePage` (tier config & gradients), `SignalGrid` (LOCKED badge), `ChatPage` (warning/burn), `SettingsModal` (Logout), `UserAvatar` (tier rings), `SecurePlayer` (Focus Lost), `VortexItem` (Signal Weak, Like, PRO badge), `UpgradePage` (tier cards, Sovereign section), `PaymentModal` (tier colors, success), and `LoginPage` (error message).
+    *   **Light Mode Alignment:** Updated `globals.css` for `[data-theme='light']` to use `brand-blue` (`#006096`) for `accent-1` and `brand-hot-pink` (`#FF53B2`) for `accent-2`.
+    *   **BottomNav Visibility:** Refined `BottomNav.tsx` to ensure tier-based active colors are visible in both light and dark modes.
+
+*   **UI/UX Refinements:**
+    *   **Payment Modal Header:** Centered "KM18 Protocol Payment" text.
+    *   **Navbar Elegance:** Ensured consistent visibility of navigation elements across themes and tiers.
+
+*   **Performance Optimizations:**
+    *   **Hum Noise Removal:** Disabled the background hum audio from `src/app/vortex/page.tsx` for a quieter experience.
+    *   **Vortex Performance:** Removed `noise.svg` overlays from `src/app/vortex/page.tsx` and `src/components/feed/VortexItem.tsx` to reduce lag and improve rendering performance.
+    *   **Vortex Simplification:** Refined 3D animation in `src/app/vortex/page.tsx` for mobile elegance (removed `rotateX`, subtle scale).
+
+*   **Feature Enhancements:**
+    *   **Holo-Toast Notification System:** Implemented a custom in-app notification system (`ToastContext.tsx`) to replace native browser alerts, integrated into `ChatPage` and `SignalGrid`.
+    *   **Chat Burn Visuals:** Added visual "incineration" effect to messages in `src/app/chat/[id]/page.tsx` (simulated TTL).
+    *   **Home Page Optimization:** Redesigned `HomePage` as a "Command Center" by removing `SignalGrid` and redundant widgets.
+    *   **Vortex Filtering:** Modified `src/app/vortex/page.tsx` to filter content, displaying only "Reels" (videos).
+    *   **Watermark Subtlety:** Reduced size and repositioned watermarks in `src/components/feed/VortexItem.tsx` for less obtrusive display.
+    *   **Creation Hub:** Refactored `src/components/feed/CreatePostModal.tsx` to offer distinct options for creating "Posts," "Reels," or "Stories" from a central hub.
+    *   **Home Feed Restoration:** Re-introduced `SignalGrid` into `src/app/home/page.tsx` (now filtered for standard "Posts") to provide a dedicated feed for image/text content.
+    *   **Functional Local Frequency Scanner:** Implemented `ScannerModal.tsx` and integrated it into `HomePage.tsx` for Premium/Gold users, providing a simulated local signal detection feature.
+    *   **Real Sign Up Flow:** Added `signup` functionality to `UserContext.tsx` and integrated a "Create ID" registration form into `LoginPage.tsx` for multi-user testing.
+
 ---
 
 ## 3. Current System Status
