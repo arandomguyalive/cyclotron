@@ -320,6 +320,11 @@ export default function HomePage() {
                   <div className="col-span-2">
                       <DailyDirective />
                   </div>
+
+                  {/* Standard Feed (Signals) - Spans 2 cols */}
+                  <div className="col-span-2">
+                      <SignalGrid />
+                  </div>
                   
                   {/* Vortex Access Widget - REMOVED */}
 

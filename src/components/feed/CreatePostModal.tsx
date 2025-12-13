@@ -18,14 +18,22 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
   const { user, firebaseUser } = useUser();
   const { playClick } = useSonic();
   
+  const [step, setStep] = useState<"select" | "create">("select");
+  const [mode, setMode] = useState<"post" | "reel" | "story">("post");
+  
   const [caption, setCaption] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [region, setRegion] = useState("global"); // New: Geo-Fence State
+  const [region, setRegion] = useState("global");
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [mode, setMode] = useState<"post" | "story">("post"); // New: Mode State
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleModeSelect = (selectedMode: "post" | "reel" | "story") => {
+      setMode(selectedMode);
+      setStep("create");
+      playClick(600, 0.1, 'square');
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -51,20 +59,19 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
       const downloadURL = await getDownloadURL(snapshot.ref);
 
       // 2. Create Firestore Document
-      // Stories go to 'stories', Posts to 'posts'
       const collectionName = mode === "story" ? "stories" : "posts";
       
       await addDoc(collection(db, collectionName), {
+        type: mode, // 'post' | 'reel' | 'story'
         caption: caption,
         mediaUrl: downloadURL,
         mediaType: file.type.startsWith("video") ? "video" : "image",
         userId: firebaseUser.uid,
         userHandle: user?.handle || "ghost_user",
         userAvatar: user?.avatarSeed || "default",
-        region: region, // Save Geo-Fence Data
+        region: region,
         likes: 0,
         createdAt: serverTimestamp(),
-        // Stories auto-expire in 24h
         expiresAt: mode === "story" ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
       });
 
@@ -77,18 +84,18 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
 
     } catch (error) {
       console.error("Upload failed", error);
-      alert("Transmission failed. Signal lost.");
+      // Removed alert, using implicit error state or could add toast later
     } finally {
       setIsUploading(false);
     }
   };
 
   const handleClose = () => {
-    // Reset state
     setCaption("");
     setFile(null);
     setPreviewUrl(null);
     setIsSuccess(false);
+    setStep("select"); // Reset to selection
     onClose();
   };
 
@@ -109,145 +116,127 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[90] bg-secondary-bg border-t border-border-color rounded-t-3xl h-[90vh] flex flex-col shadow-[0_-10px_40px_rgba(0,240,255,0.1)]"
+            className="fixed bottom-0 left-0 right-0 z-[90] bg-secondary-bg border-t border-border-color rounded-t-3xl h-[85vh] flex flex-col shadow-[0_-10px_40px_rgba(0,240,255,0.1)]"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border-color">
-              <div className="flex gap-4">
-                <button 
-                  onClick={() => setMode("post")}
-                  className={`text-xl font-bold tracking-wider uppercase transition-colors ${mode === "post" ? "text-accent-1" : "text-secondary-text"}`}
-                >
-                  Post
-                </button>
-                <div className="w-[1px] h-6 bg-border-color" />
-                <button 
-                  onClick={() => setMode("story")}
-                  className={`text-xl font-bold tracking-wider uppercase transition-colors ${mode === "story" ? "text-accent-1" : "text-secondary-text"}`}
-                >
-                  Signals
-                </button>
-              </div>
+              <h2 className="text-xl font-bold tracking-wider uppercase text-primary-text">
+                  {step === 'select' ? 'Create' : `New ${mode}`}
+              </h2>
               <button onClick={handleClose} className="p-2 bg-secondary-bg/50 rounded-full text-secondary-text hover:text-primary-text hover:bg-secondary-bg">
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+            <div className="flex-1 overflow-y-auto p-6">
                
-               {/* File Preview / Selector */}
-               <div 
-                 onClick={() => !file && fileInputRef.current?.click()}
-                 className={`relative w-full aspect-video rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden group ${
-                    file ? "border-transparent bg-black" : "border-border-color hover:border-accent-1/50 hover:bg-secondary-bg/50"
-                 }`}
-               >
-                 {previewUrl ? (
-                    file?.type.startsWith("video") ? (
-                        <video src={previewUrl} className="w-full h-full object-cover" autoPlay muted loop />
-                    ) : (
-                        <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                    )
-                 ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-secondary-text group-hover:text-accent-1 transition-colors">
-                        <Upload className="w-12 h-12" />
-                        <span className="font-mono text-sm">UPLOAD MEDIA_</span>
-                    </div>
-                 )}
-                 
-                 {/* Change File Button */}
-                 {file && (
-                     <button 
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            fileInputRef.current?.click();
-                        }}
-                        className="absolute bottom-4 right-4 bg-black/50 backdrop-blur px-3 py-1 rounded-full text-xs font-bold border border-white/20 hover:bg-white/20"
-                     >
-                        CHANGE
-                     </button>
-                 )}
-
-                 <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    onChange={handleFileSelect} 
-                    accept="image/*,video/*" 
-                    className="hidden" 
-                 />
-               </div>
-
-               {/* Caption Input */}
-               <div className="flex-1 flex flex-col gap-4">
-                   <textarea 
-                      value={caption}
-                      onChange={(e) => setCaption(e.target.value)}
-                      placeholder="Enter signal data..."
-                      className="w-full flex-1 bg-transparent border-none text-lg text-primary-text placeholder:text-secondary-text/50 focus:ring-0 resize-none font-light"
-                   />
-
-                   {/* Geo-Fencing (Gold+) */}
-                   {['gold', 'platinum', 'ultimate'].includes(user?.tier || 'free') && (
-                       <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-2/10 border border-accent-2/20 text-accent-2 text-xs whitespace-nowrap">
-                               <MapPin className="w-3 h-3" />
-                               <span className="font-bold uppercase tracking-wider">Geo-Fence:</span>
+               {step === 'select' ? (
+                   <div className="flex flex-col gap-4 h-full justify-center">
+                       <button onClick={() => handleModeSelect('post')} className="flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl hover:bg-accent-1/10 hover:border-accent-1 transition-all group text-left">
+                           <div className="p-4 bg-secondary-bg rounded-full text-accent-1 group-hover:scale-110 transition-transform"><ImageIcon className="w-8 h-8" /></div>
+                           <div>
+                               <h3 className="text-xl font-bold text-primary-text group-hover:text-accent-1">Post</h3>
+                               <p className="text-sm text-secondary-text">Share images to the feed.</p>
                            </div>
-                           {(['global', 'na', 'eu', 'asia'] as const).map((r) => (
-                               <button
-                                   key={r}
-                                   onClick={() => setRegion(r)}
-                                   className={`px-3 py-1.5 rounded-full text-xs font-mono border transition-colors ${
-                                       region === r 
-                                       ? "bg-accent-2 text-primary-bg border-accent-2 font-bold" 
-                                       : "bg-transparent text-secondary-text border-border-color hover:border-accent-2/50"
-                                   }`}
-                               >
-                                   {r.toUpperCase()}
-                               </button>
-                           ))}
+                       </button>
+                       <button onClick={() => handleModeSelect('reel')} className="flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl hover:bg-accent-2/10 hover:border-accent-2 transition-all group text-left">
+                           <div className="p-4 bg-secondary-bg rounded-full text-accent-2 group-hover:scale-110 transition-transform"><Film className="w-8 h-8" /></div>
+                           <div>
+                               <h3 className="text-xl font-bold text-primary-text group-hover:text-accent-2">Reel</h3>
+                               <p className="text-sm text-secondary-text">Share vertical videos to Vortex.</p>
+                           </div>
+                       </button>
+                       <button onClick={() => handleModeSelect('story')} className="flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl hover:bg-green-500/10 hover:border-green-500 transition-all group text-left">
+                           <div className="p-4 bg-secondary-bg rounded-full text-green-500 group-hover:scale-110 transition-transform"><Globe className="w-8 h-8" /></div>
+                           <div>
+                               <h3 className="text-xl font-bold text-primary-text group-hover:text-green-500">Story</h3>
+                               <p className="text-sm text-secondary-text">Ephemeral updates (24h).</p>
+                           </div>
+                       </button>
+                   </div>
+               ) : (
+                   <div className="flex flex-col gap-6 h-full">
+                       {/* Upload UI (Simplified for brevity, reusing logic) */}
+                       <div 
+                         onClick={() => !file && fileInputRef.current?.click()}
+                         className={`relative w-full aspect-video rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden group ${
+                            file ? "border-transparent bg-black" : "border-border-color hover:border-accent-1/50 hover:bg-secondary-bg/50"
+                         }`}
+                       >
+                         {previewUrl ? (
+                            (file?.type.startsWith("video")) ? (
+                                <video src={previewUrl} className="w-full h-full object-cover" autoPlay muted loop />
+                            ) : (
+                                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                            )
+                         ) : (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-secondary-text group-hover:text-accent-1 transition-colors">
+                                <Upload className="w-12 h-12" />
+                                <span className="font-mono text-sm">UPLOAD {mode.toUpperCase()}_</span>
+                            </div>
+                         )}
+                         
+                         {file && (
+                             <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    fileInputRef.current?.click();
+                                }}
+                                className="absolute bottom-4 right-4 bg-black/50 backdrop-blur px-3 py-1 rounded-full text-xs font-bold border border-white/20 hover:bg-white/20"
+                             >
+                                CHANGE
+                             </button>
+                         )}
+
+                         <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            onChange={handleFileSelect} 
+                            accept={mode === 'reel' ? "video/*" : "image/*,video/*"}
+                            className="hidden" 
+                         />
                        </div>
-                   )}
-               </div>
+
+                       <textarea 
+                          value={caption}
+                          onChange={(e) => setCaption(e.target.value)}
+                          placeholder={`Caption your ${mode}...`}
+                          className="w-full flex-1 bg-transparent border-none text-lg text-primary-text placeholder:text-secondary-text/50 focus:ring-0 resize-none font-light"
+                       />
+                   </div>
+               )}
             </div>
 
-            {/* Footer / Actions */}
-            <div className="p-4 border-t border-border-color bg-primary-bg pb-safe-area-inset-bottom">
-                 <div className="flex items-center justify-between mb-4 px-2">
-                    <div className="flex gap-4 text-accent-1">
-                        <ImageIcon className="w-6 h-6 opacity-50 cursor-pointer hover:opacity-100" onClick={() => fileInputRef.current?.click()} />
-                        <Film className="w-6 h-6 opacity-50 cursor-pointer hover:opacity-100" onClick={() => fileInputRef.current?.click()} />
-                        <Mic className="w-6 h-6 opacity-50 cursor-not-allowed" />
-                    </div>
-                    <span className="text-xs font-mono text-secondary-text">{caption.length} / 280</span>
-                 </div>
-
-                 <button 
-                    disabled={!file || isUploading || isSuccess}
-                    onClick={handleSubmit}
-                    className={`w-full py-4 rounded-xl font-bold text-primary-bg flex items-center justify-center gap-2 transition-all ${
-                        isSuccess ? "bg-green-500" : (file ? "bg-accent-1 hover:bg-accent-1/90" : "bg-secondary-text/20 cursor-not-allowed")
-                    }`}
-                 >
-                    {isUploading ? (
-                        <>
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            <span>POSTING...</span>
-                        </>
-                    ) : isSuccess ? (
-                        <>
-                            <CheckCircle2 className="w-5 h-5" />
-                            <span>UPLOAD COMPLETE</span>
-                        </>
-                    ) : (
-                        <>
-                            <Send className="w-5 h-5" />
-                            <span>SEND SIGNAL</span>
-                        </>
-                    )}
-                 </button>
-            </div>
+            {/* Footer */}
+            {step === 'create' && (
+                <div className="p-4 border-t border-border-color bg-primary-bg pb-safe-area-inset-bottom">
+                     <button 
+                        disabled={!file || isUploading || isSuccess}
+                        onClick={handleSubmit}
+                        className={`w-full py-4 rounded-xl font-bold text-primary-bg flex items-center justify-center gap-2 transition-all ${
+                            isSuccess ? "bg-green-500" : (file ? "bg-accent-1 hover:bg-accent-1/90" : "bg-secondary-text/20 cursor-not-allowed")
+                        }`}
+                     >
+                        {isUploading ? (
+                            <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <span>UPLOADING...</span>
+                            </>
+                        ) : isSuccess ? (
+                            <>
+                                <CheckCircle2 className="w-5 h-5" />
+                                <span>DONE</span>
+                            </>
+                        ) : (
+                            <>
+                                <Send className="w-5 h-5" />
+                                <span>PUBLISH</span>
+                            </>
+                        )}
+                     </button>
+                </div>
+            )}
           </motion.div>
         </>
       )}

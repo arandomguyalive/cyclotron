@@ -8,7 +8,7 @@ import { SecurePlayer } from "./SecurePlayer";
 
 export interface Post {
   id: string;
-  type?: "post";
+  type?: "post" | "reel" | "story";
   caption: string;
   mediaUrl: string;
   mediaType: "image" | "video";

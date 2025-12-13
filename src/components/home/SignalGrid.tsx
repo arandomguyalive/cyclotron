@@ -97,8 +97,11 @@ export function SignalGrid() {
 
         const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(4)); // Fetch more posts to insert ad
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            let fetchedPosts: (Post | MockAd)[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), type: "post" })) as Post[];
+            let fetchedPosts: (Post | MockAd)[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Post[];
             
+            // Filter for standard Posts (Images/Text) only
+            fetchedPosts = fetchedPosts.filter(p => (p as Post).type === 'post' || (!(p as Post).type && (p as Post).mediaType === 'image'));
+
             if (fetchedPosts.length === 0) {
                 fetchedPosts = mockPosts;
             }
@@ -126,7 +129,7 @@ export function SignalGrid() {
     return (
         <div className="space-y-4 pb-20">
             <div className="flex items-center justify-between px-4">
-                <h3 className="text-xl font-bold text-primary-text tracking-tight">Live Feed</h3>
+                <h3 className="text-xl font-bold text-primary-text tracking-tight">Latest Signals</h3>
                 {isFree && (
                     <span className="text-[10px] bg-secondary-bg/10 text-secondary-text px-2 py-0.5 rounded border border-border-color">
                         PUBLIC CHANNEL

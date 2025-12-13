@@ -113,6 +113,11 @@ export default function VortexPage() {
             ...doc.data()
         })) as Post[];
         
+        // Filter for Reels (Videos) only
+        newItems = newItems.filter(item => 
+            (item as Post).type === 'reel' || (item as Post).mediaType === 'video'
+        );
+        
         if (newItems.length === 0) {
             newItems = mockPosts;
         }
