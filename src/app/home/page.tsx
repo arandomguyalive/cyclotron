@@ -11,6 +11,7 @@ import { DailyDirective } from "@/components/home/widgets/DailyDirective";
 import { SystemTerminal } from "@/components/home/widgets/SystemTerminal";
 import { TrendingTags } from "@/components/home/widgets/TrendingTags";
 import { ScannerModal } from "@/components/home/widgets/ScannerModal";
+import { CreatePostModal } from "@/components/feed/CreatePostModal";
 import { Activity, Zap, Shield, Globe, Lock, AlertTriangle, Eye, Server, Radio, Signal, Wifi, Ghost } from "lucide-react";
 
 export default function HomePage() {
@@ -18,6 +19,7 @@ export default function HomePage() {
   const router = useRouter();
   const [ghostMode, setGhostMode] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isMissionModalOpen, setIsMissionModalOpen] = useState(false);
 
   // Protect the route and sync Ghost Mode
   useEffect(() => {
@@ -37,6 +39,11 @@ export default function HomePage() {
     return () => window.removeEventListener("storage", handleStorageChange);
 
   }, [loading, firebaseUser, router]);
+
+  const handleMissionStart = () => {
+      if (navigator.vibrate) navigator.vibrate(100);
+      setIsMissionModalOpen(true);
+  };
 
   if (loading || !firebaseUser || !user) return null;
 
@@ -320,7 +327,7 @@ export default function HomePage() {
                   
                   {/* Daily Directive (Gamified Task) - Spans 2 cols */}
                   <div className="col-span-2">
-                      <DailyDirective />
+                      <DailyDirective onStart={handleMissionStart} />
                   </div>
 
                   {/* Standard Feed (Signals) - Spans 2 cols */}
@@ -409,6 +416,7 @@ export default function HomePage() {
       <SystemTerminal />
       
       <ScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} userRegion="na" />
+      <CreatePostModal isOpen={isMissionModalOpen} onClose={() => setIsMissionModalOpen(false)} missionMode={true} />
     </div>
   );
 }

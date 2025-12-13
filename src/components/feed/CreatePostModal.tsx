@@ -12,14 +12,20 @@ import { useSonic } from "@/lib/SonicContext";
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
+  missionMode?: boolean;
 }
 
-export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
+export function CreatePostModal({ isOpen, onClose, missionMode = false }: CreatePostModalProps) {
   const { user, firebaseUser } = useUser();
   const { playClick } = useSonic();
   
-  const [step, setStep] = useState<"select" | "create">("select");
+  const [step, setStep] = useState<"select" | "create">(missionMode ? "create" : "select");
   const [mode, setMode] = useState<"post" | "reel" | "story">("post");
+  
+  // Reset step when modal opens/closes or missionMode changes
+  // This useEffect ensures the modal state resets correctly if props change while closed
+  // but react hooks rules say don't put hooks inside conditionals or loops.
+  // Better to handle reset in handleClose or use a key on the component instance.
   
   const [caption, setCaption] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -63,6 +69,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
       
       await addDoc(collection(db, collectionName), {
         type: mode, // 'post' | 'reel' | 'story'
+        isMission: missionMode, // Tag as mission
         caption: caption,
         mediaUrl: downloadURL,
         mediaType: file.type.startsWith("video") ? "video" : "image",
@@ -95,7 +102,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
     setFile(null);
     setPreviewUrl(null);
     setIsSuccess(false);
-    setStep("select"); // Reset to selection
+    setStep(missionMode ? "create" : "select"); // Reset to correct initial step
     onClose();
   };
 
@@ -120,8 +127,8 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border-color">
-              <h2 className="text-xl font-bold tracking-wider uppercase text-primary-text">
-                  {step === 'select' ? 'Create' : `New ${mode}`}
+              <h2 className={`text-xl font-bold tracking-wider uppercase ${missionMode ? "text-brand-orange animate-pulse" : "text-primary-text"}`}>
+                  {missionMode ? "CLASSIFIED MISSION" : (step === 'select' ? 'Create' : `New ${mode}`)}
               </h2>
               <button onClick={handleClose} className="p-2 bg-secondary-bg/50 rounded-full text-secondary-text hover:text-primary-text hover:bg-secondary-bg">
                 <X className="w-6 h-6" />
@@ -201,7 +208,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
                        <textarea 
                           value={caption}
                           onChange={(e) => setCaption(e.target.value)}
-                          placeholder={`Caption your ${mode}...`}
+                          placeholder={missionMode ? "Evidence for Directive..." : `Caption your ${mode}...`}
                           className="w-full flex-1 bg-transparent border-none text-lg text-primary-text placeholder:text-secondary-text/50 focus:ring-0 resize-none font-light"
                        />
                    </div>
@@ -223,12 +230,12 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
                                 <Loader2 className="w-5 h-5 animate-spin" />
                                 <span>UPLOADING...</span>
                             </>
-                        ) : isSuccess ? (
-                            <>
-                                <CheckCircle2 className="w-5 h-5" />
-                                <span>DONE</span>
-                            </>
-                        ) : (
+                    ) : isSuccess ? (
+                        <>
+                            <CheckCircle2 className="w-5 h-5" />
+                            <span>{missionMode ? "MISSION COMPLETE" : "UPLOAD COMPLETE"}</span>
+                        </>
+                    ) : (
                             <>
                                 <Send className="w-5 h-5" />
                                 <span>PUBLISH</span>

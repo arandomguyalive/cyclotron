@@ -3,12 +3,14 @@
 import { useUser } from "@/lib/UserContext";
 import { Crosshair, Award, ChevronRight, AlertCircle } from "lucide-react";
 
-export function DailyDirective() {
+export function DailyDirective({ onStart }: { onStart?: () => void }) {
     const { user } = useUser();
     const isFree = user?.tier === 'free';
 
     return (
-        <div className={`p-6 rounded-3xl border relative overflow-hidden group cursor-pointer transition-all ${
+        <div 
+            onClick={onStart}
+            className={`p-6 rounded-3xl border relative overflow-hidden group cursor-pointer transition-all ${
             isFree 
             ? 'bg-white/5 border-white/5 backdrop-blur-md' 
             : 'bg-white/5 border-white/10 backdrop-blur-xl hover:bg-white/10 hover:border-accent-2/30'
