@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Radar, MapPin, User, ArrowRight } from "lucide-react";
-import { collection, query, where, getDocs, limit } from "firebase/firestore";
+import { X, Radar, MapPin, User, ArrowRight, Package, PackageOpen, CheckCircle } from "lucide-react";
+import { collection, query, where, getDocs, limit, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useSonic } from "@/lib/SonicContext";
+import { useUser } from "@/lib/UserContext";
+import { useToast } from "@/lib/ToastContext";
 
 interface ScannerModalProps {
   isOpen: boolean;
@@ -17,6 +19,8 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
   const [signals, setSignals] = useState<any[]>([]);
   const [scanning, setScanning] = useState(true);
   const { playClick } = useSonic();
+  const { user, updateUser } = useUser();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
@@ -31,7 +35,7 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
                 // Query posts matching the region (or global if not specific)
                 const q = query(
                     collection(db, "posts"), 
-                    limit(5) 
+                    limit(10) 
                     // In a real app, add: where("region", "==", userRegion)
                 );
                 const snapshot = await getDocs(q);
@@ -48,6 +52,39 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
       scan();
     }
   }, [isOpen, userRegion, playClick]);
+
+  const handleClaim = async (signal: any) => {
+      if (!user) return;
+      playClick(600, 0.1, 'square');
+      
+      try {
+          // 1. Delete the drop (simulate consuming it)
+          // In a real app, we might just mark it as claimed by this user
+          await deleteDoc(doc(db, "posts", signal.id));
+          
+          // 2. Award Rewards
+          const currentRep = parseInt(user.stats.reputation || '0');
+          const currentCreds = parseInt(user.stats.credits || '0');
+          
+          updateUser({
+              stats: {
+                  ...user.stats,
+                  reputation: (currentRep + 20).toString(),
+                  credits: (currentCreds + 100).toString()
+              }
+          });
+
+          // 3. Update local state
+          setSignals(prev => prev.filter(s => s.id !== signal.id));
+          
+          toast("Dead Drop Claimed: +100 Credits", "success");
+          playClick(880, 0.3, 'triangle');
+
+      } catch (e) {
+          console.error("Failed to claim drop", e);
+          toast("Signal Lost. Claim failed.", "error");
+      }
+  };
 
   return (
     <AnimatePresence>
@@ -113,26 +150,53 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.1 }}
-                                className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:border-brand-cyan/50 transition-colors group cursor-pointer"
+                                className={`flex items-center justify-between p-3 rounded-xl border transition-colors group cursor-pointer ${
+                                    signal.type === 'drop' 
+                                    ? 'bg-brand-orange/10 border-brand-orange/30 hover:bg-brand-orange/20' 
+                                    : 'bg-white/5 border-white/10 hover:border-brand-cyan/50'
+                                }`}
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-black border border-white/20 overflow-hidden relative">
-                                        <img src={signal.mediaUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            {signal.mediaType === 'video' ? <div className="w-2 h-2 bg-brand-cyan rounded-full animate-ping" /> : null}
-                                        </div>
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center relative overflow-hidden ${signal.type === 'drop' ? 'bg-brand-orange/20' : 'bg-black border border-white/20'}`}>
+                                        {signal.type === 'drop' ? (
+                                            <Package className="w-5 h-5 text-brand-orange animate-bounce" />
+                                        ) : (
+                                            <>
+                                                <img src={signal.mediaUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    {signal.mediaType === 'video' ? <div className="w-2 h-2 bg-brand-cyan rounded-full animate-ping" /> : null}
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <span className="font-bold text-sm text-white group-hover:text-brand-cyan">@{signal.userHandle}</span>
-                                            <span className="text-[10px] text-brand-cyan/70 border border-brand-cyan/20 px-1 rounded">
+                                            <span className={`font-bold text-sm ${signal.type === 'drop' ? 'text-brand-orange' : 'text-white group-hover:text-brand-cyan'}`}>
+                                                {signal.type === 'drop' ? 'DEAD DROP' : `@${signal.userHandle}`}
+                                            </span>
+                                            <span className={`text-[10px] border px-1 rounded ${signal.type === 'drop' ? 'text-brand-orange border-brand-orange/30' : 'text-brand-cyan/70 border-brand-cyan/20'}`}>
                                                 {Math.floor(Math.random() * 1000)}m
                                             </span>
                                         </div>
-                                        <p className="text-xs text-secondary-text line-clamp-1">{signal.caption}</p>
+                                        <p className="text-xs text-secondary-text line-clamp-1">
+                                            {signal.type === 'drop' ? 'Encrypted Supply Crate' : signal.caption}
+                                        </p>
                                     </div>
                                 </div>
-                                <ArrowRight className="w-4 h-4 text-secondary-text group-hover:text-brand-cyan opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                                
+                                {signal.type === 'drop' ? (
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleClaim(signal);
+                                        }}
+                                        className="px-3 py-1.5 bg-brand-orange text-white text-[10px] font-bold rounded-lg hover:bg-brand-orange/80 transition-colors"
+                                    >
+                                        CLAIM
+                                    </button>
+                                ) : (
+                                    <ArrowRight className="w-4 h-4 text-secondary-text group-hover:text-brand-cyan opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                                )}
                             </motion.div>
                         ))}
 

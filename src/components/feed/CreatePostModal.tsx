@@ -28,6 +28,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
   const [region, setRegion] = useState("global");
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isDeadDrop, setIsDeadDrop] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleModeSelect = (selectedMode: "post" | "reel" | "story") => {
