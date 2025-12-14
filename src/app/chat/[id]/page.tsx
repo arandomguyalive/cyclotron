@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Lock, ChevronLeft, Loader2, AlertTriangle, Paperclip } from "lucide-react";
+import { Send, Lock, ChevronLeft, Loader2, AlertTriangle, Paperclip, Flame } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import AES from "crypto-js/aes";
 import encUtf8 from "crypto-js/enc-utf8";
@@ -20,6 +20,7 @@ interface ChatMessage {
   senderHandle: string;
   senderAvatar: string;
   timestamp: any;
+  isBurner?: boolean;
 }
 
 const SECRET_KEY = "cyclotron-secret-key-v1"; // IMPORTANT: In a real app, this key would be managed server-side and exchanged securely.
@@ -37,6 +38,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatPartner, setChatPartner] = useState<{ uid: string, handle: string, avatarSeed: string } | null>(null);
   const [chatLoading, setChatLoading] = useState(true);
+  const [isBurnerMode, setIsBurnerMode] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -157,6 +159,7 @@ export default function ChatPage() {
         senderHandle: currentUserProfile.handle,
         senderAvatar: currentUserProfile.avatarSeed,
         timestamp: serverTimestamp(),
+        isBurner: isBurnerMode,
       });
       setInput("");
 
@@ -202,7 +205,7 @@ export default function ChatPage() {
             className="w-full h-full rounded-full bg-primary-bg"
           />
         </div>
-        <div>
+        <div className="flex-1">
           <h2 className="font-bold text-primary-text">{chatPartner?.handle || "Agent Zero"}</h2>
           {isFree ? (
               <div className="flex items-center gap-1 text-xs text-brand-orange animate-pulse">
@@ -216,6 +219,19 @@ export default function ChatPage() {
               </div>
           )}
         </div>
+
+        {/* Burner Toggle (Premium+) */}
+        {!isFree && (
+            <button 
+                onClick={() => {
+                    setIsBurnerMode(!isBurnerMode);
+                    toast(isBurnerMode ? "Burner Mode Deactivated" : "Burner Mode Active: Messages will self-destruct", "info");
+                }}
+                className={`p-2 rounded-full transition-all ${isBurnerMode ? 'bg-brand-orange/20 text-brand-orange animate-pulse' : 'text-secondary-text hover:text-primary-text'}`}
+            >
+                <Flame className="w-5 h-5" />
+            </button>
+        )}
       </div>
 
       {/* Messages Area */}
@@ -291,8 +307,8 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar }: { messag
   useEffect(() => {
       if (!isRevealed || isBurnt) return;
       
-      // Random burn time between 15s and 60s for demo
-      const burnDuration = 30000; 
+      // Faster burn for Burner Mode messages
+      const burnDuration = message.isBurner ? 10000 : 30000; 
       const interval = 100;
       const step = (100 * interval) / burnDuration;
 
@@ -308,22 +324,21 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar }: { messag
       }, interval);
 
       return () => clearInterval(timer);
-  }, [isRevealed, isBurnt]);
+  }, [isRevealed, isBurnt, message.isBurner]);
 
   const handleScratch = (e: React.PointerEvent) => {
-    if (isRevealed || isMine) return; // Cannot scratch own messages or already revealed ones
+    if (isRevealed || isMine) return;
     
-    // Increment progress on movement
     setScratchProgress(prev => {
         const newProgress = prev + 2;
         if (newProgress >= 100) {
             setIsRevealed(true);
-            playClick(800, 0.1, 'sine'); // Unlock sound
+            playClick(800, 0.1, 'sine');
             if (navigator.vibrate) navigator.vibrate(50);
             return 100;
         }
         if (newProgress % 10 === 0) {
-             playClick(100 + newProgress * 2, 0.02, 'sawtooth'); // Scratching sound
+             playClick(100 + newProgress * 2, 0.02, 'sawtooth');
         }
         return newProgress;
     });
@@ -345,7 +360,7 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar }: { messag
       animate={{ opacity: 1, y: 0 }}
       className={`flex ${isMine ? "justify-end" : "justify-start"}`}
     >
-        {!isMine && ( // Show avatar for other users
+        {!isMine && ( 
             <div className="w-8 h-8 rounded-full bg-secondary-bg mr-2 overflow-hidden flex-shrink-0">
                 <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${senderAvatar}`} alt={senderHandle} className="w-full h-full" />
             </div>
@@ -377,13 +392,14 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar }: { messag
            </div>
         ) : (
           <>
-            <motion.p 
+            <motion.div 
                 initial={{ opacity: 0, filter: "blur(5px)" }}
                 animate={{ opacity: 1, filter: "blur(0px)" }}
-                className="text-sm relative z-10"
+                className="text-sm relative z-10 flex items-start gap-2"
             >
-                {decryptedText.current || message.text}
-            </motion.p>
+                {message.isBurner && <Flame className="w-3 h-3 text-brand-orange animate-pulse mt-1 shrink-0" />}
+                <p>{decryptedText.current || message.text}</p>
+            </motion.div>
             
             {/* Burn Fuse Visual */}
             <div className="absolute bottom-0 left-0 h-[2px] bg-brand-orange/50 blur-[1px] transition-all duration-100" style={{ width: `${burnProgress}%` }} />
