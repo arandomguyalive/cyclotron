@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Lock, ChevronLeft, Loader2, AlertTriangle, Paperclip, Flame } from "lucide-react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import AES from "crypto-js/aes";
 import encUtf8 from "crypto-js/enc-utf8";
 import { useSonic } from "@/lib/SonicContext";
@@ -14,8 +14,8 @@ import { useToast } from "@/lib/ToastContext";
 
 interface ChatMessage {
   id: string;
-  text: string; // The decrypted text
-  encrypted: string; // The stored encrypted text
+  text: string; 
+  encrypted: string; 
   senderId: string;
   senderHandle: string;
   senderAvatar: string;
@@ -23,10 +23,13 @@ interface ChatMessage {
   isBurner?: boolean;
 }
 
-const SECRET_KEY = "cyclotron-secret-key-v1"; // IMPORTANT: In a real app, this key would be managed server-side and exchanged securely.
+const SECRET_KEY = "cyclotron-secret-key-v1";
 
-export default function ChatPage() {
-  const { id: chatId } = useParams<{ id: string }>();
+interface ChatViewProps {
+    chatId: string;
+}
+
+export function ChatView({ chatId }: ChatViewProps) {
   const { firebaseUser, user: currentUserProfile, loading: userLoading } = useUser();
   const { playClick } = useSonic();
   const { toast } = useToast();
@@ -43,7 +46,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!userLoading && !firebaseUser) {
-      router.push("/login"); // Redirect if not authenticated
+      router.push("/login");
       return;
     }
 
@@ -52,7 +55,6 @@ export default function ChatPage() {
         return;
     }
 
-    // Handle Mock Chats (Prevent Firebase Calls)
     if (chatId.startsWith("mock-")) {
         setChatPartner({
             uid: "mock-partner",
@@ -92,7 +94,6 @@ export default function ChatPage() {
             avatarSeed: factionName
         });
         
-        // Setup real-time message listener for faction
         const messagesQuery = query(
             collection(db, "chats", chatId, "messages"),
             orderBy("timestamp", "asc")
@@ -141,12 +142,10 @@ export default function ChatPage() {
                 }
             }
         } else {
-            // No chat found, maybe create a new one or redirect
-            router.push("/chat"); // Go back to chat list
+            router.push("/chat"); 
             return;
         }
 
-        // Setup real-time message listener
         const messagesQuery = query(
             collection(db, "chats", chatId, "messages"),
             orderBy("timestamp", "asc")
@@ -170,7 +169,6 @@ export default function ChatPage() {
     fetchChatDetails();
   }, [chatId, firebaseUser, userLoading, router]);
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -178,7 +176,7 @@ export default function ChatPage() {
   const handleSend = async () => {
     if (!input.trim() || !firebaseUser || !currentUserProfile || !chatId) return;
 
-    playClick(500, 0.08, 'square'); // Send message sound
+    playClick(500, 0.08, 'square'); 
 
     const encrypted = AES.encrypt(input, SECRET_KEY).toString();
 
@@ -193,9 +191,8 @@ export default function ChatPage() {
       });
       setInput("");
 
-      // Update last message in chat document
       await setDoc(doc(db, "chats", chatId), {
-        lastMessage: encrypted, // Store encrypted last message for consistency
+        lastMessage: encrypted, 
         lastMessageTimestamp: serverTimestamp(),
       }, { merge: true });
 
@@ -214,7 +211,7 @@ export default function ChatPage() {
   }
 
   if (!firebaseUser) {
-      return null; // Should be handled by useEffect redirect
+      return null; 
   }
 
   return (
@@ -222,7 +219,7 @@ export default function ChatPage() {
       {/* Header */}
       <div className="px-4 py-3 border-b border-border-color flex items-center gap-3 bg-primary-bg/80 backdrop-blur-md sticky top-0 z-50 safe-area-top">
         <button 
-            onClick={() => router.push("/chat")} // Go back to chat list
+            onClick={() => router.push("/chat")} 
             className="p-2 -ml-2 text-secondary-text hover:text-primary-text transition-colors"
         >
             <ChevronLeft className="w-6 h-6" />

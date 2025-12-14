@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { MessageCircle, Search, PlusCircle, Loader2, Users, Globe } from "lucide-react";
@@ -10,6 +10,7 @@ import { useSonic } from "@/lib/SonicContext";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { UserSearchModal } from "@/components/chat/UserSearchModal";
+import { ChatView } from "@/components/chat/ChatView";
 
 interface Chat {
   id: string;
@@ -29,8 +30,7 @@ const mockChats: Chat[] = [
         lastMessageTimestamp: { toDate: () => new Date(Date.now() - 1000 * 60 * 5) },
         mockName: "Cyber_Ghost",
         mockAvatar: "Ghost"
-    },
-    // ... (rest of mocks)
+    }
 ];
 
 const factions = [
@@ -40,10 +40,13 @@ const factions = [
     { id: "faction-ghost", name: "Ghosts", description: "Unknown entities.", icon: "bg-gray-600" },
 ];
 
-export default function ChatListPage() {
+function ChatListContent() {
   const { firebaseUser, loading: userLoading } = useUser();
   const { playClick } = useSonic();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const chatId = searchParams.get('id');
+
   const [realChats, setRealChats] = useState<Chat[]>([]);
   const [chatsLoading, setChatsLoading] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -77,6 +80,23 @@ export default function ChatListPage() {
     }
   }, [firebaseUser, userLoading, router]);
 
+  if (userLoading || chatsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-primary-bg text-accent-1">
+        <Loader2 className="w-10 h-10 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!firebaseUser) {
+      return null; 
+  }
+
+  // Render Individual Chat View if ID is present
+  if (chatId) {
+      return <ChatView chatId={chatId} />;
+  }
+
   const chats = realChats.length > 0 ? realChats : mockChats;
 
   const handleChatClick = () => {
@@ -89,18 +109,6 @@ export default function ChatListPage() {
     if (navigator.vibrate) navigator.vibrate(30);
     setIsSearchOpen(true);
   };
-
-  if (userLoading || chatsLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-primary-bg text-accent-1">
-        <Loader2 className="w-10 h-10 animate-spin" />
-      </div>
-    );
-  }
-
-  if (!firebaseUser) {
-      return null; // Should redirect to login by useEffect
-  }
 
   return (
     <div className="flex flex-col h-screen bg-primary-bg">
@@ -148,7 +156,7 @@ export default function ChatListPage() {
             </div>
             ) : (
             chats.map((chat) => (
-                <Link key={chat.id} href={`/chat/${chat.id}`} onClick={handleChatClick}>
+                <Link key={chat.id} href={`/chat?id=${chat.id}`} onClick={handleChatClick}>
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -181,7 +189,7 @@ export default function ChatListPage() {
             // Factions List
             <div className="space-y-4">
                 {factions.map((faction) => (
-                    <Link key={faction.id} href={`/chat/${faction.id}`} onClick={handleChatClick}>
+                    <Link key={faction.id} href={`/chat?id=${faction.id}`} onClick={handleChatClick}>
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -207,5 +215,13 @@ export default function ChatListPage() {
 
       <UserSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </div>
+  );
+}
+
+export default function ChatListPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-primary-bg text-accent-1"><Loader2 className="w-10 h-10 animate-spin" /></div>}>
+      <ChatListContent />
+    </Suspense>
   );
 }
