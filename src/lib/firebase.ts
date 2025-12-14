@@ -23,9 +23,16 @@ try {
     if (isConfigValid) {
         app = initializeApp(firebaseConfig);
     } else {
-        console.warn("Firebase config missing. Initializing with empty config to prevent crash, but Auth will fail.");
-        // Initialize with empty config to allow app to load (albeit broken)
-        app = initializeApp({}); 
+        console.warn("Firebase config missing. Initializing with MOCK config to prevent build crash.");
+        // Initialize with MOCK config to satisfy SDK requirements during static build
+        app = initializeApp({
+            apiKey: "mock-api-key",
+            authDomain: "mock-project.firebaseapp.com",
+            projectId: "mock-project-id",
+            storageBucket: "mock-project.appspot.com",
+            messagingSenderId: "00000000000",
+            appId: "1:00000000000:web:00000000000000",
+        }); 
     }
   } else {
     app = getApps()[0];
