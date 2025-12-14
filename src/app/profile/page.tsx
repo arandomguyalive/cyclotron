@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Settings, Grid, Film, Heart, MessageCircle } from "lucide-react";
+import { Settings, Grid, Film, Heart, MessageCircle, ShoppingBag } from "lucide-react";
 import { SettingsModal } from "@/components/profile/SettingsModal";
 import { useSonic } from "@/lib/SonicContext";
 import { useUser } from "@/lib/UserContext";
@@ -92,6 +92,13 @@ export default function ProfilePage() {
               </motion.div>
               <div className="flex gap-2 mb-2">
                 <Link 
+                  href="/market" 
+                  onClick={handleButtonClick}
+                  className="p-2 bg-secondary-bg/10 rounded-full backdrop-blur-md border border-border-color hover:bg-secondary-bg/20 transition-colors shadow-lg cursor-pointer z-50 text-brand-orange"
+                >
+                  <ShoppingBag className="w-6 h-6" />
+                </Link>
+                <Link 
                   href="/chat" 
                   onClick={handleButtonClick}
                   className="p-2 bg-secondary-bg/10 rounded-full backdrop-blur-md border border-border-color hover:bg-secondary-bg/20 transition-colors shadow-lg cursor-pointer z-50"
@@ -123,6 +130,7 @@ export default function ProfilePage() {
               <Stat label="Following" value={user.stats.following} />
               <Stat label="Followers" value={user.stats.followers} />
               <Stat label="Likes" value={user.stats.likes} />
+              <Stat label="Credits" value="2,450 ₵" />
             </div>
           </motion.div>
 
