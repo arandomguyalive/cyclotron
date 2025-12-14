@@ -144,6 +144,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 }} 
                                 isPaid={user?.tier !== 'free'} // Indicate if already paid
                             />
+                            {user?.tier === 'sovereign' && (
+                                <SettingItem 
+                                    icon={Crown} 
+                                    label="Sovereign Console" 
+                                    onClick={() => {
+                                        handleButtonClick();
+                                        router.push("/sovereign");
+                                    }} 
+                                />
+                            )}
                         </Section>
 
                         {/* Categories */}
