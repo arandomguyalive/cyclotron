@@ -83,6 +83,36 @@ export default function ChatPage() {
         return;
     }
 
+    // Handle Faction Channels
+    if (chatId.startsWith("faction-")) {
+        const factionName = chatId.replace("faction-", "").toUpperCase();
+        setChatPartner({
+            uid: chatId,
+            handle: `${factionName} CHANNEL`,
+            avatarSeed: factionName
+        });
+        
+        // Setup real-time message listener for faction
+        const messagesQuery = query(
+            collection(db, "chats", chatId, "messages"),
+            orderBy("timestamp", "asc")
+        );
+
+        const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+            const newMessages: ChatMessage[] = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as ChatMessage[];
+            setMessages(newMessages);
+            setChatLoading(false);
+        }, (error) => {
+            console.error("Error fetching messages:", error);
+            setChatLoading(false);
+        });
+
+        return () => unsubscribe();
+    }
+
     // Fetch chat participants and details
     const fetchChatDetails = async () => {
         const chatDocRef = doc(db, "chats", chatId);
@@ -220,8 +250,8 @@ export default function ChatPage() {
           )}
         </div>
 
-        {/* Burner Toggle (Premium+) */}
-        {!isFree && (
+        {/* Burner Toggle (Premium+) - Disabled for Factions */}
+        {!isFree && !chatId.startsWith("faction-") && (
             <button 
                 onClick={() => {
                     setIsBurnerMode(!isBurnerMode);
@@ -243,6 +273,7 @@ export default function ChatPage() {
             isMine={msg.senderId === firebaseUser.uid}
             senderHandle={msg.senderHandle}
             senderAvatar={msg.senderAvatar}
+            isGroup={chatId.startsWith("faction-")}
           />
         ))}
         <div ref={bottomRef} />
@@ -284,7 +315,7 @@ export default function ChatPage() {
   );
 }
 
-function MessageBubble({ message, isMine, senderHandle, senderAvatar }: { message: ChatMessage, isMine: boolean, senderHandle: string, senderAvatar: string }) {
+function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = false }: { message: ChatMessage, isMine: boolean, senderHandle: string, senderAvatar: string, isGroup?: boolean }) {
   const [isRevealed, setIsRevealed] = useState(isMine); // Sent messages are always revealed
   const [scratchProgress, setScratchProgress] = useState(0);
   const [burnProgress, setBurnProgress] = useState(0);
@@ -373,6 +404,9 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar }: { messag
       }`}
         onPointerMove={!isMine ? handleScratch : undefined}
       >
+        {isGroup && !isMine && (
+            <div className="text-[10px] text-accent-1 font-bold mb-1 uppercase tracking-wider">{senderHandle}</div>
+        )}
         {!isRevealed ? (
            <div className="flex flex-col gap-1">
              <div className="flex items-center gap-2 text-xs font-mono opacity-70 text-accent-2">
