@@ -14,7 +14,7 @@ const firebaseConfig = {
 };
 
 // Validate critical config
-const isConfigValid = !!firebaseConfig.apiKey;
+const isConfigValid = !!firebaseConfig.apiKey && !!firebaseConfig.authDomain && !!firebaseConfig.projectId;
 
 let app: FirebaseApp;
 
