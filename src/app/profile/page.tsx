@@ -130,7 +130,8 @@ export default function ProfilePage() {
               <Stat label="Following" value={user.stats.following} />
               <Stat label="Followers" value={user.stats.followers} />
               <Stat label="Likes" value={user.stats.likes} />
-              <Stat label="Credits" value="2,450 ₵" />
+              <Stat label="Reputation" value={user.stats.reputation || '0'} />
+              <Stat label="Credits" value={`${user.stats.credits || '0'} ₵`} />
             </div>
           </motion.div>
 

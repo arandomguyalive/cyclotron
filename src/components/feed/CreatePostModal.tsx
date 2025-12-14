@@ -16,16 +16,11 @@ interface CreatePostModalProps {
 }
 
 export function CreatePostModal({ isOpen, onClose, missionMode = false }: CreatePostModalProps) {
-  const { user, firebaseUser } = useUser();
+  const { user, firebaseUser, updateUser } = useUser();
   const { playClick } = useSonic();
   
   const [step, setStep] = useState<"select" | "create">(missionMode ? "create" : "select");
   const [mode, setMode] = useState<"post" | "reel" | "story">("post");
-  
-  // Reset step when modal opens/closes or missionMode changes
-  // This useEffect ensures the modal state resets correctly if props change while closed
-  // but react hooks rules say don't put hooks inside conditionals or loops.
-  // Better to handle reset in handleClose or use a key on the component instance.
   
   const [caption, setCaption] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -51,7 +46,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
   };
 
   const handleSubmit = async () => {
-    if (!firebaseUser || !file) return;
+    if (!firebaseUser || !file || !user) return;
 
     setIsUploading(true);
     playClick(600, 0.1, 'sine');
@@ -68,8 +63,8 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
       const collectionName = mode === "story" ? "stories" : "posts";
       
       await addDoc(collection(db, collectionName), {
-        type: mode, // 'post' | 'reel' | 'story'
-        isMission: missionMode, // Tag as mission
+        type: mode, 
+        isMission: missionMode,
         caption: caption,
         mediaUrl: downloadURL,
         mediaType: file.type.startsWith("video") ? "video" : "image",
@@ -82,6 +77,21 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
         expiresAt: mode === "story" ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
       });
 
+      // 3. Award Gamification Rewards
+      const repReward = missionMode ? 50 : 10;
+      const credReward = missionMode ? 200 : 50;
+      
+      const currentRep = parseInt(user.stats.reputation || '0');
+      const currentCreds = parseInt(user.stats.credits || '0');
+      
+      updateUser({
+          stats: {
+              ...user.stats,
+              reputation: (currentRep + repReward).toString(),
+              credits: (currentCreds + credReward).toString()
+          }
+      });
+
       setIsSuccess(true);
       playClick(880, 0.2, 'triangle'); 
       
@@ -91,7 +101,6 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
 
     } catch (error) {
       console.error("Upload failed", error);
-      // Removed alert, using implicit error state or could add toast later
     } finally {
       setIsUploading(false);
     }

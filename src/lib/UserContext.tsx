@@ -23,6 +23,8 @@ interface UserProfile {
     following: string;
     followers: string;
     likes: string;
+    credits: string;
+    reputation: string;
   };
 }
 
@@ -47,6 +49,8 @@ const defaultUser: UserProfile = {
     following: "245",
     followers: "12.4K",
     likes: "84.2K",
+    credits: "2450",
+    reputation: "50",
   },
 };
 
@@ -96,23 +100,30 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const updateUser = (updates: Partial<UserProfile>) => {
-    setUser((prev) => {
-      if (!prev) return null;
-      const newState = { ...prev, ...updates };
-      
-      // Persist simulation
-      if (updates.tier) {
-          localStorage.setItem("simulated_tier", updates.tier);
-      }
+  const updateUser = async (updates: Partial<UserProfile>) => {
+    if (!firebaseUser) return;
 
-      // If we are anonymous/testing, save to local storage
-      if (firebaseUser?.isAnonymous) {
-          localStorage.setItem("oblivion_user", JSON.stringify(newState));
-      }
-      // TODO: In Phase 2, we will also update Firestore here
-      return newState;
-    });
+    try {
+        await setDoc(doc(db, "users", firebaseUser.uid), updates, { merge: true });
+        
+        setUser((prev) => {
+          if (!prev) return null;
+          const newState = { ...prev, ...updates };
+          
+          // Persist simulation
+          if (updates.tier) {
+              localStorage.setItem("simulated_tier", updates.tier);
+          }
+
+          // If we are anonymous/testing, save to local storage
+          if (firebaseUser?.isAnonymous) {
+              localStorage.setItem("oblivion_user", JSON.stringify(newState));
+          }
+          return newState;
+        });
+    } catch (e) {
+        console.error("Failed to update user profile", e);
+    }
   };
 
   const loginAnonymously = async () => {
@@ -137,7 +148,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               avatarSeed: "Agent",
               faction: "Drifter",
               tier: "free",
-              stats: { following: "0", followers: "0", likes: "0" }
+              stats: { following: "0", followers: "0", likes: "0", credits: "500", reputation: "10" }
           };
           await setDoc(doc(db, "users", cred.user.uid), newUser);
           setUser(newUser);
