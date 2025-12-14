@@ -31,21 +31,20 @@ jobs:
       - name: 📦 Install Dependencies
         run: npm install
 
-      - name: 🔧 Install EAS CLI
-        run: npm install -g eas-cli
+      - name: 🏗 Build Next.js (Static Export)
+        run: npm run build
 
-      - name: 🚀 Build Android APK (Local Mode)
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      - name: 🔄 Sync Capacitor
+        run: npx cap sync android
+
+      - name: 🚀 Build Android APK (Gradle)
         run: |
-          eas build --local \
-            --platform android \
-            --profile preview \
-            --output cyclotron.apk \
-            --non-interactive
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: 📤 Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cyclotron-apk
-          path: cyclotron.apk
+          name: abhed-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk

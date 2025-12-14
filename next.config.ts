@@ -14,12 +14,18 @@ const withPWAConfig = withPWA({
 
 const nextConfig: NextConfig = {
   /* config options here */
+  output: "export",
   reactCompiler: true,
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
         hostname: "api.dicebear.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
       },
     ],
   },
