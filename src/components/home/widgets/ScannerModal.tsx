@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Radar, MapPin, User, ArrowRight, Package, PackageOpen, CheckCircle } from "lucide-react";
+import { X, Radar, MapPin, User, ArrowRight, Package, PackageOpen, CheckCircle, Camera } from "lucide-react";
 import { collection, query, where, getDocs, limit, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useSonic } from "@/lib/SonicContext";
@@ -18,6 +18,7 @@ interface ScannerModalProps {
 export function ScannerModal({ isOpen, onClose, userRegion = "global" }: ScannerModalProps) {
   const [signals, setSignals] = useState<any[]>([]);
   const [scanning, setScanning] = useState(true);
+  const [arMode, setArMode] = useState(false);
   const { playClick } = useSonic();
   const { user, updateUser } = useUser();
   const { toast } = useToast();
@@ -39,7 +40,13 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
                     // In a real app, add: where("region", "==", userRegion)
                 );
                 const snapshot = await getDocs(q);
-                const found = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const found = snapshot.docs.map(doc => ({ 
+                    id: doc.id, 
+                    ...doc.data(),
+                    // Generate random AR positions
+                    arX: Math.random() * 80 + 10,
+                    arY: Math.random() * 60 + 20, 
+                }));
                 setSignals(found);
             } catch (e) {
                 console.error(e);
@@ -59,7 +66,6 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
       
       try {
           // 1. Delete the drop (simulate consuming it)
-          // In a real app, we might just mark it as claimed by this user
           await deleteDoc(doc(db, "posts", signal.id));
           
           // 2. Award Rewards
@@ -104,41 +110,95 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
             exit={{ scale: 0.9, opacity: 0 }}
             className="fixed inset-0 z-[110] flex items-center justify-center p-4 pointer-events-none"
           >
-            <div className="w-full max-w-md bg-secondary-bg/90 border border-brand-cyan/30 rounded-3xl overflow-hidden pointer-events-auto shadow-[0_0_50px_rgba(0,212,229,0.1)] relative">
+            <div className="w-full max-w-md bg-secondary-bg/90 border border-brand-cyan/30 rounded-3xl overflow-hidden pointer-events-auto shadow-[0_0_50px_rgba(0,212,229,0.1)] relative h-[600px] flex flex-col">
               
-              {/* Radar Background */}
-              <div className="absolute inset-0 overflow-hidden opacity-10 pointer-events-none">
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-brand-cyan rounded-full" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-brand-cyan rounded-full" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] border border-brand-cyan rounded-full" />
-                  <motion.div 
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-1/2 left-1/2 w-[250px] h-[250px] bg-gradient-to-r from-brand-cyan/20 to-transparent origin-top-left -translate-y-1/2"
-                    style={{ borderBottom: '1px solid var(--color-brand-cyan)' }}
-                  />
+              {/* Radar/AR Background */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  {arMode ? (
+                      // Simulated AR Feed
+                      <div className="absolute inset-0 bg-black">
+                          <img 
+                            src="https://images.unsplash.com/photo-1518544806352-06b3e1b78346?q=80&w=500&auto=format&fit=crop" 
+                            className="w-full h-full object-cover opacity-30 mix-blend-screen filter grayscale blur-sm" 
+                            alt="AR Feed"
+                          />
+                          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+                          {/* Grid Overlay */}
+                          <div className="absolute inset-0 bg-[linear-gradient(to_right,#00D4E522_1px,transparent_1px),linear-gradient(to_bottom,#00D4E522_1px,transparent_1px)] bg-[size:40px_40px]" />
+                      </div>
+                  ) : (
+                      // Radar Background
+                      <div className="opacity-10 h-full w-full relative">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-brand-cyan rounded-full" />
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-brand-cyan rounded-full" />
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] border border-brand-cyan rounded-full" />
+                        <motion.div 
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                            className="absolute top-1/2 left-1/2 w-[250px] h-[250px] bg-gradient-to-r from-brand-cyan/20 to-transparent origin-top-left -translate-y-1/2"
+                            style={{ borderBottom: '1px solid var(--color-brand-cyan)' }}
+                        />
+                      </div>
+                  )}
               </div>
 
               {/* Header */}
-              <div className="relative px-6 py-4 border-b border-brand-cyan/20 flex items-center justify-between bg-black/50">
+              <div className="relative px-6 py-4 border-b border-brand-cyan/20 flex items-center justify-between bg-black/50 z-20">
                 <div className="flex items-center gap-2 text-brand-cyan">
                     <Radar className="w-5 h-5 animate-spin-slow" />
-                    <h2 className="text-lg font-bold tracking-widest uppercase">Local Scanner</h2>
+                    <h2 className="text-lg font-bold tracking-widest uppercase">{arMode ? 'AR VISUALIZER' : 'LOCAL SCANNER'}</h2>
                 </div>
-                <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                    <button 
+                        onClick={() => setArMode(!arMode)}
+                        className={`p-2 rounded-full transition-colors ${arMode ? 'bg-brand-cyan text-black' : 'hover:bg-white/10 text-white'}`}
+                    >
+                        <Camera className="w-5 h-5" />
+                    </button>
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
               </div>
 
               {/* Content */}
-              <div className="p-6 min-h-[300px] relative z-10">
+              <div className="flex-1 relative z-10 overflow-hidden">
                 {scanning ? (
                     <div className="h-full flex flex-col items-center justify-center gap-4 text-brand-cyan">
                         <div className="text-4xl font-mono font-bold animate-pulse">SCANNING...</div>
                         <p className="text-xs font-mono tracking-widest opacity-70">TRIANGULATING SIGNALS IN SECTOR {userRegion.toUpperCase()}</p>
                     </div>
+                ) : arMode ? (
+                    // AR View
+                    <div className="relative w-full h-full">
+                        {signals.filter(s => s.type === 'drop').map((signal) => (
+                            <motion.div
+                                key={signal.id}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1, y: [0, -10, 0] }}
+                                transition={{ y: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
+                                style={{ top: `${signal.arY}%`, left: `${signal.arX}%` }}
+                                className="absolute flex flex-col items-center cursor-pointer group"
+                                onClick={() => handleClaim(signal)}
+                            >
+                                <div className="w-12 h-12 bg-brand-orange/80 backdrop-blur rounded-xl border-2 border-brand-orange flex items-center justify-center shadow-[0_0_20px_var(--color-brand-orange)] group-hover:scale-110 transition-transform">
+                                    <Package className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="mt-2 px-2 py-1 bg-black/50 backdrop-blur rounded text-[10px] text-brand-orange font-bold uppercase tracking-wider">
+                                    {Math.floor(Math.random() * 50)}m
+                                </div>
+                            </motion.div>
+                        ))}
+                        
+                        {signals.filter(s => s.type === 'drop').length === 0 && (
+                            <div className="absolute inset-0 flex items-center justify-center text-white/50 font-mono text-sm">
+                                NO ARTIFACTS DETECTED
+                            </div>
+                        )}
+                    </div>
                 ) : (
-                    <div className="space-y-4">
+                    // List View
+                    <div className="p-6 space-y-4 overflow-y-auto h-full">
                         <div className="flex justify-between items-center text-xs text-secondary-text font-mono mb-2">
                             <span>DETECTED: {signals.length} SIGNALS</span>
                             <span>RANGE: 5KM</span>
