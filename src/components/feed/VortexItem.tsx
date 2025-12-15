@@ -97,7 +97,7 @@ export function VortexItem({ post, index, watermarkText, isFree }: VortexProps) 
 
       {/* Free Tier Overlay: Signal Weak */}
       {isFree && (
-          <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-brand-orange/20 backdrop-blur-md px-3 py-1 rounded border border-brand-orange/30">
+          <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-black/80 px-3 py-1 rounded border border-brand-orange/30">
               <AlertTriangle className="w-4 h-4 text-brand-orange animate-pulse" />
               <span className="text-[10px] font-bold text-brand-orange uppercase tracking-wider">Signal Weak</span>
           </div>

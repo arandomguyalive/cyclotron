@@ -257,10 +257,10 @@ export default function VortexPage() {
 
       {/* The 3D Tunnel World */}
       <div className="relative w-full h-full md:max-w-md md:aspect-[9/16] preserve-3d flex items-center justify-center pointer-events-none">
-        {items.map((item, i) => (
+        {items.slice(Math.max(0, activeIndex - 1), Math.min(items.length, activeIndex + 2)).map((item) => (
             <TunnelItem 
                 key={item.id} 
-                index={i}
+                index={items.indexOf(item)}
                 post={item}
                 parentZ={smoothZ} 
                 activeIndex={activeIndex}
