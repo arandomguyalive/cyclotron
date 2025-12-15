@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { useUser } from "@/lib/UserContext";
 import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Heart, MessageCircle, Share2, MoreHorizontal, Bookmark } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Bookmark, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/lib/ToastContext";
+import { extractMessageFromImage } from "@/lib/steg";
 
 interface Post {
     id: string;
@@ -16,6 +17,7 @@ interface Post {
     userHandle: string;
     createdAt: any;
     type: "post";
+    hasHiddenMessage?: boolean;
 }
 
 interface MockAd {
@@ -124,6 +126,30 @@ export function SignalGrid() {
         };
     }, [isFree]); // Re-run effect if tier changes
 
+    const handleExtractHiddenMessage = async (post: Post) => {
+        if (!post.hasHiddenMessage || post.mediaType !== 'image') {
+            toast("No hidden message detected.", "info");
+            return;
+        }
+
+        try {
+            toast("Analyzing image for hidden signals...", "info");
+            const response = await fetch(post.mediaUrl);
+            const blob = await response.blob();
+            const imageFile = new File([blob], "stego_image.png", { type: blob.type });
+
+            const extractedMessage = await extractMessageFromImage(imageFile);
+            if (extractedMessage) {
+                toast(`Hidden Message: ${extractedMessage}`, "success");
+            } else {
+                toast("No decipherable hidden message found.", "warning");
+            }
+        } catch (error) {
+            console.error("Error extracting hidden message:", error);
+            toast("Failed to extract hidden message.", "error");
+        }
+    };
+
     if (loading) return <div className="h-40 flex items-center justify-center text-xs text-secondary-text animate-pulse">Scanning frequencies...</div>;
 
     return (
@@ -187,6 +213,19 @@ export function SignalGrid() {
                                         className={`w-full h-full object-cover transition-all duration-500 ${isFree || dataSaver ? 'grayscale contrast-125 blur-[1px] opacity-70' : ''}`}
                                         alt="Signal"
                                     />
+                                    
+                                    {post.hasHiddenMessage && post.mediaType === 'image' && (
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Prevent parent image click
+                                                handleExtractHiddenMessage(post);
+                                            }}
+                                            className="absolute top-4 left-4 bg-brand-cyan/20 backdrop-blur-md text-brand-cyan px-3 py-1 rounded-full flex items-center gap-2 hover:bg-brand-cyan/30 transition-colors z-10"
+                                        >
+                                            <Eye className="w-4 h-4" />
+                                            <span className="text-[10px] font-bold uppercase">Decrypt</span>
+                                        </button>
+                                    )}
                                     
                                     {isFree && (
                                         <div className="absolute top-4 right-4 bg-brand-orange text-white text-[10px] font-bold px-2 py-1 rounded-md z-10 shadow-lg">
