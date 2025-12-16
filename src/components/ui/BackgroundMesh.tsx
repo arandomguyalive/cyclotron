@@ -14,6 +14,7 @@ export function BackgroundMesh() {
     gold: "from-amber-900/20 via-black to-black",
     platinum: "from-gray-100/10 via-black to-black",
     sovereign: "from-amber-500/10 via-black to-black", // Vantablack effect (subtle gold glow)
+    lifetime: "from-orange-600/30 via-black to-black",
   };
 
   return (
