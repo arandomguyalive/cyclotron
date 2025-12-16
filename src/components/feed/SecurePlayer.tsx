@@ -6,14 +6,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { EyeOff, Lock } from "lucide-react";
 
 export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, securityLevel?: 'none' | 'blacklist' | 'tier3' }) {
-        const { user } = useUser();
+        const { user, firebaseUser } = useUser();
         const videoRef = useRef<HTMLVideoElement>(null);
         const [isLocked, setIsLocked] = useState(true); // Start locked for hold-to-view
         const [isPressing, setIsPressing] = useState(false);
         
         const isBlacklist = securityLevel === 'blacklist' || user?.tier === 'lifetime';
         const isHoldToViewActive = isBlacklist; // Activate hold-to-view for blacklist content
-        const viewerIdentifier = user?.email || user?.uid || 'UNAUTHORIZED_VIEWER';
+        const viewerIdentifier = firebaseUser?.email || firebaseUser?.uid || 'UNAUTHORIZED_VIEWER';
     
         // Platinum Feature: Biometric Lock Simulation
         const isPlatinum = ['platinum', 'ultimate'].includes(user?.tier || 'free');
