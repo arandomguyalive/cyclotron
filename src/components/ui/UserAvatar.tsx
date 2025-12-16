@@ -26,6 +26,7 @@ export function UserAvatar({ className, size = "md", showRing = true }: UserAvat
             gold: "border-brand-pale-pink",
             platinum: "border-white",
             sovereign: "border-brand-blue", // or gold for sovereign
+            lifetime: "border-amber-500",
           };
     return (
         <div className={cn(
