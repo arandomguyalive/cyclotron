@@ -72,8 +72,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   }
 
   // Tier Access Helpers
-  const canAccessGhost = ['gold', 'platinum', 'sovereign'].includes(user?.tier || '');
-  const canAccessHardening = ['platinum', 'sovereign'].includes(user?.tier || '');
+  const canAccessGhost = ['gold', 'platinum', 'sovereign', 'lifetime'].includes(user?.tier || '');
+  const canAccessHardening = ['platinum', 'sovereign', 'lifetime'].includes(user?.tier || '');
 
   return (
     <>
@@ -233,7 +233,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             <div className="space-y-2">
                                 <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider ml-2">Simulate Tier</h3>
                                 <div className="grid grid-cols-3 gap-2">
-                                    {(["free", "premium", "gold", "platinum", "sovereign"] as const).map((t) => (
+                                    {(["free", "premium", "gold", "platinum", "sovereign", "lifetime"] as const).map((t) => (
                                         <button
                                             key={t}
                                             onClick={() => {

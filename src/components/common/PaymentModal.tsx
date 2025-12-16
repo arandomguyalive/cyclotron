@@ -8,7 +8,7 @@ import { useUser } from "@/lib/UserContext";
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  upgradeToTier: "premium" | "gold" | "platinum" | "sovereign";
+  upgradeToTier: "premium" | "gold" | "platinum" | "sovereign" | "lifetime";
 }
 
 export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalProps) {
@@ -25,8 +25,15 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalPro
     setPaymentStep("processing");
     setTimeout(() => {
       setPaymentStep("success");
+      
+      // Special Handling for Lifetime: Set accessType
+      const updates: any = { tier: upgradeToTier };
+      if (upgradeToTier === 'lifetime') {
+          updates.accessType = 'LIFETIME_BLACKLIST';
+      }
+      
       // Simulate success and upgrade user
-      updateUser({ tier: upgradeToTier });
+      updateUser(updates);
       setTimeout(onClose, 1500); // Close after success animation
     }, 2000);
   };
@@ -36,6 +43,7 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalPro
     gold: { name: "The Professional", price: "₹9,999/mo", color: "text-brand-pale-pink" },
     platinum: { name: "The Ultra Elite", price: "₹99,999/mo", color: "text-white" },
     sovereign: { name: "The Sovereign", price: "₹10,00,000", color: "text-brand-blue" },
+    lifetime: { name: "The Blacklist", price: "₹20,000", color: "text-amber-500" },
   }[upgradeToTier] || { name: "Unknown", price: "0", color: "text-gray-500" }; // Fallback
 
   return (

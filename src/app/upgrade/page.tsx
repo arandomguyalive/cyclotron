@@ -11,9 +11,20 @@ export default function UpgradePage() {
     const router = useRouter();
     const { user } = useUser();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-    const [selectedTier, setSelectedTier] = useState<"premium" | "gold" | "platinum">("premium");
+    const [selectedTier, setSelectedTier] = useState<"premium" | "gold" | "platinum" | "lifetime">("premium");
 
     const tiers = [
+                {
+                    id: "lifetime",
+                    name: "The Blacklist",
+                    price: "₹20,000",
+                    features: ["Lifetime Access (One-time)", "Forensic Watermarking", "Dead Man's Switch", "Sovereign Wallet", "Limit: 500 Spots"],
+                    buttonText: "Join Blacklist",
+                    bgColor: "bg-amber-500/10",
+                    borderColor: "border-amber-500/50",
+                    textColor: "text-amber-500",
+                    buttonBgColor: "bg-amber-500 text-black"
+                },
                 {
                     id: "premium",
                     name: "The Shield",
