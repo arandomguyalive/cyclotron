@@ -11,7 +11,8 @@ export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, sec
         const [isLocked, setIsLocked] = useState(true); // Start locked for hold-to-view
         const [isPressing, setIsPressing] = useState(false);
         
-        const isBlacklist = securityLevel === 'blacklist' || user?.tier === 'lifetime';
+        // Security Features Active for Tier 3 (Gold) and above
+        const isBlacklist = securityLevel === 'blacklist' || ['gold', 'platinum', 'sovereign', 'lifetime'].includes(user?.tier || 'free');
         const isHoldToViewActive = isBlacklist; // Activate hold-to-view for blacklist content
         const viewerIdentifier = firebaseUser?.email || firebaseUser?.uid || 'UNAUTHORIZED_VIEWER';
     
