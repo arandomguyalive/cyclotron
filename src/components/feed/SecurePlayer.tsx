@@ -40,8 +40,6 @@ export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, sec
                 videoRef.current?.pause();
             }
         };
-    // Platinum Feature: Biometric Lock Simulation
-    const isPlatinum = ['platinum', 'ultimate'].includes(user?.tier || 'free');
 
     useEffect(() => {
         if (!isPlatinum || isHoldToViewActive) return;
