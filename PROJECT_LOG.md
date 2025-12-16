@@ -104,6 +104,8 @@
 *   **Key Actions:**
     *   **Forensic Watermarking (Ghost Overlay):** Implemented dynamic, repeating viewer ID overlay in `SecurePlayer.tsx` for "blacklist" content, preventing screen recording leaks.
     *   **Dead Man's Switch (Hold-to-View):** Integrated "Hold-to-View" mechanic in `SecurePlayer.tsx`, requiring continuous user interaction to play sensitive content, enforcing attention and preventing passive consumption/screenshotting.
+    *   **Geo-Fencing Infrastructure:** Deployed `middleware.ts` to block traffic from restricted regions (e.g., North Korea, Embargoed Zones) and a custom "Access Denied" page.
+    *   **Blacklist / Lifetime Tier:** Implemented "Founding Member" logic, including a shareable "Golden Ticket" certificate and Sovereign Wallet UI for tracking (future) earnings.
 
 ---
 
@@ -124,10 +126,11 @@
     *   ✅ **Missions:** Interactive "Daily Directive" flow.
 *   **Profile:** 
     *   ✅ **Customization:** Themes, Cover Images, and Tier Rings fully functional.
+    *   ✅ **Wallet:** "Sovereign Wallet" UI and "Blacklist Certificate" live.
 *   **Monetization:** 
-    *   ✅ **Tiers:** Free, Premium, Gold, Platinum, Sovereign fully integrated with visual and functional gating.
+    *   ✅ **Tiers:** Free, Premium, Gold, Platinum, Sovereign, Lifetime fully integrated.
     *   ✅ **Dashboard:** "Sovereign Console" live for top-tier users.
-    *   ✅ **Tier 3 Security Logic:** Forensic Watermarking and Hold-to-View implemented for "Blacklist" content.
+    *   ✅ **Tier 3 Security Logic:** Forensic Watermarking, Hold-to-View, and Geo-Fencing implemented.
 
 *   **Authentication:** 
     *   ✅ **Guests:** Anonymous login supported.

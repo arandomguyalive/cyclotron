@@ -18,7 +18,8 @@ interface UserProfile {
   avatarSeed: string;
   coverImage?: string;
   faction: "Netrunner" | "Drifter" | "Corp" | "Ghost";
-  tier: "free" | "premium" | "gold" | "platinum" | "sovereign";
+  tier: "free" | "premium" | "gold" | "platinum" | "sovereign" | "lifetime";
+  accessType?: "LIFETIME_BLACKLIST";
   stats: {
     following: string;
     followers: string;
@@ -77,6 +78,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             // Fallback to default/mock user
             const saved = localStorage.getItem("oblivion_user");
             userData = saved ? JSON.parse(saved) : defaultUser;
+          }
+
+          // Check for Lifetime Access
+          if (userData.accessType === "LIFETIME_BLACKLIST") {
+              userData.tier = "lifetime";
           }
 
           // Apply Simulated Tier Override

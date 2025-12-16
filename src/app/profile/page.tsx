@@ -3,14 +3,17 @@
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { Settings, Grid, Film, Heart, MessageCircle, ShoppingBag } from "lucide-react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { Settings, Grid, Film, Heart, MessageCircle, ShoppingBag, Wallet, ShieldCheck } from "lucide-react";
 import { SettingsModal } from "@/components/profile/SettingsModal";
+import { BlacklistCertificate } from "@/components/profile/BlacklistCertificate";
 import { useSonic } from "@/lib/SonicContext";
 import { useUser } from "@/lib/UserContext";
 
 export default function ProfilePage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showCertificate, setShowCertificate] = useState(false);
+  const [activeTab, setActiveTab] = useState<'grid' | 'likes' | 'wallet'>('grid');
   const { playClick } = useSonic();
   const { user, loading, firebaseUser } = useUser();
   const router = useRouter();
@@ -126,54 +129,122 @@ export default function ProfilePage() {
             </div>
 
             {/* Stats */}
-            <div className="flex gap-6 mt-6 py-4 border-y border-border-color relative z-30">
+            <div className="flex gap-6 mt-6 py-4 border-y border-border-color relative z-30 overflow-x-auto">
               <Stat label="Following" value={user.stats.following} />
               <Stat label="Followers" value={user.stats.followers} />
               <Stat label="Likes" value={user.stats.likes} />
               <Stat label="Reputation" value={user.stats.reputation || '0'} />
               <Stat label="Credits" value={`${user.stats.credits || '0'} ₵`} />
+              
+              {user.tier === 'lifetime' && (
+                  <button 
+                    onClick={() => setShowCertificate(true)}
+                    className="flex flex-col items-center justify-center text-amber-500 animate-pulse"
+                  >
+                      <ShieldCheck className="w-6 h-6 mb-1" />
+                      <span className="text-[10px] uppercase tracking-widest font-bold">Certificate</span>
+                  </button>
+              )}
             </div>
           </motion.div>
 
         {/* Tabs */}
-        <div className="flex mt-6 gap-4">
+        <div className="flex mt-6 gap-4 border-b border-white/10 pb-2">
           <button 
-            onClick={handleButtonClick}
-            className="flex-1 py-2 border-b-2 border-accent-1 text-accent-1 flex justify-center"
+            onClick={() => { setActiveTab('grid'); handleButtonClick(); }}
+            className={`flex-1 py-2 flex justify-center transition-colors ${activeTab === 'grid' ? 'text-accent-1 border-b-2 border-accent-1' : 'text-zinc-500'}`}
           >
             <Grid className="w-5 h-5" />
           </button>
           <button 
-            onClick={handleButtonClick}
-            className="flex-1 py-2 border-b-2 border-transparent text-secondary-text flex justify-center"
+            onClick={() => { setActiveTab('likes'); handleButtonClick(); }}
+            className={`flex-1 py-2 flex justify-center transition-colors ${activeTab === 'likes' ? 'text-accent-1 border-b-2 border-accent-1' : 'text-zinc-500'}`}
           >
             <Heart className="w-5 h-5" />
           </button>
+          <button 
+            onClick={() => { setActiveTab('wallet'); handleButtonClick(); }}
+            className={`flex-1 py-2 flex justify-center transition-colors ${activeTab === 'wallet' ? 'text-brand-orange border-b-2 border-brand-orange' : 'text-zinc-500'}`}
+          >
+            <Wallet className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* Grid Content */}
-        <div className="grid grid-cols-3 gap-1 mt-4">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className="aspect-square bg-secondary-bg/5 relative overflow-hidden group rounded-sm">
-                <div className={`absolute inset-0 bg-gradient-to-br ${
-                    ['from-pink-500 to-purple-500', 'from-blue-500 to-cyan-500', 'from-green-500 to-emerald-500'][i % 3]
-                } opacity-50 group-hover:opacity-80 transition-opacity`}/>
-            </div>
-          ))}
+        {/* Tab Content */}
+        <div className="mt-4 min-h-[300px]">
+            {activeTab === 'grid' && (
+                <div className="grid grid-cols-3 gap-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {Array.from({ length: 9 }).map((_, i) => (
+                    <div key={i} className="aspect-square bg-secondary-bg/5 relative overflow-hidden group rounded-sm">
+                        <div className={`absolute inset-0 bg-gradient-to-br ${
+                            ['from-pink-500 to-purple-500', 'from-blue-500 to-cyan-500', 'from-green-500 to-emerald-500'][i % 3]
+                        } opacity-50 group-hover:opacity-80 transition-opacity`}/>
+                    </div>
+                  ))}
+                </div>
+            )}
+
+            {activeTab === 'likes' && (
+                <div className="flex flex-col items-center justify-center h-48 text-zinc-500 animate-in fade-in zoom-in duration-300">
+                    <Heart className="w-12 h-12 mb-4 opacity-20" />
+                    <p className="text-sm font-mono uppercase tracking-widest">No signals saved</p>
+                </div>
+            )}
+
+            {activeTab === 'wallet' && (
+                <div className="p-4 animate-in fade-in slide-in-from-right-8 duration-500">
+                    <div className="bg-zinc-900/50 border border-white/10 rounded-xl p-6 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <Wallet className="w-24 h-24 text-white" />
+                        </div>
+                        
+                        <h3 className="text-xs text-zinc-400 uppercase tracking-widest mb-1">Total Asset Value</h3>
+                        <div className="text-4xl font-mono text-white font-bold mb-6">₹0.00</div>
+                        
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                                <span className="text-sm text-zinc-500">Pending Payouts</span>
+                                <span className="text-sm font-mono text-zinc-300">₹0.00</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                                <span className="text-sm text-zinc-500">Creator Fund</span>
+                                <span className="text-sm font-mono text-zinc-300">Active</span>
+                            </div>
+                        </div>
+
+                        <button className="w-full mt-8 py-3 bg-brand-orange text-black font-bold uppercase tracking-widest text-sm hover:bg-white transition-colors">
+                            Withdraw Funds
+                        </button>
+                        
+                        <p className="text-[10px] text-zinc-600 mt-4 text-center">
+                            * Withdrawals require Tier 3 Verification. <br/> 
+                            Next payout cycle: Dec 31, 2025.
+                        </p>
+                    </div>
+                </div>
+            )}
         </div>
       </div>
 
-      {/* Settings Modal */}
+      {/* Modals */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      {showCertificate && user && (
+          <BlacklistCertificate 
+            handle={user.handle} 
+            dateJoined={new Date().toLocaleDateString()} 
+            id={firebaseUser?.uid.substring(0, 8).toUpperCase() || 'UNKNOWN'} 
+            onClose={() => setShowCertificate(false)} 
+          />
+      )}
     </div>
   );
 }
 
 function Stat({ label, value }: { label: string, value: string }) {
   return (
-    <div className="flex flex-col">
-      <span className="font-bold text-lg">{value}</span>
-      <span className="text-xs text-secondary-text uppercase tracking-wider">{label}</span>
+    <div className="flex flex-col min-w-[60px]">
+      <span className="font-bold text-lg whitespace-nowrap">{value}</span>
+      <span className="text-xs text-secondary-text uppercase tracking-wider whitespace-nowrap">{label}</span>
     </div>
   );
 }
