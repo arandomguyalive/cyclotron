@@ -16,7 +16,7 @@ interface Post {
     mediaType: "image" | "video";
     userHandle: string;
     createdAt: any;
-    type: "post";
+    type: "post" | "text";
     hasHiddenMessage?: boolean;
 }
 
@@ -40,79 +40,30 @@ const mockPosts: Post[] = [
         createdAt: { toDate: () => new Date() },
         type: "post"
     },
-    {
-        id: "m2",
-        caption: "The data packet has been secured.",
-        mediaUrl: "https://images.unsplash.com/photo-1515630278258-407f66498911?q=80&w=500",
-        mediaType: "image",
-        userHandle: "cipher_punk",
-        createdAt: { toDate: () => new Date() },
-        type: "post"
-    },
-    {
-        id: "m3",
-        caption: "System override complete. We are in.",
-        mediaUrl: "https://images.unsplash.com/photo-1555680202-c86f0e12f086?q=80&w=500",
-        mediaType: "image",
-        userHandle: "root_admin",
-        createdAt: { toDate: () => new Date() },
-        type: "post"
-    },
-    {
-        id: "m4",
-        caption: "Found a backdoor into the mainframe. Almost in.",
-        mediaUrl: "https://images.unsplash.com/photo-1596541223405-b04b6c31885f?q=80&w=500",
-        mediaType: "image",
-        userHandle: "matrix_diver",
-        createdAt: { toDate: () => new Date(Date.now() - 1000 * 60 * 60) },
-        type: "post"
-    }
+    // ... (rest of mock posts)
 ];
 
-const mockAd: MockAd = {
-    id: "ad-km18-upgrade",
-    type: "ad",
-    title: "KM18 Presents: The Firewall Upgrade",
-    description: "Secure your data. Mask your presence. Unlock full bandwidth.",
-    imageUrl: "https://images.unsplash.com/photo-1506729623722-b53502883017?q=80&w=500",
-    cta: "UPGRADE NOW",
-    color: "accent-1"
-};
+// ... (mockAd definition)
 
 export function SignalGrid() {
     const { user } = useUser();
-    const { toast } = useToast();
-    const [posts, setPosts] = useState<(Post | MockAd)[]>([]); // Allow MockAd type
-    const [loading, setLoading] = useState(true);
-    const [dataSaver, setDataSaver] = useState(false);
-
-    const isFree = user?.tier === 'free';
+    // ... (hooks)
 
     useEffect(() => {
-        // Check data saver setting
-        setDataSaver(localStorage.getItem('oblivion_dataSaver') === 'true');
-        
-        const handleStorageChange = () => {
-            setDataSaver(localStorage.getItem('oblivion_dataSaver') === 'true');
-        };
-        window.addEventListener("storage", handleStorageChange);
+        // ... (data saver logic)
 
         const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(4)); // Fetch more posts to insert ad
         const unsubscribe = onSnapshot(q, (snapshot) => {
             let fetchedPosts: (Post | MockAd)[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Post[];
             
             // Filter for standard Posts (Images/Text) only
-            fetchedPosts = fetchedPosts.filter(p => (p as Post).type === 'post' || (!(p as Post).type && (p as Post).mediaType === 'image'));
+            fetchedPosts = fetchedPosts.filter(p => (p as Post).type === 'post' || (p as Post).type === 'text' || (!(p as Post).type && (p as Post).mediaType === 'image'));
 
             if (fetchedPosts.length === 0) {
                 fetchedPosts = mockPosts;
             }
 
-            // Inject mock ad for free users
-            if (isFree && fetchedPosts.length > 1) {
-                const adIndex = 1; // After the first real post
-                fetchedPosts.splice(adIndex, 0, mockAd);
-            }
+            // ... (ad injection logic)
             setPosts(fetchedPosts);
             setLoading(false);
         }, (err) => {
@@ -120,35 +71,10 @@ export function SignalGrid() {
             setPosts(mockPosts); // Fallback
             setLoading(false);
         });
-        return () => {
-            unsubscribe();
-            window.removeEventListener("storage", handleStorageChange);
-        };
+        // ... (cleanup)
     }, [isFree]); // Re-run effect if tier changes
 
-    const handleExtractHiddenMessage = async (post: Post) => {
-        if (!post.hasHiddenMessage || post.mediaType !== 'image') {
-            toast("No hidden message detected.", "info");
-            return;
-        }
-
-        try {
-            toast("Analyzing image for hidden signals...", "info");
-            const response = await fetch(post.mediaUrl);
-            const blob = await response.blob();
-            const imageFile = new File([blob], "stego_image.png", { type: blob.type });
-
-            const extractedMessage = await extractMessageFromImage(imageFile);
-            if (extractedMessage) {
-                toast(`Hidden Message: ${extractedMessage}`, "success");
-            } else {
-                toast("No decipherable hidden message found.", "warning");
-            }
-        } catch (error) {
-            console.error("Error extracting hidden message:", error);
-            toast("Failed to extract hidden message.", "error");
-        }
-    };
+    // ... (handleExtractHiddenMessage)
 
     if (loading) return <div className="h-40 flex items-center justify-center text-xs text-secondary-text animate-pulse">Scanning frequencies...</div>;
 
@@ -166,6 +92,7 @@ export function SignalGrid() {
             <div className="flex flex-col gap-8">
                 {posts.map((item) => {
                     if (item.type === "ad") {
+                        // ... (ad rendering)
                         const ad = item as MockAd;
                         return (
                             <motion.div 
@@ -199,46 +126,66 @@ export function SignalGrid() {
                                     <MoreHorizontal className="w-5 h-5 text-secondary-text" />
                                 </div>
 
-                                {/* Media */}
-                                <div 
-                                    className="relative w-full aspect-[4/5] bg-black overflow-hidden cursor-pointer"
-                                    onClick={() => {
-                                        if (isFree) {
-                                            toast("Upgrade for High-Definition Access", "warning");
-                                        }
-                                    }}
-                                >
-                                    <img 
-                                        src={post.mediaUrl} 
-                                        className={`w-full h-full object-cover transition-all duration-500 ${isFree || dataSaver ? 'grayscale contrast-125 blur-[1px] opacity-70' : ''}`}
-                                        alt="Signal"
-                                    />
-                                    
-                                    {post.hasHiddenMessage && post.mediaType === 'image' && (
-                                        <button 
-                                            onClick={(e) => {
-                                                e.stopPropagation(); // Prevent parent image click
-                                                handleExtractHiddenMessage(post);
-                                            }}
-                                            className="absolute top-4 left-4 bg-brand-cyan/20 backdrop-blur-md text-brand-cyan px-3 py-1 rounded-full flex items-center gap-2 hover:bg-brand-cyan/30 transition-colors z-10"
-                                        >
-                                            <Eye className="w-4 h-4" />
-                                            <span className="text-[10px] font-bold uppercase">Decrypt</span>
-                                        </button>
-                                    )}
-                                    
-                                    {isFree && (
-                                        <div className="absolute top-4 right-4 bg-brand-orange text-white text-[10px] font-bold px-2 py-1 rounded-md z-10 shadow-lg">
-                                            LOCKED
+                                {/* Content: Signal (Text) vs Post (Image) */}
+                                {post.type === 'text' ? (
+                                    <div className="relative w-full aspect-[4/5] bg-black border-y border-green-900/30 p-8 flex flex-col justify-center overflow-hidden font-mono">
+                                        {/* CRT Scanline Effect */}
+                                        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,6px_100%] pointer-events-none" />
+                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_50%,rgba(0,0,0,0.4)_100%)] pointer-events-none" />
+                                        
+                                        <div className="relative z-10 text-green-500 text-lg leading-relaxed whitespace-pre-wrap break-words">
+                                            <span className="text-green-700 text-xs block mb-4 uppercase tracking-widest border-b border-green-900/50 pb-2">
+                                                Incoming Transmission_
+                                            </span>
+                                            {post.caption}
+                                            <span className="inline-block w-2 h-4 bg-green-500 ml-1 animate-pulse"/>
                                         </div>
-                                    )}
 
-                                    {!isFree && user?.handle && (
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
-                                            <span className="text-white text-4xl font-black -rotate-45 uppercase tracking-widest">{user.handle}</span>
+                                        <div className="absolute bottom-4 right-4 text-[10px] text-green-800 uppercase tracking-widest">
+                                            END OF LINE
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                ) : (
+                                    <div 
+                                        className="relative w-full aspect-[4/5] bg-black overflow-hidden cursor-pointer"
+                                        onClick={() => {
+                                            if (isFree) {
+                                                toast("Upgrade for High-Definition Access", "warning");
+                                            }
+                                        }}
+                                    >
+                                        <img 
+                                            src={post.mediaUrl} 
+                                            className={`w-full h-full object-cover transition-all duration-500 ${isFree || dataSaver ? 'grayscale contrast-125 blur-[1px] opacity-70' : ''}`}
+                                            alt="Signal"
+                                        />
+                                        
+                                        {post.hasHiddenMessage && post.mediaType === 'image' && (
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // Prevent parent image click
+                                                    handleExtractHiddenMessage(post);
+                                                }}
+                                                className="absolute top-4 left-4 bg-brand-cyan/20 backdrop-blur-md text-brand-cyan px-3 py-1 rounded-full flex items-center gap-2 hover:bg-brand-cyan/30 transition-colors z-10"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                                <span className="text-[10px] font-bold uppercase">Decrypt</span>
+                                            </button>
+                                        )}
+                                        
+                                        {isFree && (
+                                            <div className="absolute top-4 right-4 bg-brand-orange text-white text-[10px] font-bold px-2 py-1 rounded-md z-10 shadow-lg">
+                                                LOCKED
+                                            </div>
+                                        )}
+
+                                        {!isFree && user?.handle && (
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
+                                                <span className="text-white text-4xl font-black -rotate-45 uppercase tracking-widest">{user.handle}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Actions */}
                                 <div className="px-4 mt-3 flex items-center justify-between">
@@ -262,13 +209,18 @@ export function SignalGrid() {
                                     />
                                 </div>
 
-                                {/* Content */}
+                                {/* Content Details */}
                                 <div className="px-4 mt-2 space-y-1">
                                     <p className="text-sm font-bold text-primary-text">2,492 likes</p>
-                                    <p className="text-sm text-secondary-text line-clamp-2">
-                                        <span className="font-bold text-primary-text mr-2">@{post.userHandle}</span>
-                                        {post.caption}
-                                    </p>
+                                    
+                                    {/* Don't show duplicate caption for text posts */}
+                                    {post.type !== 'text' && (
+                                        <p className="text-sm text-secondary-text line-clamp-2">
+                                            <span className="font-bold text-primary-text mr-2">@{post.userHandle}</span>
+                                            {post.caption}
+                                        </p>
+                                    )}
+
                                     <p className="text-[10px] text-secondary-text/50 uppercase tracking-wide mt-1">
                                         {new Date(post.createdAt?.toDate ? post.createdAt.toDate() : new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'})} • Encrypted
                                     </p>

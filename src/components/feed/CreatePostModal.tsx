@@ -1,8 +1,4 @@
-"use client";
-
-import { useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Upload, Send, Image as ImageIcon, Film, Mic, Loader2, CheckCircle2, Globe, MapPin } from "lucide-react";
+import { X, Upload, Send, Image as ImageIcon, Film, Mic, Loader2, CheckCircle2, Globe, MapPin, Terminal } from "lucide-react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { storage, db } from "@/lib/firebase";
@@ -20,7 +16,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
   const { playClick } = useSonic();
   
   const [step, setStep] = useState<"select" | "create">(missionMode ? "create" : "select");
-  const [mode, setMode] = useState<"post" | "reel" | "story">("post");
+  const [mode, setMode] = useState<"post" | "reel" | "story" | "signal">("post");
   
   const [caption, setCaption] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -31,7 +27,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
   const [isDeadDrop, setIsDeadDrop] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleModeSelect = (selectedMode: "post" | "reel" | "story") => {
+  const handleModeSelect = (selectedMode: "post" | "reel" | "story" | "signal") => {
       setMode(selectedMode);
       setStep("create");
       playClick(600, 0.1, 'square');
@@ -47,28 +43,32 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
   };
 
   const handleSubmit = async () => {
-    if (!firebaseUser || !file || !user) return;
+    if (!firebaseUser || (!file && mode !== 'signal') || !user) return;
 
     setIsUploading(true);
     playClick(600, 0.1, 'sine');
 
     try {
-      // 1. Upload File
-      const path = mode === "story" ? "stories" : "uploads";
-      const storageRef = ref(storage, `${path}/${firebaseUser.uid}/${Date.now()}_${file.name}`);
-      
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(snapshot.ref);
+      let downloadURL = null;
+
+      // 1. Upload File (if not a signal)
+      if (mode !== 'signal' && file) {
+          const path = mode === "story" ? "stories" : "uploads";
+          const storageRef = ref(storage, `${path}/${firebaseUser.uid}/${Date.now()}_${file.name}`);
+          
+          const snapshot = await uploadBytes(storageRef, file);
+          downloadURL = await getDownloadURL(snapshot.ref);
+      }
 
       // 2. Create Firestore Document
       const collectionName = mode === "story" ? "stories" : "posts";
       
       await addDoc(collection(db, collectionName), {
-        type: mode, 
+        type: mode === 'signal' ? 'text' : mode, 
         isMission: missionMode,
         caption: caption,
         mediaUrl: downloadURL,
-        mediaType: file.type.startsWith("video") ? "video" : "image",
+        mediaType: mode === 'signal' ? 'text' : (file?.type.startsWith("video") ? "video" : "image"),
         userId: firebaseUser.uid,
         userHandle: user?.handle || "ghost_user",
         userAvatar: user?.avatarSeed || "default",
@@ -79,8 +79,8 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
       });
 
       // 3. Award Gamification Rewards
-      const repReward = missionMode ? 50 : 10;
-      const credReward = missionMode ? 200 : 50;
+      const repReward = missionMode ? 50 : (mode === 'signal' ? 5 : 10);
+      const credReward = missionMode ? 200 : (mode === 'signal' ? 25 : 50);
       
       const currentRep = parseInt(user.stats.reputation || '0');
       const currentCreds = parseInt(user.stats.credits || '0');
@@ -157,6 +157,13 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                                <p className="text-sm text-secondary-text">Share images to the feed.</p>
                            </div>
                        </button>
+                       <button onClick={() => handleModeSelect('signal')} className="flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl hover:bg-green-500/10 hover:border-green-500 transition-all group text-left">
+                           <div className="p-4 bg-secondary-bg rounded-full text-green-500 group-hover:scale-110 transition-transform"><Terminal className="w-8 h-8" /></div>
+                           <div>
+                               <h3 className="text-xl font-bold text-primary-text group-hover:text-green-500">Signal</h3>
+                               <p className="text-sm text-secondary-text">Broadcast text-only transmission.</p>
+                           </div>
+                       </button>
                        <button onClick={() => handleModeSelect('reel')} className="flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl hover:bg-accent-2/10 hover:border-accent-2 transition-all group text-left">
                            <div className="p-4 bg-secondary-bg rounded-full text-accent-2 group-hover:scale-110 transition-transform"><Film className="w-8 h-8" /></div>
                            <div>
@@ -164,63 +171,82 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                                <p className="text-sm text-secondary-text">Share vertical videos to Vortex.</p>
                            </div>
                        </button>
-                       <button onClick={() => handleModeSelect('story')} className="flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl hover:bg-green-500/10 hover:border-green-500 transition-all group text-left">
-                           <div className="p-4 bg-secondary-bg rounded-full text-green-500 group-hover:scale-110 transition-transform"><Globe className="w-8 h-8" /></div>
+                       <button onClick={() => handleModeSelect('story')} className="flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl hover:bg-purple-500/10 hover:border-purple-500 transition-all group text-left">
+                           <div className="p-4 bg-secondary-bg rounded-full text-purple-500 group-hover:scale-110 transition-transform"><Globe className="w-8 h-8" /></div>
                            <div>
-                               <h3 className="text-xl font-bold text-primary-text group-hover:text-green-500">Story</h3>
+                               <h3 className="text-xl font-bold text-primary-text group-hover:text-purple-500">Story</h3>
                                <p className="text-sm text-secondary-text">Ephemeral updates (24h).</p>
                            </div>
                        </button>
                    </div>
                ) : (
                    <div className="flex flex-col gap-6 h-full">
-                       {/* Upload UI (Simplified for brevity, reusing logic) */}
-                       <div 
-                         onClick={() => !file && fileInputRef.current?.click()}
-                         className={`relative w-full aspect-video rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden group ${
-                            file ? "border-transparent bg-black" : "border-border-color hover:border-accent-1/50 hover:bg-secondary-bg/50"
-                         }`}
-                       >
-                         {previewUrl ? (
-                            (file?.type.startsWith("video")) ? (
-                                <video src={previewUrl} className="w-full h-full object-cover" autoPlay muted loop />
-                            ) : (
-                                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                            )
-                         ) : (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-secondary-text group-hover:text-accent-1 transition-colors">
-                                <Upload className="w-12 h-12" />
-                                <span className="font-mono text-sm">UPLOAD {mode.toUpperCase()}_</span>
-                            </div>
-                         )}
-                         
-                         {file && (
-                             <button 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    fileInputRef.current?.click();
-                                }}
-                                className="absolute bottom-4 right-4 bg-black/50 backdrop-blur px-3 py-1 rounded-full text-xs font-bold border border-white/20 hover:bg-white/20"
-                             >
-                                CHANGE
-                             </button>
-                         )}
+                       {/* Conditional UI based on Mode */}
+                       {mode === 'signal' ? (
+                           <div className="flex-1 flex flex-col bg-black border border-green-500/30 rounded-2xl p-4 font-mono shadow-[0_0_20px_rgba(34,197,94,0.1)] relative overflow-hidden">
+                               <div className="absolute top-0 left-0 w-full h-1 bg-green-500/50 animate-pulse" />
+                               <textarea
+                                    value={caption}
+                                    onChange={(e) => setCaption(e.target.value)}
+                                    placeholder=">> ENTER TRANSMISSION..."
+                                    className="flex-1 bg-transparent border-none text-green-500 placeholder:text-green-900 focus:ring-0 resize-none outline-none text-lg leading-relaxed"
+                                    autoFocus
+                               />
+                               <div className="text-right text-xs text-green-700 mt-2">
+                                   {caption.length} / 280 BYTES
+                               </div>
+                           </div>
+                       ) : (
+                           <>
+                           {/* Media Upload UI */}
+                           <div 
+                             onClick={() => !file && fileInputRef.current?.click()}
+                             className={`relative w-full aspect-video rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden group ${
+                                file ? "border-transparent bg-black" : "border-border-color hover:border-accent-1/50 hover:bg-secondary-bg/50"
+                             }`}
+                           >
+                             {previewUrl ? (
+                                (file?.type.startsWith("video")) ? (
+                                    <video src={previewUrl} className="w-full h-full object-cover" autoPlay muted loop />
+                                ) : (
+                                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                                )
+                             ) : (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-secondary-text group-hover:text-accent-1 transition-colors">
+                                    <Upload className="w-12 h-12" />
+                                    <span className="font-mono text-sm">UPLOAD {mode.toUpperCase()}_</span>
+                                </div>
+                             )}
+                             
+                             {file && (
+                                 <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        fileInputRef.current?.click();
+                                    }}
+                                    className="absolute bottom-4 right-4 bg-black/50 backdrop-blur px-3 py-1 rounded-full text-xs font-bold border border-white/20 hover:bg-white/20"
+                                 >
+                                    CHANGE
+                                 </button>
+                             )}
 
-                         <input 
-                            type="file" 
-                            ref={fileInputRef} 
-                            onChange={handleFileSelect} 
-                            accept={mode === 'reel' ? "video/*" : "image/*,video/*"}
-                            className="hidden" 
-                         />
-                       </div>
+                             <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                onChange={handleFileSelect} 
+                                accept={mode === 'reel' ? "video/*" : "image/*,video/*"}
+                                className="hidden" 
+                             />
+                           </div>
 
-                       <textarea 
-                          value={caption}
-                          onChange={(e) => setCaption(e.target.value)}
-                          placeholder={missionMode ? "Evidence for Directive..." : `Caption your ${mode}...`}
-                          className="w-full flex-1 bg-transparent border-none text-lg text-primary-text placeholder:text-secondary-text/50 focus:ring-0 resize-none font-light"
-                       />
+                           <textarea 
+                              value={caption}
+                              onChange={(e) => setCaption(e.target.value)}
+                              placeholder={missionMode ? "Evidence for Directive..." : `Caption your ${mode}...`}
+                              className="w-full flex-1 bg-transparent border-none text-lg text-primary-text placeholder:text-secondary-text/50 focus:ring-0 resize-none font-light"
+                           />
+                           </>
+                       )}
                    </div>
                )}
             </div>
@@ -229,10 +255,10 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
             {step === 'create' && (
                 <div className="p-4 border-t border-border-color bg-primary-bg pb-safe-area-inset-bottom">
                      <button 
-                        disabled={!file || isUploading || isSuccess}
+                        disabled={(!file && mode !== 'signal') || isUploading || isSuccess || (mode === 'signal' && !caption.trim())}
                         onClick={handleSubmit}
                         className={`w-full py-4 rounded-xl font-bold text-primary-bg flex items-center justify-center gap-2 transition-all ${
-                            isSuccess ? "bg-green-500" : (file ? "bg-accent-1 hover:bg-accent-1/90" : "bg-secondary-text/20 cursor-not-allowed")
+                            isSuccess ? "bg-green-500" : ((file || (mode === 'signal' && caption.trim())) ? "bg-accent-1 hover:bg-accent-1/90" : "bg-secondary-text/20 cursor-not-allowed")
                         }`}
                      >
                         {isUploading ? (
@@ -248,7 +274,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                     ) : (
                             <>
                                 <Send className="w-5 h-5" />
-                                <span>PUBLISH</span>
+                                <span>PUBLISH {mode === 'signal' ? 'SIGNAL' : ''}</span>
                             </>
                         )}
                      </button>
