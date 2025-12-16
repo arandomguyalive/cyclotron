@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
   // 1. Get Country Code
   // Vercel provides this in req.geo.country on Edge Middleware
   // Fallback to header for local dev/testing
-  let country = request.geo?.country || request.headers.get('x-vercel-ip-country') || 'US';
+  let country = (request as any).geo?.country || request.headers.get('x-vercel-ip-country') || 'US';
 
   // 2. Allow Simulation via Query Param (For Dev/Demo)
   // Usage: ?simulate_geo=KP
