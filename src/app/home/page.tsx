@@ -131,6 +131,22 @@ export default function HomePage() {
 
                   label: "SOVEREIGN",
 
+              },
+
+              lifetime: {
+
+                  color: "text-amber-500",
+
+                  bgColor: "bg-black",
+
+                  borderColor: "border-amber-500/50",
+
+                  signalText: "FOUNDER",
+
+                  signalValue: 100,
+
+                  label: "BLACKLIST",
+
               }
 
           }[tier];
@@ -152,6 +168,8 @@ export default function HomePage() {
                   tier === 'gold' ? 'bg-[radial-gradient(circle_at_top_right,#FFCDEC_0%,transparent_40%)]' :
 
                   tier === 'platinum' ? 'bg-[radial-gradient(circle_at_top_right,white_0%,transparent_40%)]' :
+
+                  tier === 'lifetime' ? 'bg-[radial-gradient(circle_at_top_right,#F59E0B_0%,transparent_40%)]' :
 
                   'bg-[radial-gradient(circle_at_top_right,#000000_0%,transparent_40%)]' // Sovereign: Deep Black/Void
 
@@ -359,19 +377,19 @@ export default function HomePage() {
                 </div>
             )}
 
-                        {(tier === 'platinum' || tier === 'sovereign') && (
-                            <div className={`col-span-2 p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left`}>
-                                 <Server className={`w-8 h-8 mb-3 ${config.color}`} />
-                                 <h3 className="font-bold text-lg">The Vault</h3>
-                                 <p className="text-xs text-secondary-text mt-1">Secure Storage: 0% Used</p>
-                            </div>
-                        )}
-                        
-                        {/* 3. Global Stats (Gold+) */}
-                        {['gold', 'platinum', 'sovereign'].includes(tier) && (
-                             <div className="col-span-2 p-4 rounded-2xl bg-secondary-bg/30 border border-border-color flex items-center justify-between">
-                                 <div className="flex items-center gap-3">
-                                     <Globe className="w-5 h-5 text-secondary-text" />                         <div>
+            {(tier === 'platinum' || tier === 'sovereign' || tier === 'lifetime') && (
+                <div className={`col-span-2 p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left`}>
+                     <Server className={`w-8 h-8 mb-3 ${config.color}`} />
+                     <h3 className="font-bold text-lg">The Vault</h3>
+                     <p className="text-xs text-secondary-text mt-1">Secure Storage: 0% Used</p>
+                </div>
+            )}
+            
+            {/* 3. Global Stats (Gold+) */}
+            {['gold', 'platinum', 'sovereign', 'lifetime'].includes(tier) && (
+                 <div className="col-span-2 p-4 rounded-2xl bg-secondary-bg/30 border border-border-color flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                         <Globe className="w-5 h-5 text-secondary-text" />                         <div>
                              <p className="text-xs text-secondary-text uppercase">Global Signals</p>
                              <p className="font-mono font-bold">8,492</p>
                          </div>
