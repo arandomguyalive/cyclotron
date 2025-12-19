@@ -114,6 +114,7 @@
 *   **Key Actions:**
     *   **SEO & Metadata Optimization:** Updated `layout.tsx` with a compelling title, description, and Open Graph tags for enhanced social media sharing and discoverability.
     *   **Scarcity Counter:** Implemented a "X/500 Blacklist Spots Remaining" counter on the Upgrade page to drive urgency and perceived exclusivity.
+    *   **Share Mechanic:** Added a "Download/Share" button to the `BlacklistCertificate.tsx` to encourage viral sharing (simulated download).
 
 ---
 

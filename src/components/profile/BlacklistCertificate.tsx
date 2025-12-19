@@ -1,5 +1,5 @@
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { User, ShieldCheck, Fingerprint } from "lucide-react";
+import { User, ShieldCheck, Fingerprint, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface BlacklistCertificateProps {
@@ -93,6 +93,18 @@ export function BlacklistCertificate({ handle, dateJoined, id, onClose }: Blackl
                     animate={{ top: ["0%", "100%", "0%"] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                 />
+                
+                {/* Download Button */}
+                <motion.button
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1, type: "spring", stiffness: 300, damping: 25 }}
+                    onClick={() => alert("Certificate image saved to your secured drive. Share with discretion.")}
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold uppercase tracking-widest text-sm rounded-full shadow-lg flex items-center gap-2"
+                >
+                    <Download className="w-5 h-5" />
+                    DOWNLOAD CERTIFICATE
+                </motion.button>
             </motion.div>
         </div>
     );
