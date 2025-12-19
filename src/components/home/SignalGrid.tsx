@@ -40,10 +40,44 @@ const mockPosts: Post[] = [
         createdAt: { toDate: () => new Date() },
         type: "post"
     },
-    // ... (rest of mock posts)
+    {
+        id: "m2",
+        caption: "The data packet has been secured.",
+        mediaUrl: "https://images.unsplash.com/photo-1515630278258-407f66498911?q=80&w=500",
+        mediaType: "image",
+        userHandle: "cipher_punk",
+        createdAt: { toDate: () => new Date() },
+        type: "post"
+    },
+    {
+        id: "m3",
+        caption: "System override complete. We are in.",
+        mediaUrl: "https://images.unsplash.com/photo-1555680202-c86f0e12f086?q=80&w=500",
+        mediaType: "image",
+        userHandle: "root_admin",
+        createdAt: { toDate: () => new Date() },
+        type: "post"
+    },
+    {
+        id: "m4",
+        caption: "Found a backdoor into the mainframe. Almost in.",
+        mediaUrl: "https://images.unsplash.com/photo-1596541223405-b04b6c31885f?q=80&w=500",
+        mediaType: "image",
+        userHandle: "matrix_diver",
+        createdAt: { toDate: () => new Date(Date.now() - 1000 * 60 * 60) },
+        type: "post"
+    }
 ];
 
-// ... (mockAd definition)
+const mockAd: MockAd = {
+    id: "ad-km18-upgrade",
+    type: "ad",
+    title: "KM18 Presents: The Firewall Upgrade",
+    description: "Secure your data. Mask your presence. Unlock full bandwidth.",
+    imageUrl: "https://images.unsplash.com/photo-1506729623722-b53502883017?q=80&w=500",
+    cta: "UPGRADE NOW",
+    color: "accent-1"
+};
 
 export function SignalGrid() {
     const { user } = useUser();
