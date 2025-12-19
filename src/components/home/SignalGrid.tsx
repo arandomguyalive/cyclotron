@@ -47,10 +47,21 @@ const mockPosts: Post[] = [
 
 export function SignalGrid() {
     const { user } = useUser();
-    // ... (hooks)
+    const { toast } = useToast();
+    const [posts, setPosts] = useState<(Post | MockAd)[]>([]); // Allow MockAd type
+    const [loading, setLoading] = useState(true);
+    const [dataSaver, setDataSaver] = useState(false);
+
+    const isFree = user?.tier === 'free';
 
     useEffect(() => {
-        // ... (data saver logic)
+        // Check data saver setting
+        setDataSaver(localStorage.getItem('oblivion_dataSaver') === 'true');
+        
+        const handleStorageChange = () => {
+            setDataSaver(localStorage.getItem('oblivion_dataSaver') === 'true');
+        };
+        window.addEventListener("storage", handleStorageChange);
 
         const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(4)); // Fetch more posts to insert ad
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -63,7 +74,11 @@ export function SignalGrid() {
                 fetchedPosts = mockPosts;
             }
 
-            // ... (ad injection logic)
+            // Inject mock ad for free users
+            if (isFree && fetchedPosts.length > 1) {
+                const adIndex = 1; // After the first real post
+                fetchedPosts.splice(adIndex, 0, mockAd);
+            }
             setPosts(fetchedPosts);
             setLoading(false);
         }, (err) => {
@@ -71,7 +86,10 @@ export function SignalGrid() {
             setPosts(mockPosts); // Fallback
             setLoading(false);
         });
-        // ... (cleanup)
+        return () => {
+            unsubscribe();
+            window.removeEventListener("storage", handleStorageChange);
+        };
     }, [isFree]); // Re-run effect if tier changes
 
     // ... (handleExtractHiddenMessage)
