@@ -107,6 +107,7 @@
     *   **Geo-Fencing Infrastructure:** Deployed `middleware.ts` to block traffic from restricted regions (e.g., North Korea, Embargoed Zones) and a custom "Access Denied" page.
     *   **Blacklist / Lifetime Tier:** Implemented "Founding Member" logic, including a shareable "Golden Ticket" certificate and Sovereign Wallet UI for tracking (future) earnings.
     *   **Signal Mode (Text Posts):** Implemented "Signal" creation mode for raw text transmissions and a specialized "Terminal Card" renderer in the Home Feed.
+    *   **Blacklist Visual Polish:** Enhanced the "Golden Ticket" with 3D holographic tilt/glitch effects, added animated graphs to the Sovereign Wallet, and a distinct "Star Badge" for Lifetime profiles.
 
 ---
 

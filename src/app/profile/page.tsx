@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { Settings, Grid, Film, Heart, MessageCircle, ShoppingBag, Wallet, ShieldCheck } from "lucide-react";
+import { Settings, Grid, Film, Heart, MessageCircle, ShoppingBag, Wallet, ShieldCheck, Star } from "lucide-react";
 import { SettingsModal } from "@/components/profile/SettingsModal";
 import { BlacklistCertificate } from "@/components/profile/BlacklistCertificate";
 import { useSonic } from "@/lib/SonicContext";
@@ -121,7 +121,14 @@ export default function ProfilePage() {
             </div>
 
             <div className="mt-8 relative z-30">
-              <h1 className="text-2xl font-bold drop-shadow-md">{user.displayName}</h1>
+              <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold drop-shadow-md">{user.displayName}</h1>
+                  {user.tier === 'lifetime' && (
+                      <div className="bg-amber-500/10 border border-amber-500/50 p-1 rounded-full animate-pulse">
+                          <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      </div>
+                  )}
+              </div>
               <p className="text-accent-1 drop-shadow-sm font-mono text-sm">@{user.handle}</p>
               <p className="mt-2 text-sm text-secondary-text leading-relaxed whitespace-pre-wrap">
                 {user.bio}
@@ -193,33 +200,82 @@ export default function ProfilePage() {
 
             {activeTab === 'wallet' && (
                 <div className="p-4 animate-in fade-in slide-in-from-right-8 duration-500">
-                    <div className="bg-zinc-900/50 border border-white/10 rounded-xl p-6 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <Wallet className="w-24 h-24 text-white" />
+                    <div className="bg-black/80 border border-brand-orange/30 rounded-xl p-6 relative overflow-hidden shadow-[0_0_30px_rgba(235,121,85,0.1)]">
+                        {/* Background Tech Elements */}
+                        <div className="absolute top-0 right-0 p-4 opacity-5">
+                            <Wallet className="w-32 h-32 text-brand-orange" />
                         </div>
+                        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-brand-orange/10 to-transparent pointer-events-none" />
                         
-                        <h3 className="text-xs text-zinc-400 uppercase tracking-widest mb-1">Total Asset Value</h3>
-                        <div className="text-4xl font-mono text-white font-bold mb-6">₹0.00</div>
-                        
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                                <span className="text-sm text-zinc-500">Pending Payouts</span>
-                                <span className="text-sm font-mono text-zinc-300">₹0.00</span>
+                        {/* Header */}
+                        <div className="flex justify-between items-start mb-6 relative z-10">
+                            <div>
+                                <h3 className="text-xs text-brand-orange/70 uppercase tracking-widest mb-1 flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-brand-orange rounded-full animate-pulse" />
+                                    Total Asset Value
+                                </h3>
+                                <motion.div 
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="text-4xl font-mono text-white font-bold tracking-tight"
+                                >
+                                    ₹0.00
+                                </motion.div>
                             </div>
-                            <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                                <span className="text-sm text-zinc-500">Creator Fund</span>
-                                <span className="text-sm font-mono text-zinc-300">Active</span>
+                            <div className="px-3 py-1 bg-brand-orange/10 border border-brand-orange/30 rounded text-[10px] text-brand-orange font-bold uppercase tracking-wider">
+                                Beta Access
                             </div>
                         </div>
 
-                        <button className="w-full mt-8 py-3 bg-brand-orange text-black font-bold uppercase tracking-widest text-sm hover:bg-white transition-colors">
-                            Withdraw Funds
-                        </button>
+                        {/* Fake Graph */}
+                        <div className="h-24 w-full mb-6 relative z-10">
+                            <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
+                                <defs>
+                                    <linearGradient id="graphGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#EB7955" stopOpacity="0.2" />
+                                        <stop offset="100%" stopColor="#EB7955" stopOpacity="0" />
+                                    </linearGradient>
+                                </defs>
+                                <motion.path
+                                    initial={{ pathLength: 0 }}
+                                    animate={{ pathLength: 1 }}
+                                    transition={{ duration: 1.5, ease: "easeInOut" }}
+                                    d="M0,80 C20,80 40,60 60,60 C80,60 100,75 120,75 C140,75 160,40 180,40 C200,40 220,55 240,55 C260,55 280,20 300,20"
+                                    fill="none"
+                                    stroke="#EB7955"
+                                    strokeWidth="2"
+                                    vectorEffect="non-scaling-stroke"
+                                />
+                                <path d="M0,80 C20,80 40,60 60,60 C80,60 100,75 120,75 C140,75 160,40 180,40 C200,40 220,55 240,55 C260,55 280,20 300,20 V100 H0 Z" fill="url(#graphGradient)" opacity="0.5" />
+                            </svg>
+                            <div className="absolute bottom-0 left-0 w-full h-px bg-white/10"></div>
+                        </div>
                         
-                        <p className="text-[10px] text-zinc-600 mt-4 text-center">
-                            * Withdrawals require Tier 3 Verification. <br/> 
-                            Next payout cycle: Dec 31, 2025.
-                        </p>
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-2 gap-4 mb-8 relative z-10">
+                            <div className="p-3 bg-white/5 rounded-lg border border-white/5">
+                                <span className="text-[10px] text-zinc-500 uppercase block mb-1">Pending</span>
+                                <span className="text-sm font-mono text-zinc-300">₹0.00</span>
+                            </div>
+                            <div className="p-3 bg-white/5 rounded-lg border border-white/5">
+                                <span className="text-[10px] text-zinc-500 uppercase block mb-1">Creator Fund</span>
+                                <span className="text-sm font-mono text-green-500 flex items-center gap-1">
+                                    <ShieldCheck className="w-3 h-3" /> Active
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="relative z-10 space-y-3">
+                             <button className="w-full py-3 bg-brand-orange text-black font-bold uppercase tracking-widest text-sm hover:bg-white transition-colors flex items-center justify-center gap-2">
+                                <Wallet className="w-4 h-4" />
+                                Connect Payout Method
+                            </button>
+                            <p className="text-[10px] text-zinc-500 text-center leading-relaxed">
+                                * Withdrawals are processed on the 1st of every month.<br/> 
+                                Minimum threshold: ₹5,000.
+                            </p>
+                        </div>
                     </div>
                 </div>
             )}
