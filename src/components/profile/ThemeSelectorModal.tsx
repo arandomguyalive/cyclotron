@@ -25,7 +25,7 @@ export function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps)
         //     alert("Access Restricted. Upgrade Clearance.");
         //     return;
         // }
-        setTheme(selectedTheme as any);
+        setTheme(selectedTheme as ThemeName);
         playClick(selectedTheme === theme ? 200 : 500, 0.05, 'triangle'); 
         if (navigator.vibrate) navigator.vibrate(20);
     };
@@ -158,7 +158,7 @@ export function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps)
     );
 }
 
-function ThemeCard({ theme, isActive, onClick, isPremium }: { theme: any, isActive: boolean, onClick: () => void, isPremium?: boolean }) {
+function ThemeCard({ theme, isActive, onClick, isPremium }: { theme: { name: ThemeName; colors: { [key: string]: string } }, isActive: boolean, onClick: () => void, isPremium?: boolean }) {
     return (
         <button
             onClick={onClick}

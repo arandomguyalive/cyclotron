@@ -19,7 +19,7 @@ interface ChatMessage {
   senderId: string;
   senderHandle: string;
   senderAvatar: string;
-  timestamp: any;
+  timestamp: firebase.firestore.Timestamp | Date;
   isBurner?: boolean;
 }
 
@@ -51,7 +51,8 @@ export function ChatView({ chatId }: ChatViewProps) {
     }
 
     if (!chatId || !firebaseUser) {
-        setChatLoading(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        if (chatLoading) setChatLoading(false); // Guard against unnecessary calls
         return;
     }
 
@@ -81,7 +82,7 @@ export function ChatView({ chatId }: ChatViewProps) {
                 timestamp: { toDate: () => new Date(Date.now() - 3500000) }
             }
         ]);
-        setChatLoading(false);
+        if (chatLoading) setChatLoading(false);
         return;
     }
 
@@ -105,10 +106,10 @@ export function ChatView({ chatId }: ChatViewProps) {
                 ...doc.data()
             })) as ChatMessage[];
             setMessages(newMessages);
-            setChatLoading(false);
+            if (chatLoading) setChatLoading(false);
         }, (error) => {
             console.error("Error fetching messages:", error);
-            setChatLoading(false);
+            if (chatLoading) setChatLoading(false);
         });
 
         return () => unsubscribe();
@@ -157,10 +158,10 @@ export function ChatView({ chatId }: ChatViewProps) {
                 ...doc.data()
             })) as ChatMessage[];
             setMessages(newMessages);
-            setChatLoading(false);
+            if (chatLoading) setChatLoading(false);
         }, (error) => {
             console.error("Error fetching messages:", error);
-            setChatLoading(false);
+            if (chatLoading) setChatLoading(false);
         });
 
         return () => unsubscribe();
@@ -325,15 +326,20 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = 
     if (isRevealed && message.encrypted) {
       try {
           const bytes = AES.decrypt(message.encrypted, SECRET_KEY);
-          setDisplayDecryptedText(bytes.toString(encUtf8));
+          const decryptedValue = bytes.toString(encUtf8);
+          if (decryptedValue !== displayDecryptedText) {
+            setDisplayDecryptedText(decryptedValue);
+          }
       } catch (e) {
           console.error("Decryption failed:", e);
-          setDisplayDecryptedText("[DECRYPTION FAILED]");
+          if (displayDecryptedText !== "[DECRYPTION FAILED]") {
+            setDisplayDecryptedText("[DECRYPTION FAILED]");
+          }
       }
-    } else if (!isRevealed) {
+    } else if (!isRevealed && displayDecryptedText !== null) {
         setDisplayDecryptedText(null); // Clear on un-reveal
     }
-  }, [isRevealed, message.encrypted]);
+  }, [isRevealed, message.encrypted, displayDecryptedText]);
 
   // Burn Timer Simulation (Visual only, starts after reveal)
   useEffect(() => {

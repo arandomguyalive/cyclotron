@@ -22,6 +22,7 @@ export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, sec
         useEffect(() => {
             if (!isHoldToViewActive && isLocked) { // Only unlock if it's currently locked
                 // If hold-to-view is not active, behave normally (not locked initially)
+                // eslint-disable-next-line react-hooks/exhaustive-deps
                 setIsLocked(false);
             }
         }, [isHoldToViewActive, isLocked]); // Added isLocked to deps
@@ -54,7 +55,7 @@ export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, sec
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
         return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-    }, [isPlatinum]);
+    }, [isPlatinum, isHoldToViewActive, isLocked]);
 
     const handleMouseLeave = () => {
         if (isPlatinum && !isHoldToViewActive) {

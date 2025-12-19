@@ -15,7 +15,7 @@ interface Post {
     mediaUrl: string;
     mediaType: "image" | "video";
     userHandle: string;
-    createdAt: any;
+    createdAt: firebase.firestore.Timestamp | Date;
     type: "post" | "text";
     hasHiddenMessage?: boolean;
 }
@@ -84,14 +84,16 @@ export function SignalGrid() {
     const { toast } = useToast();
     const [posts, setPosts] = useState<(Post | MockAd)[]>([]); // Allow MockAd type
     const [loading, setLoading] = useState(true);
-    const [dataSaver, setDataSaver] = useState(false);
+    const [dataSaver, setDataSaver] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('oblivion_dataSaver') === 'true';
+        }
+        return false;
+    });
 
     const isFree = user?.tier === 'free';
 
     useEffect(() => {
-        // Check data saver setting
-        setDataSaver(localStorage.getItem('oblivion_dataSaver') === 'true');
-        
         const handleStorageChange = () => {
             setDataSaver(localStorage.getItem('oblivion_dataSaver') === 'true');
         };

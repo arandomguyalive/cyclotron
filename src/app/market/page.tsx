@@ -13,7 +13,7 @@ interface MarketItem {
     name: string;
     description: string;
     price: number;
-    icon: any;
+    icon: React.ElementType;
     type: "consumable" | "unlock";
     color: string;
 }

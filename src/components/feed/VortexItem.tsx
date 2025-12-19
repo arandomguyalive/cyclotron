@@ -16,7 +16,7 @@ export interface Post {
   userHandle: string;
   userAvatar: string;
   likes: number;
-  createdAt: any;
+  createdAt: firebase.firestore.Timestamp | Date;
 }
 
 export interface Ad {

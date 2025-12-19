@@ -1,6 +1,5 @@
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { User, ShieldCheck, Fingerprint, Download } from "lucide-react";
-import { useState, useEffect } from "react";
 
 interface BlacklistCertificateProps {
     handle: string;
@@ -22,16 +21,13 @@ export function BlacklistCertificate({ handle, dateJoined, id, onClose }: Blackl
         y.set(event.clientY - rect.top);
     }
     
-    const [qrPattern, setQrPattern] = useState<boolean[]>([]);
-
-    useEffect(() => {
-        // Generate a pseudo-random but stable pattern based on the user's ID
+    const qrPattern = React.useMemo(() => {
         const seed = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
         const newPattern: boolean[] = [];
         for (let i = 0; i < 16; i++) {
             newPattern.push(((seed + i) % 2) === 0); // Simple deterministic pattern
         }
-        setQrPattern(newPattern);
+        return newPattern;
     }, [id]); // Regenerate if ID changes
 
     return (

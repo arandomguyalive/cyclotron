@@ -111,7 +111,7 @@ export default function VortexPage() {
         let newItems: (Post | Ad)[] = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
-        })) as Post[];
+        })) as (Post | Ad)[];
         
         // Filter for Reels (Videos) only
         newItems = newItems.filter(item => 
@@ -274,7 +274,7 @@ export default function VortexPage() {
   );
 }
 
-function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkText, isFree }: { index: number, post: Post | Ad, parentZ: any, activeIndex: number, onCollect: () => void, watermarkText?: string, isFree?: boolean }) {
+function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkText, isFree }: { index: number, post: Post | Ad, parentZ: MotionValue<number>, activeIndex: number, onCollect: () => void, watermarkText?: string, isFree?: boolean }) {
     // Base Z position for this item
     const baseZ = index * GAP;
     

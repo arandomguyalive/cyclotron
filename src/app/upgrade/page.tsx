@@ -133,7 +133,7 @@ export default function UpgradePage() {
                                     ) : (
                                         <button 
                                             onClick={() => {
-                                                setSelectedTier(tier.id as any);
+                                                setSelectedTier(tier.id);
                                                 setIsPaymentModalOpen(true);
                                             }}
                                             className={`mt-auto w-full py-3 rounded-xl font-bold ${tier.buttonBgColor} transition-colors hover:scale-[1.02] active:scale-[0.98]`}

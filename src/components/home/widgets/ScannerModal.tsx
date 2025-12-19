@@ -8,6 +8,12 @@ import { db } from "@/lib/firebase";
 import { useSonic } from "@/lib/SonicContext";
 import { useUser } from "@/lib/UserContext";
 import { useToast } from "@/lib/ToastContext";
+import { Post, Ad } from "@/components/feed/VortexItem"; // Assuming Post and Ad interfaces are exported
+
+interface SignalPost extends Post {
+    arX: number;
+    arY: number;
+}
 
 interface ScannerModalProps {
   isOpen: boolean;
@@ -16,7 +22,7 @@ interface ScannerModalProps {
 }
 
 export function ScannerModal({ isOpen, onClose, userRegion = "global" }: ScannerModalProps) {
-  const [signals, setSignals] = useState<any[]>([]);
+  const [signals, setSignals] = useState<(Post | Ad | SignalPost)[]>([]);
   const [scanning, setScanning] = useState(true);
   const [arMode, setArMode] = useState(false);
   const { playClick } = useSonic();
@@ -40,13 +46,13 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
                     // In a real app, add: where("region", "==", userRegion)
                 );
                 const snapshot = await getDocs(q);
-                const found = snapshot.docs.map(doc => ({ 
+                const found: (Post | Ad | SignalPost)[] = snapshot.docs.map(doc => ({ 
                     id: doc.id, 
                     ...doc.data(),
                     // Generate random AR positions
                     arX: Math.random() * 80 + 10,
                     arY: Math.random() * 60 + 20, 
-                }));
+                })) as (Post | Ad | SignalPost)[];
                 setSignals(found);
             } catch (e) {
                 console.error(e);
@@ -60,7 +66,7 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
     }
   }, [isOpen, userRegion, playClick]);
 
-  const handleClaim = async (signal: any) => {
+  const handleClaim = async (signal: SignalPost) => {
       if (!user) return;
       playClick(600, 0.1, 'square');
       
@@ -171,7 +177,7 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
                 ) : arMode ? (
                     // AR View
                     <div className="relative w-full h-full">
-                        {signals.filter(s => s.type === 'drop').map((signal) => (
+                        {signals.filter((s): s is SignalPost => (s as SignalPost).type === 'drop').map((signal) => (
                             <motion.div
                                 key={signal.id}
                                 initial={{ scale: 0 }}
@@ -190,7 +196,7 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
                             </motion.div>
                         ))}
                         
-                        {signals.filter(s => s.type === 'drop').length === 0 && (
+                        {signals.filter((s): s is SignalPost => (s as SignalPost).type === 'drop').length === 0 && (
                             <div className="absolute inset-0 flex items-center justify-center text-white/50 font-mono text-sm">
                                 NO ARTIFACTS DETECTED
                             </div>

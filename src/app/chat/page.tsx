@@ -16,7 +16,7 @@ interface Chat {
   id: string;
   participants: string[]; // UIDs of participants
   lastMessage: string;
-  lastMessageTimestamp: any;
+  lastMessageTimestamp: firebase.firestore.Timestamp | Date;
   // Other metadata like chat name, avatar, etc.
   mockName?: string;
   mockAvatar?: string;

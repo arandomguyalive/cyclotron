@@ -15,8 +15,8 @@ interface Story {
   userId: string;
   userHandle: string;
   userAvatar: string;
-  createdAt: any;
-  expiresAt: any;
+  createdAt: firebase.firestore.Timestamp | Date;
+  expiresAt: firebase.firestore.Timestamp | Date;
   caption?: string;
 }
 

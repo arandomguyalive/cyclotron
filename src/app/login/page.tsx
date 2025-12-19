@@ -36,8 +36,12 @@ export default function LoginPage() {
           await signup(email, password, handle);
       }
       // Router redirection handled by useEffect
-    } catch (err: any) {
-      setError(err.message || "Authentication failed.");
+    } catch (err: unknown) { // Use unknown for better type safety
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Authentication failed.");
+      }
       setIsAuthenticating(false);
     }
   };

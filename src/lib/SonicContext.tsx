@@ -19,6 +19,7 @@ export const SonicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Initialize AudioContext on first user interaction
   const initializeAudio = useCallback(() => {
     if (!audioContextRef.current) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       console.log('AudioContext initialized');
     }

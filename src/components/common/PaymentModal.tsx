@@ -17,6 +17,7 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalPro
 
   useEffect(() => {
     if (!isOpen && paymentStep !== 'form') {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setPaymentStep("form"); // Reset state when closed
     }
   }, [isOpen, paymentStep]);
@@ -27,7 +28,7 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalPro
       setPaymentStep("success");
       
       // Special Handling for Lifetime: Set accessType
-      const updates: any = { tier: upgradeToTier };
+      const updates: Partial<UserProfile> = { tier: upgradeToTier };
       if (upgradeToTier === 'lifetime') {
           updates.accessType = 'LIFETIME_BLACKLIST';
       }

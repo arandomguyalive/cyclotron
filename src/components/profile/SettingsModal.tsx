@@ -218,9 +218,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
                                         alert("Test users seeded! 'admin-two' UID copied to clipboard.");
                                         navigator.clipboard.writeText("admin-two");
-                                    } catch (e: any) {
+                                    } catch (e: unknown) {
                                         console.error(e);
-                                        alert(`Failed to seed users: ${e.message}`);
+                                        if (e instanceof Error) {
+                                            alert(`Failed to seed users: ${e.message}`);
+                                        } else {
+                                            alert("Failed to seed users.");
+                                        }
                                     }
                                 }}
                                 className="w-full py-4 flex items-center justify-center gap-2 text-accent-2 bg-accent-2/10 rounded-xl border border-accent-2/20 hover:bg-accent-2/20 transition-colors"
@@ -353,7 +357,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 )}
                 
                 <div className="text-center text-xs text-secondary-text pt-8">
-                    ABHED v1.0.0 <span className="opacity-50">// Powered by KM18</span>
+                    ABHED v1.0.0 {/* Powered by KM18 */}
                 </div>
             </div>
           </motion.div>
@@ -393,7 +397,7 @@ function SettingItem({
   isPaid, 
   onClick 
 }: { 
-  icon: any, 
+  icon: React.ElementType, 
   label: string, 
   value?: string, 
   toggle?: boolean, 

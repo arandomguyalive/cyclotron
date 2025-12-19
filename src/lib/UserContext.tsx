@@ -88,7 +88,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           // Apply Simulated Tier Override
           const simulatedTier = localStorage.getItem("simulated_tier");
           if (simulatedTier) {
-              userData = { ...userData, tier: simulatedTier as any };
+              userData = { ...userData, tier: simulatedTier as UserProfile['tier'] };
           }
 
           setUser(userData);

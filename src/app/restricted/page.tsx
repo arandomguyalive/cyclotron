@@ -5,11 +5,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 
 export default function RestrictedPage() {
-  const [ipHash, setIpHash] = useState("LOADING...");
-
-  useEffect(() => {
-      setIpHash(Math.random().toString(36).substring(7).toUpperCase());
-  }, []);
+  const [ipHash, setIpHash] = useState(() => Math.random().toString(36).substring(7).toUpperCase());
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-red-500 font-mono p-4 overflow-hidden relative">

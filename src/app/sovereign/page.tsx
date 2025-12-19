@@ -19,7 +19,7 @@ interface UserProfileSimple {
 interface Alert {
     id?: string;
     message: string;
-    timestamp: any;
+    timestamp: firebase.firestore.Timestamp | Date;
 }
 
 export default function SovereignDashboardPage() {
@@ -191,7 +191,7 @@ export default function SovereignDashboardPage() {
     );
 }
 
-function StatCard({ icon: Icon, label, value, color }: { icon: any, label: string, value: string | number, color: string }) {
+function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType, label: string, value: string | number, color: string }) {
     return (
         <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
