@@ -16,10 +16,10 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalPro
   const [paymentStep, setPaymentStep] = useState<"form" | "processing" | "success">("form");
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isOpen && paymentStep !== 'form') {
       setPaymentStep("form"); // Reset state when closed
     }
-  }, [isOpen]);
+  }, [isOpen, paymentStep]);
 
   const handlePayment = () => {
     setPaymentStep("processing");

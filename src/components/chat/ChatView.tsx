@@ -318,18 +318,22 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = 
   const [burnProgress, setBurnProgress] = useState(0);
   const [isBurnt, setIsBurnt] = useState(false);
   const { playClick } = useSonic();
+  const [displayDecryptedText, setDisplayDecryptedText] = useState<string | null>(null);
 
-  // Decrypt message once revealed
-  const decryptedText = useRef<string | null>(null);
-  if (isRevealed && decryptedText.current === null) {
+  // Decrypt message when revealed
+  useEffect(() => {
+    if (isRevealed && message.encrypted) {
       try {
           const bytes = AES.decrypt(message.encrypted, SECRET_KEY);
-          decryptedText.current = bytes.toString(encUtf8);
+          setDisplayDecryptedText(bytes.toString(encUtf8));
       } catch (e) {
           console.error("Decryption failed:", e);
-          decryptedText.current = "[DECRYPTION FAILED]";
+          setDisplayDecryptedText("[DECRYPTION FAILED]");
       }
-  }
+    } else if (!isRevealed) {
+        setDisplayDecryptedText(null); // Clear on un-reveal
+    }
+  }, [isRevealed, message.encrypted]);
 
   // Burn Timer Simulation (Visual only, starts after reveal)
   useEffect(() => {
@@ -429,7 +433,7 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = 
                 className="text-sm relative z-10 flex items-start gap-2"
             >
                 {message.isBurner && <Flame className="w-3 h-3 text-brand-orange animate-pulse mt-1 shrink-0" />}
-                <p>{decryptedText.current || message.text}</p>
+                <p>{displayDecryptedText || message.text}</p>
             </motion.div>
             
             {/* Burn Fuse Visual */}

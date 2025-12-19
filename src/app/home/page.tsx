@@ -6,18 +6,16 @@ import { useUser } from "@/lib/UserContext";
 import { motion } from "framer-motion";
 import { StoriesTray } from "@/components/feed/StoriesTray";
 import { SignalGrid } from "@/components/home/SignalGrid";
-import { FrequencyTuner } from "@/components/home/widgets/FrequencyTuner";
 import { DailyDirective } from "@/components/home/widgets/DailyDirective";
 import { SystemTerminal } from "@/components/home/widgets/SystemTerminal";
-import { TrendingTags } from "@/components/home/widgets/TrendingTags";
 import { ScannerModal } from "@/components/home/widgets/ScannerModal";
 import { CreatePostModal } from "@/components/feed/CreatePostModal";
-import { Activity, Zap, Shield, Globe, Lock, AlertTriangle, Eye, Server, Radio, Signal, Wifi, Ghost } from "lucide-react";
+import { Activity, Shield, Globe, Lock, Server, Radio, Ghost } from "lucide-react";
 
 export default function HomePage() {
   const { user, firebaseUser, loading } = useUser();
   const router = useRouter();
-  const [ghostMode, setGhostMode] = useState(false);
+  const [ghostMode, setGhostMode] = useState(() => localStorage.getItem('oblivion_ghostMode') === 'true');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isMissionModalOpen, setIsMissionModalOpen] = useState(false);
 
@@ -26,9 +24,6 @@ export default function HomePage() {
     if (!loading && !firebaseUser) {
       router.push("/login");
     }
-
-    // Initial check
-    setGhostMode(localStorage.getItem('oblivion_ghostMode') === 'true');
 
     // Listener for changes from SettingsModal
     const handleStorageChange = () => {

@@ -102,8 +102,14 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeName>('oblivion');
-  const [colorMode, setColorMode] = useState<ColorMode>('dark');
+  const [theme, setThemeState] = useState<ThemeName>(() => {
+    const savedTheme = localStorage.getItem('oblivion_theme') as ThemeName;
+    return (savedTheme && themes[savedTheme]) ? savedTheme : 'oblivion';
+  });
+  const [colorMode, setColorMode] = useState<ColorMode>(() => {
+    const savedMode = localStorage.getItem('oblivion_color_mode') as ColorMode;
+    return savedMode === 'light' ? 'light' : 'dark';
+  });
 
   const applyThemeStyles = useCallback((name: ThemeName, mode: ColorMode) => {
     const root = document.documentElement;
@@ -131,16 +137,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('oblivion_theme') as ThemeName;
-    const savedMode = localStorage.getItem('oblivion_color_mode') as ColorMode;
-    
-    const initialTheme = (savedTheme && themes[savedTheme]) ? savedTheme : 'oblivion';
-    const initialMode = savedMode === 'light' ? 'light' : 'dark';
-
-    setThemeState(initialTheme);
-    setColorMode(initialMode);
-    applyThemeStyles(initialTheme, initialMode);
-  }, [applyThemeStyles]);
+    applyThemeStyles(theme, colorMode);
+  }, [theme, colorMode, applyThemeStyles]); // Depend on theme and colorMode now.
 
   const setTheme = useCallback((name: ThemeName) => {
     setThemeState(name);

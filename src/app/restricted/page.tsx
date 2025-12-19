@@ -1,7 +1,14 @@
 import { ShieldAlert, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export default function RestrictedPage() {
+  const [ipHash, setIpHash] = useState("LOADING...");
+
+  useEffect(() => {
+      setIpHash(Math.random().toString(36).substring(7).toUpperCase());
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-red-500 font-mono p-4 overflow-hidden relative">
       {/* Background Noise/Grid */}
@@ -37,7 +44,7 @@ export default function RestrictedPage() {
         <div className="w-full h-px bg-gradient-to-r from-transparent via-red-900 to-transparent my-8"></div>
 
         <div className="text-xs text-red-700 font-mono">
-            IP_HASH: {Math.random().toString(36).substring(7).toUpperCase()} <br/>
+            IP_HASH: {ipHash} <br/>
             NODE: BLK-MARKET-ALPHA
         </div>
 

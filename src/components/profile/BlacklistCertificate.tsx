@@ -21,6 +21,18 @@ export function BlacklistCertificate({ handle, dateJoined, id, onClose }: Blackl
         x.set(event.clientX - rect.left);
         y.set(event.clientY - rect.top);
     }
+    
+    const [qrPattern, setQrPattern] = useState<boolean[]>([]);
+
+    useEffect(() => {
+        // Generate a pseudo-random but stable pattern based on the user's ID
+        const seed = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const newPattern: boolean[] = [];
+        for (let i = 0; i < 16; i++) {
+            newPattern.push(((seed + i) % 2) === 0); // Simple deterministic pattern
+        }
+        setQrPattern(newPattern);
+    }, [id]); // Regenerate if ID changes
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 perspective-1000" onClick={onClose}>
@@ -77,8 +89,8 @@ export function BlacklistCertificate({ handle, dateJoined, id, onClose }: Blackl
                     <div className="w-14 h-14 bg-black border border-amber-500/50 p-0.5 relative overflow-hidden">
                         <div className="absolute inset-0 bg-amber-500/10 animate-pulse"></div>
                         <div className="w-full h-full grid grid-cols-4 grid-rows-4 gap-px">
-                             {Array(16).fill(0).map((_, i) => (
-                                 <div key={i} className={`w-full h-full ${Math.random() > 0.4 ? 'bg-amber-500' : 'bg-black'} opacity-80`}></div>
+                             {qrPattern.map((isFilled, i) => (
+                                 <div key={i} className={`w-full h-full ${isFilled ? 'bg-amber-500' : 'bg-black'} opacity-80`}></div>
                              ))}
                         </div>
                     </div>

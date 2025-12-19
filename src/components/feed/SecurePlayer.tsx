@@ -20,11 +20,11 @@ export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, sec
         const isPlatinum = ['platinum', 'ultimate'].includes(user?.tier || 'free');
     
         useEffect(() => {
-            if (!isHoldToViewActive) {
+            if (!isHoldToViewActive && isLocked) { // Only unlock if it's currently locked
                 // If hold-to-view is not active, behave normally (not locked initially)
                 setIsLocked(false);
             }
-        }, [isHoldToViewActive]);
+        }, [isHoldToViewActive, isLocked]); // Added isLocked to deps
     
         const handlePress = () => {
             if (isHoldToViewActive) {
