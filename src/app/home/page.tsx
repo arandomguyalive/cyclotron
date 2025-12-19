@@ -15,7 +15,12 @@ import { Activity, Shield, Globe, Lock, Server, Radio, Ghost } from "lucide-reac
 export default function HomePage() {
   const { user, firebaseUser, loading } = useUser();
   const router = useRouter();
-  const [ghostMode, setGhostMode] = useState(() => localStorage.getItem('oblivion_ghostMode') === 'true');
+  const [ghostMode, setGhostMode] = useState(() => {
+      if (typeof window !== 'undefined') {
+          return localStorage.getItem('oblivion_ghostMode') === 'true';
+      }
+      return false;
+  });
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isMissionModalOpen, setIsMissionModalOpen] = useState(false);
 

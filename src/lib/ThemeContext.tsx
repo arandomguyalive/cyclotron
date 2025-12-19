@@ -103,15 +103,23 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<ThemeName>(() => {
-    const savedTheme = localStorage.getItem('oblivion_theme') as ThemeName;
-    return (savedTheme && themes[savedTheme]) ? savedTheme : 'oblivion';
+    if (typeof window !== 'undefined') {
+        const savedTheme = localStorage.getItem('oblivion_theme') as ThemeName;
+        return (savedTheme && themes[savedTheme]) ? savedTheme : 'oblivion';
+    }
+    return 'oblivion';
   });
   const [colorMode, setColorMode] = useState<ColorMode>(() => {
-    const savedMode = localStorage.getItem('oblivion_color_mode') as ColorMode;
-    return savedMode === 'light' ? 'light' : 'dark';
+    if (typeof window !== 'undefined') {
+        const savedMode = localStorage.getItem('oblivion_color_mode') as ColorMode;
+        return savedMode === 'light' ? 'light' : 'dark';
+    }
+    return 'dark';
   });
 
   const applyThemeStyles = useCallback((name: ThemeName, mode: ColorMode) => {
+    if (typeof window === 'undefined') return;
+    
     const root = document.documentElement;
     
     // Handle Light/Dark Mode
