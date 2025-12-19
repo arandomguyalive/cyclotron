@@ -126,7 +126,29 @@ export function SignalGrid() {
         };
     }, [isFree]); // Re-run effect if tier changes
 
-    // ... (handleExtractHiddenMessage)
+    const handleExtractHiddenMessage = async (post: Post) => {
+        if (!post.hasHiddenMessage || post.mediaType !== 'image') {
+            toast("No hidden message detected.", "info");
+            return;
+        }
+
+        try {
+            toast("Analyzing image for hidden signals...", "info");
+            const response = await fetch(post.mediaUrl);
+            const blob = await response.blob();
+            const imageFile = new File([blob], "stego_image.png", { type: blob.type });
+
+            const extractedMessage = await extractMessageFromImage(imageFile);
+            if (extractedMessage) {
+                toast(`Hidden Message: ${extractedMessage}`, "success");
+            } else {
+                toast("No decipherable hidden message found.", "warning");
+            }
+        } catch (error) {
+            console.error("Error extracting hidden message:", error);
+            toast("Failed to extract hidden message.", "error");
+        }
+    };
 
     if (loading) return <div className="h-40 flex items-center justify-center text-xs text-secondary-text animate-pulse">Scanning frequencies...</div>;
 
