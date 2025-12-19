@@ -1,3 +1,5 @@
+import React, { useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, Send, Image as ImageIcon, Film, Mic, Loader2, CheckCircle2, Globe, MapPin, Terminal } from "lucide-react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
