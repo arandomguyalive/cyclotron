@@ -12,6 +12,7 @@ export default function UpgradePage() {
     const { user } = useUser();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [selectedTier, setSelectedTier] = useState<"premium" | "gold" | "platinum" | "lifetime">("premium");
+    const [spotsLeft, setSpotsLeft] = useState(487); // Simulating some spots already taken
 
     const tiers = [
                 {
@@ -80,6 +81,23 @@ export default function UpgradePage() {
                         >
                             Unlock the full power of ABHED. Secure your digital existence with KM18's advanced protocols.
                         </motion.p>
+                        
+                        {/* Blacklist Spots Remaining */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="relative bg-gradient-to-r from-amber-900/20 to-black border border-amber-500/30 rounded-xl p-4 text-center shadow-lg"
+                        >
+                            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10" />
+                            <p className="text-sm font-bold text-amber-500 uppercase tracking-widest animate-pulse">
+                                Limited Offer
+                            </p>
+                            <h3 className="text-3xl font-black text-white mt-2">
+                                <span className="text-amber-500">{spotsLeft}</span> / 500 Blacklist Spots Remaining
+                            </h3>
+                            <p className="text-xs text-amber-700 mt-2">Act fast before the opportunity is gone.</p>
+                        </motion.div>
         
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {tiers.map((tier, index) => (
@@ -94,6 +112,7 @@ export default function UpgradePage() {
                                         {tier.id === "premium" && <Shield className="w-8 h-8" />}
                                         {tier.id === "gold" && <Briefcase className="w-8 h-8" />}
                                         {tier.id === "platinum" && <Crown className="w-8 h-8" />}
+                                        {tier.id === "lifetime" && <Lock className="w-8 h-8" />}
                                     </div>
                                     <h2 className={`text-2xl font-bold mb-2 ${tier.textColor}`}>{tier.name}</h2>
                                     <p className="text-3xl font-extrabold mb-4">{tier.price}</p>

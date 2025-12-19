@@ -15,13 +15,40 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KM18's ABHED",
-  description: "The Impenetrable Digital Sanctum.",
+  metadataBase: new URL('https://your-domain.com'), // Replace with actual domain
+  title: {
+    default: "ABHED: Join the Blacklist - Secure, Sovereign, Exclusive",
+    template: "%s | ABHED Blacklist",
+  },
+  description: "Secure your digital existence with KM18's ABHED Blacklist. Experience unparalleled privacy, forensic protection, and exclusive access. Only 500 spots available.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "KM18's ABHED",
+    title: "ABHED Blacklist",
+  },
+  openGraph: {
+    title: "ABHED: Join the Blacklist - Secure, Sovereign, Exclusive",
+    description: "Secure your digital existence with KM18's ABHED Blacklist. Experience unparalleled privacy, forensic protection, and exclusive access. Only 500 spots available.",
+    url: "https://your-domain.com/upgrade", // Replace with upgrade page URL
+    siteName: "ABHED Blacklist",
+    images: [
+      {
+        url: "https://your-domain.com/og-image.jpg", // Placeholder for actual OG image
+        width: 1200,
+        height: 630,
+        alt: "ABHED Blacklist: Secure Your Existence",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ABHED: Join the Blacklist - Secure, Sovereign, Exclusive",
+    description: "Secure your digital existence with KM18's ABHED Blacklist. Experience unparalleled privacy, forensic protection, and exclusive access. Only 500 spots available.",
+    creator: "@KM18Official", // Replace with actual Twitter handle
+    images: ["https://your-domain.com/og-image.jpg"], // Placeholder for actual OG image
   },
 };
 
