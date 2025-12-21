@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, useMotionValue, useTransform, useSpring, PanInfo, AnimatePresence } from "framer-motion";
+import { motion, useMotionValue, useTransform, useSpring, PanInfo, AnimatePresence, MotionValue } from "framer-motion";
 import { VortexItem, Post, Ad } from "@/components/feed/VortexItem";
 import { ChevronUp, Box, Loader2, WifiOff } from "lucide-react";
 import { useSonic } from "@/lib/SonicContext";
