@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle2, Loader2, CreditCard, Banknote } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useUser } from "@/lib/UserContext";
+import { useUser, UserProfile } from "@/lib/UserContext";
 
 interface PaymentModalProps {
   isOpen: boolean;

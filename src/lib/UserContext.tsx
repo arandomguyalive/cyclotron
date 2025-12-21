@@ -11,7 +11,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
-interface UserProfile {
+export interface UserProfile {
   displayName: string;
   handle: string;
   bio: string;

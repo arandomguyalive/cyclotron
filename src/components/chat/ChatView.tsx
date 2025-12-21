@@ -51,7 +51,6 @@ export function ChatView({ chatId }: ChatViewProps) {
     }
 
     if (!chatId || !firebaseUser) {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         if (chatLoading) setChatLoading(false); // Guard against unnecessary calls
         return;
     }
