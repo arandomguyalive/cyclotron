@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { MessageCircle, Search, PlusCircle, Loader2, Users, Globe } from "lucide-react";
 import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { collection, query, where, onSnapshot, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { UserSearchModal } from "@/components/chat/UserSearchModal";
 import { ChatView } from "@/components/chat/ChatView";
@@ -16,7 +16,7 @@ interface Chat {
   id: string;
   participants: string[]; // UIDs of participants
   lastMessage: string;
-  lastMessageTimestamp: firebase.firestore.Timestamp | Date;
+  lastMessageTimestamp: Timestamp | Date;
   // Other metadata like chat name, avatar, etc.
   mockName?: string;
   mockAvatar?: string;

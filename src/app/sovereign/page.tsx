@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useUser } from "@/lib/UserContext";
 import { Users, Signal, Globe, Zap, AlertTriangle, ShieldOff, CheckCircle, Crown, X, Loader2 } from "lucide-react";
 import { useToast } from "@/lib/ToastContext";
-import { collection, query, orderBy, limit, onSnapshot, addDoc, serverTimestamp, doc, updateDoc } from "firebase/firestore";
+import { collection, query, orderBy, limit, onSnapshot, addDoc, serverTimestamp, doc, updateDoc, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 interface UserProfileSimple {
@@ -19,7 +19,7 @@ interface UserProfileSimple {
 interface Alert {
     id?: string;
     message: string;
-    timestamp: firebase.firestore.Timestamp | Date;
+    timestamp: Timestamp | Date;
 }
 
 export default function SovereignDashboardPage() {

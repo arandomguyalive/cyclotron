@@ -267,6 +267,7 @@ export default function VortexPage() {
                 onCollect={() => setCycles(prev => prev + 100)} 
                 watermarkText={watermarkText} // Pass watermarkText
                 isFree={isFree} // Pass isFree
+                tier={user?.tier || 'free'} // Pass tier
             />
         ))}
       </div>
@@ -274,7 +275,7 @@ export default function VortexPage() {
   );
 }
 
-function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkText, isFree }: { index: number, post: Post | Ad, parentZ: MotionValue<number>, activeIndex: number, onCollect: () => void, watermarkText?: string, isFree?: boolean }) {
+function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkText, isFree, tier }: { index: number, post: Post | Ad, parentZ: MotionValue<number>, activeIndex: number, onCollect: () => void, watermarkText?: string, isFree?: boolean, tier: string }) {
     // Base Z position for this item
     const baseZ = index * GAP;
     
@@ -316,7 +317,7 @@ function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkTex
             className="origin-center p-4"
         >
              {/* The Card Content */}
-             <VortexItem post={post} index={index} watermarkText={watermarkText} isFree={isFree} />
+             <VortexItem post={post} index={index} watermarkText={watermarkText} isFree={isFree} tier={tier} />
 
              {/* Scavenger Hunt Artifact */}
              {hasArtifact && (

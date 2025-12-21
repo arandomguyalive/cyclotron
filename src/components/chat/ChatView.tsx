@@ -338,7 +338,8 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = 
     } else if (!isRevealed && displayDecryptedText !== null) {
         setDisplayDecryptedText(null); // Clear on un-reveal
     }
-  }, [isRevealed, message.encrypted, displayDecryptedText]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRevealed, message.encrypted]);
 
   // Burn Timer Simulation (Visual only, starts after reveal)
   useEffect(() => {
