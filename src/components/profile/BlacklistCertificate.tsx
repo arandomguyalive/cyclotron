@@ -1,5 +1,6 @@
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { User, ShieldCheck, Fingerprint, Download } from "lucide-react";
+import { useMemo } from "react";
 
 interface BlacklistCertificateProps {
     handle: string;
@@ -21,7 +22,7 @@ export function BlacklistCertificate({ handle, dateJoined, id, onClose }: Blackl
         y.set(event.clientY - rect.top);
     }
     
-    const qrPattern = React.useMemo(() => {
+    const qrPattern = useMemo(() => {
         const seed = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
         const newPattern: boolean[] = [];
         for (let i = 0; i < 16; i++) {

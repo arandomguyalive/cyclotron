@@ -87,7 +87,7 @@ const themes = {
   },
 };
 
-type ThemeName = keyof typeof themes;
+export type ThemeName = keyof typeof themes;
 type ColorMode = 'light' | 'dark';
 
 interface ThemeContextType {

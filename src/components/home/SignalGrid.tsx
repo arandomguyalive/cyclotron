@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@/lib/UserContext";
-import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { collection, query, orderBy, limit, onSnapshot, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Heart, MessageCircle, Share2, MoreHorizontal, Bookmark, Eye } from "lucide-react";
 import { motion } from "framer-motion";
@@ -15,7 +15,7 @@ interface Post {
     mediaUrl: string;
     mediaType: "image" | "video";
     userHandle: string;
-    createdAt: firebase.firestore.Timestamp | Date;
+    createdAt: Timestamp | Date;
     type: "post" | "text";
     hasHiddenMessage?: boolean;
 }

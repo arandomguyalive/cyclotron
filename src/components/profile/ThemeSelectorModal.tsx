@@ -5,7 +5,7 @@ import { X, Save, RefreshCw, Palette, Lock, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
-import { useTheme } from "@/lib/ThemeContext";
+import { useTheme, ThemeName } from "@/lib/ThemeContext";
 import { cn } from "@/lib/utils";
 
 interface ThemeSelectorModalProps {

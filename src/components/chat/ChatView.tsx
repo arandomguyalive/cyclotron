@@ -69,7 +69,7 @@ export function ChatView({ chatId }: ChatViewProps) {
                 senderId: "mock-partner",
                 senderHandle: "Cyber_Ghost",
                 senderAvatar: "Ghost",
-                timestamp: { toDate: () => new Date(Date.now() - 3600000) }
+                timestamp: new Date(Date.now() - 3600000)
             },
             {
                 id: "m2",
@@ -78,7 +78,7 @@ export function ChatView({ chatId }: ChatViewProps) {
                 senderId: firebaseUser.uid,
                 senderHandle: currentUserProfile?.handle || "You",
                 senderAvatar: currentUserProfile?.avatarSeed || "User",
-                timestamp: { toDate: () => new Date(Date.now() - 3500000) }
+                timestamp: new Date(Date.now() - 3500000)
             }
         ]);
         if (chatLoading) setChatLoading(false);

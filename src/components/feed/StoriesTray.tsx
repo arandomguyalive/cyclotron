@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, X, ChevronRight, ChevronLeft, Lock } from "lucide-react";
-import { collection, query, where, getDocs, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { collection, query, where, getDocs, orderBy, limit, onSnapshot, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
@@ -15,8 +15,8 @@ interface Story {
   userId: string;
   userHandle: string;
   userAvatar: string;
-  createdAt: firebase.firestore.Timestamp | Date;
-  expiresAt: firebase.firestore.Timestamp | Date;
+  createdAt: Timestamp | Date;
+  expiresAt: Timestamp | Date;
   caption?: string;
 }
 

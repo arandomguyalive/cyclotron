@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Heart, MessageCircle, Share2, Disc, Music, Plus, Play, AlertTriangle, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SecurePlayer } from "./SecurePlayer";
+import { Timestamp } from "firebase/firestore";
 
 export interface Post {
   id: string;
@@ -16,7 +17,7 @@ export interface Post {
   userHandle: string;
   userAvatar: string;
   likes: number;
-  createdAt: firebase.firestore.Timestamp | Date;
+  createdAt: Timestamp | Date;
 }
 
 export interface Ad {
