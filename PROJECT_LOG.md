@@ -131,6 +131,7 @@
     *   **Firebase Timestamp/Date Typing:** Standardized timestamp usage across `StoriesTray`, `SignalGrid`, `VortexItem`, and `ChatView` by consistently importing and using `Timestamp | Date` types and updating mock data to `new Date()`.
     *   **`useMemo` / `MotionValue` Imports:** Corrected `React.useMemo` to `useMemo` and added `MotionValue` import where needed.
     *   **Type Guarding Refinements:** Improved type guards in `ScannerModal` to correctly differentiate `Post`, `Ad`, and `SignalPost` types.
+    *   **Sovereign Control Features:** Implemented creator controls for Tier Gating (Public, Shield+, Gold+, Platinum+) and Geo-Blocking (Country Codes) in `CreatePostModal`, with enforcement logic in `SignalGrid` to redact restricted content.
 
 ---
 
