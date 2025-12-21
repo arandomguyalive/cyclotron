@@ -34,7 +34,20 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
   const [isDeadDrop, setIsDeadDrop] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ... (handleModeSelect, handleFileSelect)
+  const handleModeSelect = (selectedMode: "post" | "reel" | "story" | "signal") => {
+      setMode(selectedMode);
+      setStep("create");
+      playClick(600, 0.1, 'square');
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+      setPreviewUrl(URL.createObjectURL(selectedFile));
+      playClick(500, 0.05, 'square');
+    }
+  };
 
   const handleSubmit = async () => {
     if (!firebaseUser || (!file && mode !== 'signal') || !user) return;
@@ -73,14 +86,35 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
         userHandle: user?.handle || "ghost_user",
         userAvatar: user?.avatarSeed || "default",
         region: region,
-        allowedTiers: allowedTiers, // New Field
-        blockedRegions: blockedRegions.split(',').map(r => r.trim().toUpperCase()).filter(r => r.length > 0), // New Field
+        allowedTiers: allowedTiers, 
+        blockedRegions: blockedRegions.split(',').map(r => r.trim().toUpperCase()).filter(r => r.length > 0),
         likes: 0,
         createdAt: serverTimestamp(),
         expiresAt: mode === "story" ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
       });
 
-      // ... (rest of handleSubmit)
+      // 3. Award Gamification Rewards
+      const repReward = missionMode ? 50 : (mode === 'signal' ? 5 : 10);
+      const credReward = missionMode ? 200 : (mode === 'signal' ? 25 : 50);
+      
+      const currentRep = parseInt(user.stats.reputation || '0');
+      const currentCreds = parseInt(user.stats.credits || '0');
+      
+      updateUser({
+          stats: {
+              ...user.stats,
+              reputation: (currentRep + repReward).toString(),
+              credits: (currentCreds + credReward).toString()
+          }
+      });
+
+      setIsSuccess(true);
+      playClick(880, 0.2, 'triangle'); 
+      
+      setTimeout(() => {
+        handleClose();
+      }, 1500);
+
     } catch (error) {
       console.error("Upload failed", error);
     } finally {
@@ -88,20 +122,48 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
     }
   };
 
-  // ... (handleClose)
+  const handleClose = () => {
+    setCaption("");
+    setFile(null);
+    setPreviewUrl(null);
+    setIsSuccess(false);
+    setStep(missionMode ? "create" : "select"); // Reset to correct initial step
+    onClose();
+  };
 
   return (
     <AnimatePresence>
-      {/* ... (Modal Overlay & Container) */}
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/90 backdrop-blur-md z-[80]"
+            onClick={handleClose}
+          />
           
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed bottom-0 left-0 right-0 z-[90] bg-secondary-bg border-t border-border-color rounded-t-3xl h-[85vh] flex flex-col shadow-[0_-10px_40px_rgba(0,240,255,0.1)]"
+          >
             {/* Header */}
-            {/* ... */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border-color">
+              <h2 className={`text-xl font-bold tracking-wider uppercase ${missionMode ? "text-brand-orange animate-pulse" : "text-primary-text"}`}>
+                  {missionMode ? "CLASSIFIED MISSION" : (step === 'select' ? 'Create' : `New ${mode}`)}
+              </h2>
+              <button onClick={handleClose} className="p-2 bg-secondary-bg/50 rounded-full text-secondary-text hover:text-primary-text hover:bg-secondary-bg">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6">
                
                {step === 'select' ? (
-                   // ... (Select Mode UI)
                    <div className="flex flex-col gap-4 h-full justify-center">
                        <button onClick={() => handleModeSelect('post')} className="flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl hover:bg-accent-1/10 hover:border-accent-1 transition-all group text-left">
                            <div className="p-4 bg-secondary-bg rounded-full text-accent-1 group-hover:scale-110 transition-transform"><ImageIcon className="w-8 h-8" /></div>
@@ -167,7 +229,6 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
 
                        {/* Conditional UI based on Mode */}
                        {mode === 'signal' ? (
-                           // ... (Signal UI)
                            <div className="flex-1 flex flex-col bg-black border border-green-500/30 rounded-2xl p-4 font-mono shadow-[0_0_20px_rgba(34,197,94,0.1)] relative overflow-hidden">
                                <div className="absolute top-0 left-0 w-full h-1 bg-green-500/50 animate-pulse" />
                                <textarea
@@ -183,8 +244,6 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                            </div>
                        ) : (
                            <>
-                           {/* Media Upload UI */}
-                           {/* ... (Upload Div) */}
                            <div 
                              onClick={() => !file && fileInputRef.current?.click()}
                              className={`relative w-full aspect-video rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden group ${
@@ -238,7 +297,6 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
             </div>
 
             {/* Footer */}
-            {/* ... */}
             {step === 'create' && (
                 <div className="p-4 border-t border-border-color bg-primary-bg pb-safe-area-inset-bottom">
                      <button 
