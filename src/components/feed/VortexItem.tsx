@@ -9,7 +9,7 @@ import { Timestamp } from "firebase/firestore";
 
 export interface Post {
   id: string;
-  type?: "post" | "reel" | "story";
+  type?: "post" | "reel" | "story" | "text" | "drop";
   caption: string;
   mediaUrl: string;
   mediaType: "image" | "video";

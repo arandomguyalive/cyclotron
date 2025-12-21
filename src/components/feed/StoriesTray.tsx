@@ -29,8 +29,8 @@ const mockStories: Story[] = [
         userId: "mock-u1",
         userHandle: "neon_shadow",
         userAvatar: "Felix",
-        createdAt: { toDate: () => new Date() },
-        expiresAt: { toDate: () => new Date(Date.now() + 86400000) },
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 86400000),
         caption: "System override initiated. #signals"
     },
     {
@@ -40,8 +40,8 @@ const mockStories: Story[] = [
         userId: "mock-u2",
         userHandle: "cyber_punk",
         userAvatar: "Jocelyn",
-        createdAt: { toDate: () => new Date() },
-        expiresAt: { toDate: () => new Date(Date.now() + 86400000) },
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 86400000),
         caption: "Midnight run."
     }
 ];

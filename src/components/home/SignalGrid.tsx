@@ -37,7 +37,7 @@ const mockPosts: Post[] = [
         mediaUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=500",
         mediaType: "image",
         userHandle: "neon_ghost",
-        createdAt: { toDate: () => new Date() },
+        createdAt: new Date(),
         type: "post"
     },
     {
@@ -46,7 +46,7 @@ const mockPosts: Post[] = [
         mediaUrl: "https://images.unsplash.com/photo-1515630278258-407f66498911?q=80&w=500",
         mediaType: "image",
         userHandle: "cipher_punk",
-        createdAt: { toDate: () => new Date() },
+        createdAt: new Date(),
         type: "post"
     },
     {
@@ -55,7 +55,7 @@ const mockPosts: Post[] = [
         mediaUrl: "https://images.unsplash.com/photo-1555680202-c86f0e12f086?q=80&w=500",
         mediaType: "image",
         userHandle: "root_admin",
-        createdAt: { toDate: () => new Date() },
+        createdAt: new Date(),
         type: "post"
     },
     {
@@ -64,7 +64,7 @@ const mockPosts: Post[] = [
         mediaUrl: "https://images.unsplash.com/photo-1596541223405-b04b6c31885f?q=80&w=500",
         mediaType: "image",
         userHandle: "matrix_diver",
-        createdAt: { toDate: () => new Date(Date.now() - 1000 * 60 * 60) },
+        createdAt: new Date(Date.now() - 1000 * 60 * 60),
         type: "post"
     }
 ];

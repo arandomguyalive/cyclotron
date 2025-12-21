@@ -22,7 +22,7 @@ interface ScannerModalProps {
 }
 
 export function ScannerModal({ isOpen, onClose, userRegion = "global" }: ScannerModalProps) {
-  const [signals, setSignals] = useState<(Post | Ad | SignalPost)[]>([]);
+  const [signals, setSignals] = useState<SignalPost[]>([]);
   const [scanning, setScanning] = useState(true);
   const [arMode, setArMode] = useState(false);
   const { playClick } = useSonic();
@@ -46,13 +46,13 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
                     // In a real app, add: where("region", "==", userRegion)
                 );
                 const snapshot = await getDocs(q);
-                const found: (Post | Ad | SignalPost)[] = snapshot.docs.map(doc => ({ 
+                const found: SignalPost[] = snapshot.docs.map(doc => ({ 
                     id: doc.id, 
                     ...doc.data(),
                     // Generate random AR positions
                     arX: Math.random() * 80 + 10,
                     arY: Math.random() * 60 + 20, 
-                })) as (Post | Ad | SignalPost)[];
+                })) as SignalPost[];
                 setSignals(found);
             } catch (e) {
                 console.error(e);
