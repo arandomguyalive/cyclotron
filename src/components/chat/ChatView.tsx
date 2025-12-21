@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import AES from "crypto-js/aes";
 import encUtf8 from "crypto-js/enc-utf8";
 import { useSonic } from "@/lib/SonicContext";
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
 import { useToast } from "@/lib/ToastContext";
@@ -19,7 +19,7 @@ interface ChatMessage {
   senderId: string;
   senderHandle: string;
   senderAvatar: string;
-  timestamp: firebase.firestore.Timestamp | Date;
+  timestamp: Timestamp | Date;
   isBurner?: boolean;
 }
 
