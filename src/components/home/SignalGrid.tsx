@@ -92,6 +92,9 @@ export function SignalGrid() {
     });
 
     const isFree = user?.tier === 'free';
+    const viewerTier = user?.tier || 'free';
+    const isShield = viewerTier === 'premium';
+    const isForensic = ['gold', 'platinum', 'sovereign', 'lifetime'].includes(viewerTier);
 
     useEffect(() => {
         const handleStorageChange = () => {
@@ -255,9 +258,27 @@ export function SignalGrid() {
                                             </div>
                                         )}
 
-                                        {!isFree && user?.handle && (
-                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
-                                                <span className="text-white text-4xl font-black -rotate-45 uppercase tracking-widest">{user.handle}</span>
+                                        {/* Forensic Watermark (Gold+) */}
+                                        {isForensic && user?.handle && (
+                                            <div 
+                                                className="absolute inset-0 flex flex-wrap content-around justify-around pointer-events-none opacity-10 font-mono text-white text-xs z-10"
+                                                style={{
+                                                    transform: 'rotate(-30deg) scale(1.5)',
+                                                    overflow: 'hidden',
+                                                }}
+                                            >
+                                                {Array(20).fill(0).map((_, i) => (
+                                                    <span key={i} className="mx-4 my-2 whitespace-nowrap">{user.handle.toUpperCase()}</span>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Shield Watermark (Premium) */}
+                                        {isShield && user?.handle && (
+                                            <div className="absolute bottom-4 right-4 pointer-events-none z-10 bg-black/50 px-2 py-1 rounded backdrop-blur-sm border border-brand-cyan/20">
+                                                <span className="text-brand-cyan/50 text-[10px] font-mono tracking-widest uppercase">
+                                                    {user.handle.toUpperCase()}
+                                                </span>
                                             </div>
                                         )}
                                     </div>

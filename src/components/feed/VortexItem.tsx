@@ -32,37 +32,15 @@ interface VortexProps {
   post: Post | Ad;
   index: number;
   watermarkText?: string;
-  isFree?: boolean; // New prop
+  isFree?: boolean; 
+  tier?: string; // Add tier prop
 }
 
-export function VortexItem({ post, index, watermarkText, isFree }: VortexProps) {
+export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }: VortexProps) {
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState((post as Post).likes || 0);
 
-  // --- AD RENDERING ---
-  if (post.type === "ad") {
-      const ad = post as Ad;
-      return (
-        <div className="relative h-full w-full overflow-hidden bg-black rounded-xl border border-white/10 shadow-2xl flex flex-col items-center justify-center p-8 text-center">
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
-            <motion.div 
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className={`p-6 rounded-full bg-${ad.color}/10 mb-6 border border-${ad.color}/20`}
-            >
-                <ShieldCheck className={`w-16 h-16 text-${ad.color}`} />
-            </motion.div>
-            <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">{ad.title}</h2>
-            <p className="text-gray-400 mb-8 max-w-xs">{ad.description}</p>
-            <button className={`px-8 py-4 bg-${ad.color} text-black font-bold rounded-xl hover:scale-105 transition-transform`}>
-                {ad.cta}
-            </button>
-            <div className="absolute bottom-8 text-[10px] text-gray-600 uppercase tracking-widest">
-                System Message • Signal Interference
-            </div>
-        </div>
-      );
-  }
+  // ... (Ad Rendering - omitted for brevity in replace, keep existing)
 
   // --- STANDARD POST RENDERING ---
   const p = post as Post; // Type assertion
@@ -72,13 +50,16 @@ export function VortexItem({ post, index, watermarkText, isFree }: VortexProps) 
     setLikes(prev => liked ? prev - 1 : prev + 1);
   };
 
-  // Generate a unique cyberpunk gradient based on index (fallback)
+  // ... (Gradients - omitted for brevity)
   const gradients = [
     "bg-gradient-to-br from-brand-purple via-cyber-black to-brand-blue",
     "bg-gradient-to-bl from-brand-orange via-cyber-black to-brand-purple",
     "bg-gradient-to-tr from-brand-cyan via-cyber-black to-brand-blue",
   ];
   const bgGradient = gradients[index % gradients.length];
+
+  const isForensicTier = ['gold', 'platinum', 'sovereign', 'lifetime'].includes(tier);
+  const isShieldTier = tier === 'premium';
 
   return (
     <div className={cn("relative h-full w-full overflow-hidden bg-cyber-black rounded-xl border border-white/10 shadow-2xl")}>
@@ -103,13 +84,25 @@ export function VortexItem({ post, index, watermarkText, isFree }: VortexProps) 
           </div>
       )}
 
-      {/* Watermark Overlay for Premium+ Users */}
-      {watermarkText && !isFree && (
-        <div className="absolute bottom-4 right-4 pointer-events-none z-10">
-          <span 
-            className="text-white text-xs font-mono tracking-widest uppercase opacity-30"
-            style={{ textShadow: '0 0 2px rgba(255,255,255,0.1)' }}
-          >
+      {/* Forensic Watermark (Gold+) - Overlay */}
+      {watermarkText && isForensicTier && (
+        <div 
+            className="absolute inset-0 flex flex-wrap content-around justify-around pointer-events-none opacity-10 font-mono text-white text-xs z-10"
+            style={{
+                transform: 'rotate(-30deg) scale(1.5)',
+                overflow: 'hidden',
+            }}
+        >
+            {Array(20).fill(0).map((_, i) => (
+                <span key={i} className="mx-4 my-2 whitespace-nowrap">{watermarkText}</span>
+            ))}
+        </div>
+      )}
+
+      {/* Shield Watermark (Premium) - Bottom Right Corner */}
+      {watermarkText && isShieldTier && (
+        <div className="absolute bottom-20 right-4 pointer-events-none z-10 bg-black/50 px-2 py-1 rounded backdrop-blur-sm border border-brand-cyan/20">
+          <span className="text-brand-cyan/50 text-[10px] font-mono tracking-widest uppercase">
             {watermarkText}
           </span>
         </div>

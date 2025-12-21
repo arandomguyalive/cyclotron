@@ -127,6 +127,7 @@
         *   Fixed `useRef` access during render in `src/components/chat/ChatView.tsx` (`MessageBubble`) by refactoring decryption logic into `useEffect` and storing results in `useState`.
     *   **`setState` in `useEffect` Warnings:** Addressed `react-hooks/set-state-in-effect` warnings in `src/app/home/page.tsx`, `src/components/common/PaymentModal.tsx`, `src/components/feed/SecurePlayer.tsx`, and `src/lib/ThemeContext.tsx` by employing `useState` initializer functions or appropriate guarding conditions.
     *   **Missing Mock Data Restoration:** Restored `mockPosts` and `mockAd` definitions in `src/components/home/SignalGrid.tsx`.
+    *   **Watermark Refinement:** Differentiated watermark styles by tier. Shield (Premium) users now see a subtle bottom-right watermark, while higher tiers (Gold+) retain the full-screen forensic overlay.
 
 ---
 
