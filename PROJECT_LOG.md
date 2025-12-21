@@ -128,6 +128,9 @@
     *   **`setState` in `useEffect` Warnings:** Addressed `react-hooks/set-state-in-effect` warnings in `src/app/home/page.tsx`, `src/components/common/PaymentModal.tsx`, `src/components/feed/SecurePlayer.tsx`, and `src/lib/ThemeContext.tsx` by employing `useState` initializer functions or appropriate guarding conditions.
     *   **Missing Mock Data Restoration:** Restored `mockPosts` and `mockAd` definitions in `src/components/home/SignalGrid.tsx`.
     *   **Watermark Refinement:** Differentiated watermark styles by tier. Shield (Premium) users now see a subtle bottom-right watermark, while higher tiers (Gold+) retain the full-screen forensic overlay.
+    *   **Firebase Timestamp/Date Typing:** Standardized timestamp usage across `StoriesTray`, `SignalGrid`, `VortexItem`, and `ChatView` by consistently importing and using `Timestamp | Date` types and updating mock data to `new Date()`.
+    *   **`useMemo` / `MotionValue` Imports:** Corrected `React.useMemo` to `useMemo` and added `MotionValue` import where needed.
+    *   **Type Guarding Refinements:** Improved type guards in `ScannerModal` to correctly differentiate `Post`, `Ad`, and `SignalPost` types.
 
 ---
 
