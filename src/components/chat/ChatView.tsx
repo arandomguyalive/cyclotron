@@ -439,7 +439,11 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = 
           </>
         )}
         <span className={`block text-[10px] text-secondary-text/50 mt-1 ${isMine ? "text-right" : "text-left"}`}>
-            {new Date(message.timestamp?.toDate()).toLocaleTimeString()}
+            {(() => {
+                const ts = message.timestamp;
+                const date = ts instanceof Date ? ts : ts?.toDate ? ts.toDate() : new Date();
+                return date.toLocaleTimeString();
+            })()}
         </span>
       </div>
     </motion.div>

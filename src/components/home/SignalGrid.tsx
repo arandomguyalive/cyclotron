@@ -319,7 +319,11 @@ export function SignalGrid() {
                                     )}
 
                                     <p className="text-[10px] text-secondary-text/50 uppercase tracking-wide mt-1">
-                                        {new Date(post.createdAt?.toDate ? post.createdAt.toDate() : new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'})} • Encrypted
+                                        {(() => {
+                                            const ts = post.createdAt;
+                                            const date = ts instanceof Date ? ts : ts?.toDate ? ts.toDate() : new Date();
+                                            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'});
+                                        })()} • Encrypted
                                     </p>
                                 </div>
                             </div>

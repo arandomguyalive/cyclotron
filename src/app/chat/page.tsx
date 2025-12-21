@@ -179,7 +179,11 @@ function ChatListContent() {
                     </p>
                     </div>
                     <span className="text-xs text-secondary-text/70">
-                    {chat.lastMessageTimestamp?.toDate ? chat.lastMessageTimestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Now"}
+                    {(() => {
+                        const ts = chat.lastMessageTimestamp;
+                        const date = ts instanceof Date ? ts : ts.toDate();
+                        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    })()}
                     </span>
                 </motion.div>
                 </Link>

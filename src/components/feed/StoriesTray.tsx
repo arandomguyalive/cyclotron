@@ -181,7 +181,13 @@ export function StoriesTray() {
                              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${stories[currentIndex].userAvatar}`} />
                          </div>
                          <span className="font-bold text-white shadow-black drop-shadow-md">{stories[currentIndex].userHandle}</span>
-                         <span className="text-white/50 text-xs">{new Date(stories[currentIndex].createdAt.toDate()).toLocaleTimeString()}</span>
+                         <span className="text-white/50 text-xs">
+                             {(() => {
+                                 const ts = stories[currentIndex].createdAt;
+                                 const date = ts instanceof Date ? ts : ts.toDate();
+                                 return date.toLocaleTimeString();
+                             })()}
+                         </span>
                     </div>
                     <button onClick={() => setIsOpen(false)} className="text-white/80 hover:text-white">
                         <X className="w-8 h-8" />
