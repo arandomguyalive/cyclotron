@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Lock, ChevronLeft, Loader2, AlertTriangle, Paperclip, Flame } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -318,27 +318,19 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = 
   const [burnProgress, setBurnProgress] = useState(0);
   const [isBurnt, setIsBurnt] = useState(false);
   const { playClick } = useSonic();
-  const [displayDecryptedText, setDisplayDecryptedText] = useState<string | null>(null);
 
-  // Decrypt message when revealed
-  useEffect(() => {
+  // Decrypt message when revealed (derived state)
+  const displayDecryptedText = useMemo(() => {
     if (isRevealed && message.encrypted) {
       try {
           const bytes = AES.decrypt(message.encrypted, SECRET_KEY);
-          const decryptedValue = bytes.toString(encUtf8);
-          if (decryptedValue !== displayDecryptedText) {
-            setDisplayDecryptedText(decryptedValue);
-          }
+          return bytes.toString(encUtf8);
       } catch (e) {
           console.error("Decryption failed:", e);
-          if (displayDecryptedText !== "[DECRYPTION FAILED]") {
-            setDisplayDecryptedText("[DECRYPTION FAILED]");
-          }
+          return "[DECRYPTION FAILED]";
       }
-    } else if (!isRevealed && displayDecryptedText !== null) {
-        setDisplayDecryptedText(null); // Clear on un-reveal
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return null;
   }, [isRevealed, message.encrypted]);
 
   // Burn Timer Simulation (Visual only, starts after reveal)

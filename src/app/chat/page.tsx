@@ -27,7 +27,7 @@ const mockChats: Chat[] = [
         id: "mock-c1",
         participants: [],
         lastMessage: "U2FsdGVkX1+...", // Encrypted-looking text
-        lastMessageTimestamp: { toDate: () => new Date(Date.now() - 1000 * 60 * 5) },
+        lastMessageTimestamp: new Date(Date.now() - 1000 * 60 * 5),
         mockName: "Cyber_Ghost",
         mockAvatar: "Ghost"
     }
