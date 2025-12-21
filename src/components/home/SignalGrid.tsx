@@ -18,6 +18,8 @@ interface Post {
     createdAt: Timestamp | Date;
     type: "post" | "text";
     hasHiddenMessage?: boolean;
+    allowedTiers?: string[];
+    blockedRegions?: string[];
 }
 
 interface MockAd {
@@ -93,6 +95,8 @@ export function SignalGrid() {
 
     const isFree = user?.tier === 'free';
     const viewerTier = user?.tier || 'free';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const viewerRegion = (user as any)?.region || 'global';
     const isShield = viewerTier === 'premium';
     const isForensic = ['gold', 'platinum', 'sovereign', 'lifetime'].includes(viewerTier);
 
@@ -171,7 +175,6 @@ export function SignalGrid() {
             <div className="flex flex-col gap-8">
                 {posts.map((item) => {
                     if (item.type === "ad") {
-                        // ... (ad rendering)
                         const ad = item as MockAd;
                         return (
                             <motion.div 
@@ -190,6 +193,35 @@ export function SignalGrid() {
                         );
                     } else {
                         const post = item as Post;
+                        
+                        // --- ENFORCEMENT LOGIC ---
+                        const isTierAllowed = !post.allowedTiers || post.allowedTiers.length === 0 || post.allowedTiers.includes(viewerTier);
+                        const isRegionBlocked = post.blockedRegions && post.blockedRegions.includes(viewerRegion);
+
+                        if (!isTierAllowed || isRegionBlocked) {
+                            return (
+                                <div key={post.id} className="w-full border-b border-white/5 pb-6">
+                                    <div className="px-4 mb-3 flex items-center gap-3 opacity-50">
+                                        <div className="w-8 h-8 rounded-full bg-secondary-bg" />
+                                        <div className="h-4 w-24 bg-secondary-bg rounded" />
+                                    </div>
+                                    <div className="relative w-full aspect-[4/5] bg-black border border-red-900/30 flex flex-col items-center justify-center p-8 text-center overflow-hidden">
+                                        <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#2a0000_10px,#2a0000_20px)] opacity-20" />
+                                        <div className="relative z-10 p-6 bg-black/80 border border-red-500/50 rounded-xl">
+                                            <h3 className="text-red-500 font-bold tracking-widest uppercase mb-2">
+                                                {isRegionBlocked ? "GEO-BLOCKED" : "CLEARANCE REQUIRED"}
+                                            </h3>
+                                            <p className="text-xs text-red-400/70 font-mono">
+                                                {isRegionBlocked 
+                                                    ? `CONTENT UNAVAILABLE IN ${viewerRegion.toUpperCase()}` 
+                                                    : `TIER LEVEL [${post.allowedTiers?.join('/').toUpperCase()}] REQUIRED`}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        }
+
                         return (
                             <div key={post.id} className="w-full border-b border-white/5 pb-6">
                                 {/* Header */}

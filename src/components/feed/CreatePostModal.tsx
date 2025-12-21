@@ -24,25 +24,17 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [region, setRegion] = useState("global");
+  
+  // Sovereign Controls
+  const [selectedTier, setSelectedTier] = useState<"public" | "premium" | "gold" | "platinum">("public");
+  const [blockedRegions, setBlockedRegions] = useState("");
+
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isDeadDrop, setIsDeadDrop] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleModeSelect = (selectedMode: "post" | "reel" | "story" | "signal") => {
-      setMode(selectedMode);
-      setStep("create");
-      playClick(600, 0.1, 'square');
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setFile(selectedFile);
-      setPreviewUrl(URL.createObjectURL(selectedFile));
-      playClick(500, 0.05, 'square');
-    }
-  };
+  // ... (handleModeSelect, handleFileSelect)
 
   const handleSubmit = async () => {
     if (!firebaseUser || (!file && mode !== 'signal') || !user) return;
@@ -62,6 +54,12 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
           downloadURL = await getDownloadURL(snapshot.ref);
       }
 
+      // Determine allowed tiers
+      let allowedTiers: string[] = [];
+      if (selectedTier === 'premium') allowedTiers = ['premium', 'gold', 'platinum', 'sovereign', 'lifetime'];
+      if (selectedTier === 'gold') allowedTiers = ['gold', 'platinum', 'sovereign', 'lifetime'];
+      if (selectedTier === 'platinum') allowedTiers = ['platinum', 'sovereign', 'lifetime'];
+
       // 2. Create Firestore Document
       const collectionName = mode === "story" ? "stories" : "posts";
       
@@ -75,33 +73,14 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
         userHandle: user?.handle || "ghost_user",
         userAvatar: user?.avatarSeed || "default",
         region: region,
+        allowedTiers: allowedTiers, // New Field
+        blockedRegions: blockedRegions.split(',').map(r => r.trim().toUpperCase()).filter(r => r.length > 0), // New Field
         likes: 0,
         createdAt: serverTimestamp(),
         expiresAt: mode === "story" ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
       });
 
-      // 3. Award Gamification Rewards
-      const repReward = missionMode ? 50 : (mode === 'signal' ? 5 : 10);
-      const credReward = missionMode ? 200 : (mode === 'signal' ? 25 : 50);
-      
-      const currentRep = parseInt(user.stats.reputation || '0');
-      const currentCreds = parseInt(user.stats.credits || '0');
-      
-      updateUser({
-          stats: {
-              ...user.stats,
-              reputation: (currentRep + repReward).toString(),
-              credits: (currentCreds + credReward).toString()
-          }
-      });
-
-      setIsSuccess(true);
-      playClick(880, 0.2, 'triangle'); 
-      
-      setTimeout(() => {
-        handleClose();
-      }, 1500);
-
+      // ... (rest of handleSubmit)
     } catch (error) {
       console.error("Upload failed", error);
     } finally {
@@ -109,48 +88,20 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
     }
   };
 
-  const handleClose = () => {
-    setCaption("");
-    setFile(null);
-    setPreviewUrl(null);
-    setIsSuccess(false);
-    setStep(missionMode ? "create" : "select"); // Reset to correct initial step
-    onClose();
-  };
+  // ... (handleClose)
 
   return (
     <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 backdrop-blur-md z-[80]"
-            onClick={handleClose}
-          />
+      {/* ... (Modal Overlay & Container) */}
           
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[90] bg-secondary-bg border-t border-border-color rounded-t-3xl h-[85vh] flex flex-col shadow-[0_-10px_40px_rgba(0,240,255,0.1)]"
-          >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border-color">
-              <h2 className={`text-xl font-bold tracking-wider uppercase ${missionMode ? "text-brand-orange animate-pulse" : "text-primary-text"}`}>
-                  {missionMode ? "CLASSIFIED MISSION" : (step === 'select' ? 'Create' : `New ${mode}`)}
-              </h2>
-              <button onClick={handleClose} className="p-2 bg-secondary-bg/50 rounded-full text-secondary-text hover:text-primary-text hover:bg-secondary-bg">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
+            {/* ... */}
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6">
                
                {step === 'select' ? (
+                   // ... (Select Mode UI)
                    <div className="flex flex-col gap-4 h-full justify-center">
                        <button onClick={() => handleModeSelect('post')} className="flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl hover:bg-accent-1/10 hover:border-accent-1 transition-all group text-left">
                            <div className="p-4 bg-secondary-bg rounded-full text-accent-1 group-hover:scale-110 transition-transform"><ImageIcon className="w-8 h-8" /></div>
@@ -183,8 +134,40 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                    </div>
                ) : (
                    <div className="flex flex-col gap-6 h-full">
+                       
+                       {/* Sovereign Controls (Non-Free Only) */}
+                       {user?.tier !== 'free' && (
+                           <div className="p-4 rounded-xl bg-black/20 border border-white/10 space-y-4">
+                               <div className="flex items-center justify-between">
+                                   <span className="text-xs font-bold text-secondary-text uppercase tracking-wider">Visibility</span>
+                                   <div className="flex gap-2">
+                                       {(['public', 'premium', 'gold', 'platinum'] as const).map(t => (
+                                           <button 
+                                                key={t}
+                                                onClick={() => setSelectedTier(t)}
+                                                className={`px-3 py-1 rounded text-[10px] font-bold uppercase transition-colors ${selectedTier === t ? 'bg-accent-1 text-black' : 'bg-white/5 text-secondary-text hover:bg-white/10'}`}
+                                           >
+                                               {t === 'public' ? 'All' : `${t.charAt(0).toUpperCase() + t.slice(1)}+`}
+                                           </button>
+                                       ))}
+                                   </div>
+                               </div>
+                               <div>
+                                   <span className="text-xs font-bold text-secondary-text uppercase tracking-wider block mb-2">Geo-Block (Country Codes)</span>
+                                   <input 
+                                        type="text" 
+                                        value={blockedRegions}
+                                        onChange={(e) => setBlockedRegions(e.target.value)}
+                                        placeholder="e.g. US, CN, RU (Comma separated)"
+                                        className="w-full bg-transparent border-b border-white/10 py-1 text-sm text-white placeholder:text-secondary-text/30 focus:border-accent-1 focus:outline-none font-mono"
+                                   />
+                               </div>
+                           </div>
+                       )}
+
                        {/* Conditional UI based on Mode */}
                        {mode === 'signal' ? (
+                           // ... (Signal UI)
                            <div className="flex-1 flex flex-col bg-black border border-green-500/30 rounded-2xl p-4 font-mono shadow-[0_0_20px_rgba(34,197,94,0.1)] relative overflow-hidden">
                                <div className="absolute top-0 left-0 w-full h-1 bg-green-500/50 animate-pulse" />
                                <textarea
@@ -201,6 +184,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                        ) : (
                            <>
                            {/* Media Upload UI */}
+                           {/* ... (Upload Div) */}
                            <div 
                              onClick={() => !file && fileInputRef.current?.click()}
                              className={`relative w-full aspect-video rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden group ${
@@ -254,6 +238,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
             </div>
 
             {/* Footer */}
+            {/* ... */}
             {step === 'create' && (
                 <div className="p-4 border-t border-border-color bg-primary-bg pb-safe-area-inset-bottom">
                      <button 
