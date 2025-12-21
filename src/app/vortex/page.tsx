@@ -22,7 +22,7 @@ const mockPosts: Post[] = [
         userHandle: "neon_drifter",
         userAvatar: "Felix",
         likes: 1240,
-        createdAt: { toDate: () => new Date() }
+        createdAt: new Date()
     },
     {
         id: "mock-2",
@@ -33,7 +33,7 @@ const mockPosts: Post[] = [
         userHandle: "system_shock",
         userAvatar: "Cipher",
         likes: 892,
-        createdAt: { toDate: () => new Date() }
+        createdAt: new Date()
     },
     {
         id: "mock-3",
@@ -44,7 +44,7 @@ const mockPosts: Post[] = [
         userHandle: "void_walker",
         userAvatar: "Echo",
         likes: 3400,
-        createdAt: { toDate: () => new Date() }
+        createdAt: new Date()
     },
     {
         id: "mock-4",
@@ -55,7 +55,7 @@ const mockPosts: Post[] = [
         userHandle: "hardware_fiend",
         userAvatar: "Chip",
         likes: 560,
-        createdAt: { toDate: () => new Date() }
+        createdAt: new Date(Date.now() - 1000 * 60 * 60)
     },
     {
         id: "mock-5",
@@ -66,7 +66,7 @@ const mockPosts: Post[] = [
         userHandle: "architect_zero",
         userAvatar: "Architect",
         likes: 2100,
-        createdAt: { toDate: () => new Date() }
+        createdAt: new Date()
     }
 ];
 
