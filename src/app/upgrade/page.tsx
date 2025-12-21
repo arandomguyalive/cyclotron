@@ -14,7 +14,19 @@ export default function UpgradePage() {
     const [selectedTier, setSelectedTier] = useState<"premium" | "gold" | "platinum" | "lifetime">("premium");
     const [spotsLeft, setSpotsLeft] = useState(487); // Simulating some spots already taken
 
-    const tiers = [
+    type TierOption = {
+        id: "premium" | "gold" | "platinum" | "lifetime";
+        name: string;
+        price: string;
+        features: string[];
+        buttonText: string;
+        bgColor: string;
+        borderColor: string;
+        textColor: string;
+        buttonBgColor: string;
+    };
+
+    const tiers: TierOption[] = [
                 {
                     id: "lifetime",
                     name: "The Blacklist",
