@@ -11,6 +11,7 @@ import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, g
 import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
 import { useToast } from "@/lib/ToastContext";
+import { useScreenshot } from "@/lib/useScreenshot";
 
 interface ChatMessage {
   id: string;
@@ -21,6 +22,7 @@ interface ChatMessage {
   senderAvatar: string;
   timestamp: Timestamp | Date;
   isBurner?: boolean;
+  type?: 'text' | 'system';
 }
 
 const SECRET_KEY = "cyclotron-secret-key-v1";
@@ -43,6 +45,48 @@ export function ChatView({ chatId }: ChatViewProps) {
   const [chatLoading, setChatLoading] = useState(true);
   const [isBurnerMode, setIsBurnerMode] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // 📸 Screenshot Detection System
+  useScreenshot(async () => {
+    if (!firebaseUser || !currentUserProfile || !chatId || chatId.startsWith("mock-")) return;
+
+    // Throttle: Don't spam if they hold the key
+    const now = Date.now();
+    const lastAlert = parseInt(sessionStorage.getItem('last_screenshot_alert') || '0');
+    if (now - lastAlert < 5000) return;
+    sessionStorage.setItem('last_screenshot_alert', now.toString());
+
+    toast("Screenshot Detected. Notifying party...", "error");
+    playClick(150, 0.5, 'sawtooth'); // Harsh alarm sound
+
+    try {
+        let locationString = "Unknown Sector";
+        try {
+            const res = await fetch('https://ipapi.co/json/');
+            const data = await res.json();
+            if (data.city && data.country_name) {
+                locationString = `${data.city}, ${data.country_name}`;
+            }
+        } catch (err) {
+            console.error("Location trace failed", err);
+        }
+
+        const alertText = `⚠️ SCREENSHOT DETECTED\nUSER: ${currentUserProfile.handle}\nID: ${firebaseUser.uid}\nLOC: ${locationString}`;
+        const encryptedAlert = AES.encrypt(alertText, SECRET_KEY).toString();
+
+        await addDoc(collection(db, "chats", chatId, "messages"), {
+            encrypted: encryptedAlert,
+            senderId: firebaseUser.uid,
+            senderHandle: "SYSTEM", // System sender
+            senderAvatar: "alert",
+            timestamp: serverTimestamp(),
+            isBurner: false,
+            type: 'system'
+        });
+    } catch (e) {
+        console.error("Failed to send screenshot alert", e);
+    }
+  });
 
   useEffect(() => {
     if (!userLoading && !firebaseUser) {
@@ -373,6 +417,25 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = 
         return newProgress;
     });
   };
+
+  // --- SYSTEM MESSAGE RENDERER ---
+  if (message.type === 'system') {
+      return (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex justify-center my-4 w-full"
+          >
+              <div className="bg-red-500/10 border border-red-500/50 text-red-500 px-4 py-2 rounded-lg text-xs font-bold tracking-widest flex flex-col items-center gap-1 uppercase animate-pulse whitespace-pre-wrap text-center">
+                  <div className="flex items-center gap-2 mb-1 border-b border-red-500/30 pb-1 w-full justify-center">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>SECURITY BREACH</span>
+                  </div>
+                  {displayDecryptedText || message.text || "SECURITY ALERT"}
+              </div>
+          </motion.div>
+      );
+  }
 
   if (isBurnt) {
       return (
