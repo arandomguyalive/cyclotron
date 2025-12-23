@@ -183,11 +183,10 @@ export function StoriesTray() {
                          <span className="font-bold text-white shadow-black drop-shadow-md">{stories[currentIndex].userHandle}</span>
                          <span className="text-white/50 text-xs">
                              {(() => {
-                                 const ts = stories[currentIndex].createdAt;
-                                 const date = ts instanceof Date ? ts : ts.toDate();
-                                 return date.toLocaleTimeString();
-                             })()}
-                         </span>
+                                                           const ts = stories[currentIndex].createdAt;
+                                                           const date = ts instanceof Date ? ts : (ts?.toDate ? ts.toDate() : new Date());
+                                                           return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                         })()}                         </span>
                     </div>
                     <button onClick={() => setIsOpen(false)} className="text-white/80 hover:text-white">
                         <X className="w-8 h-8" />

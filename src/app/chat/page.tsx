@@ -181,7 +181,8 @@ function ChatListContent() {
                     <span className="text-xs text-secondary-text/70">
                     {(() => {
                         const ts = chat.lastMessageTimestamp;
-                        const date = ts instanceof Date ? ts : ts.toDate();
+                        if (!ts) return "Just now";
+                        const date = ts instanceof Date ? ts : ts.toDate ? ts.toDate() : new Date();
                         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     })()}
                     </span>
