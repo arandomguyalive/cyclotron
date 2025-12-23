@@ -17,6 +17,11 @@ export const useScreenshot = (onScreenshot: () => void) => {
       if (e.key === 'PrintScreen') {
         onScreenshot();
       }
+      // Attempt to detect Mac Shortcuts (Cmd+Shift+3 or Cmd+Shift+4)
+      // Note: macOS often intercepts these before the browser, but some browser versions leak the keydown.
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '$' || e.key === '#')) {
+          onScreenshot();
+      }
     };
 
     // For Mac users, 'PrintScreen' doesn't exist. cmd+shift+3/4 are system level and undetectable by the browser.

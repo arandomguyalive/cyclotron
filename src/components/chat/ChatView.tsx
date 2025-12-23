@@ -49,7 +49,7 @@ export function ChatView({ chatId }: ChatViewProps) {
 
   // 📸 Screenshot Detection System
   useScreenshot(async () => {
-    if (!firebaseUser || !currentUserProfile || !chatId || chatId.startsWith("mock-")) return;
+    if (!firebaseUser || !currentUserProfile || !chatId) return;
 
     // Throttle: Don't spam if they hold the key
     const now = Date.now();
