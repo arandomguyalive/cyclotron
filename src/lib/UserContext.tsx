@@ -6,6 +6,7 @@ import {
   onAuthStateChanged, 
   signInAnonymously as firebaseSignInAnonymously, 
   createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   signOut as firebaseSignOut, 
   User 
 } from "firebase/auth";
@@ -35,6 +36,7 @@ interface UserContextType {
   loading: boolean;
   updateUser: (updates: Partial<UserProfile>) => void;
   loginAnonymously: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, handle: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -142,6 +144,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const login = async (email: string, password: string) => {
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.error("Login failed", error);
+      setLoading(false);
+      throw error;
+    }
+  };
+
   const signup = async (email: string, password: string, handle: string) => {
       setLoading(true);
       try {
@@ -175,7 +188,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <UserContext.Provider value={{ user, firebaseUser, loading, updateUser, loginAnonymously, signup, logout }}>
+    <UserContext.Provider value={{ user, firebaseUser, loading, updateUser, loginAnonymously, login, signup, logout }}>
       {children}
     </UserContext.Provider>
   );

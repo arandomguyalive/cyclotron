@@ -7,11 +7,11 @@ import { User, Shield, AlertTriangle, Fingerprint } from "lucide-react";
 import { useUser } from "@/lib/UserContext";
 
 export default function LoginPage() {
-  const { loginAnonymously, signup, firebaseUser, loading } = useUser();
+  const { loginAnonymously, login, signup, firebaseUser, loading } = useUser();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [mode, setMode] = useState<'guest' | 'register'>('guest');
+  const [mode, setMode] = useState<'guest' | 'login' | 'register'>('guest');
   
   // Registration State
   const [email, setEmail] = useState("");
@@ -31,6 +31,9 @@ export default function LoginPage() {
     try {
       if (mode === 'guest') {
           await loginAnonymously();
+      } else if (mode === 'login') {
+          if (!email || !password) throw new Error("Email and password required.");
+          await login(email, password);
       } else {
           if (!email || !password || !handle) throw new Error("All fields required.");
           await signup(email, password, handle);
@@ -74,34 +77,43 @@ export default function LoginPage() {
         <div className="flex p-1 bg-secondary-bg/50 rounded-xl mb-6 border border-border-color">
             <button 
                 onClick={() => setMode('guest')} 
-                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors ${mode === 'guest' ? 'bg-accent-1 text-primary-bg' : 'text-secondary-text hover:text-primary-text'}`}
+                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors ${mode === 'guest' ? 'bg-accent-1 text-primary-bg' : 'text-secondary-text hover:text-primary-text'}`}
             >
-                Guest Access
+                Ghost
+            </button>
+            <button 
+                onClick={() => setMode('login')} 
+                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors ${mode === 'login' ? 'bg-accent-1 text-primary-bg' : 'text-secondary-text hover:text-primary-text'}`}
+            >
+                Sign In
             </button>
             <button 
                 onClick={() => setMode('register')} 
-                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors ${mode === 'register' ? 'bg-accent-1 text-primary-bg' : 'text-secondary-text hover:text-primary-text'}`}
+                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors ${mode === 'register' ? 'bg-accent-1 text-primary-bg' : 'text-secondary-text hover:text-primary-text'}`}
             >
-                Create ID
+                Register
             </button>
         </div>
 
-        {/* Form Inputs (Register Mode) */}
+        {/* Form Inputs */}
         <AnimatePresence mode="wait">
-            {mode === 'register' && (
+            {(mode === 'register' || mode === 'login') && (
                 <motion.div 
+                    key={mode}
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     className="space-y-4 mb-6 overflow-hidden"
                 >
-                    <input 
-                        type="text" 
-                        placeholder="CODENAME (HANDLE)" 
-                        value={handle}
-                        onChange={(e) => setHandle(e.target.value)}
-                        className="w-full bg-secondary-bg border border-border-color rounded-xl px-4 py-3 text-primary-text placeholder:text-secondary-text/50 focus:border-accent-1 outline-none text-sm font-mono uppercase"
-                    />
+                    {mode === 'register' && (
+                        <input 
+                            type="text" 
+                            placeholder="CODENAME (HANDLE)" 
+                            value={handle}
+                            onChange={(e) => setHandle(e.target.value)}
+                            className="w-full bg-secondary-bg border border-border-color rounded-xl px-4 py-3 text-primary-text placeholder:text-secondary-text/50 focus:border-accent-1 outline-none text-sm font-mono uppercase"
+                        />
+                    )}
                     <input 
                         type="email" 
                         placeholder="SECURE EMAIL" 
@@ -137,7 +149,9 @@ export default function LoginPage() {
             ) : (
               <>
                 <User className="w-5 h-5" />
-                <span>{mode === 'guest' ? 'ENTER AS GHOST' : 'INITIALIZE PROTOCOL'}</span>
+                <span>
+                    {mode === 'guest' ? 'ENTER AS GHOST' : mode === 'login' ? 'ACCESS VAULT' : 'INITIALIZE PROTOCOL'}
+                </span>
               </>
             )}
           </button>
