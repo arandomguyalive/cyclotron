@@ -74,15 +74,29 @@ export function ChatView({ chatId }: ChatViewProps) {
         const alertText = `⚠️ SCREENSHOT DETECTED\nUSER: ${currentUserProfile.handle}\nID: ${firebaseUser.uid}\nLOC: ${locationString}`;
         const encryptedAlert = AES.encrypt(alertText, SECRET_KEY).toString();
 
+        // 1. Send System Message to Chat
         await addDoc(collection(db, "chats", chatId, "messages"), {
             encrypted: encryptedAlert,
             senderId: firebaseUser.uid,
-            senderHandle: "SYSTEM", // System sender
+            senderHandle: "SYSTEM", 
             senderAvatar: "alert",
             timestamp: serverTimestamp(),
             isBurner: false,
             type: 'system'
         });
+
+        // 2. Send Notification to Partner (Activity Tab)
+        if (chatPartner && chatPartner.uid && !chatPartner.uid.startsWith("mock-")) {
+            await addDoc(collection(db, "users", chatPartner.uid, "notifications"), {
+                type: "SCREENSHOT_POST", // Reusing this type for red alert styling
+                actorId: firebaseUser.uid,
+                actorHandle: currentUserProfile.handle,
+                caption: "Secure Channel", // Context
+                timestamp: serverTimestamp(),
+                read: false
+            });
+        }
+
     } catch (e) {
         console.error("Failed to send screenshot alert", e);
     }
