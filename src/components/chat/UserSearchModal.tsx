@@ -41,22 +41,21 @@ export function UserSearchModal({ isOpen, onClose }: UserSearchModalProps) {
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        // Simple prefix search on handle
+        // Client-side filtering for better UX in prototype
         const usersRef = collection(db, "users");
-        // Note: Firestore queries are case-sensitive and require exact prefix match or specialized indexing.
-        // For this prototype, we'll use a simple >= query for handles.
-        const q = query(
-            usersRef, 
-            where("handle", ">=", searchQuery),
-            where("handle", "<=", searchQuery + '\uf8ff'),
-            limit(5)
-        );
+        const q = query(usersRef, limit(50)); // Fetch enough candidates
         
         const snapshot = await getDocs(q);
         const foundUsers: UserResult[] = [];
+        const lowerQuery = searchQuery.toLowerCase();
+
         snapshot.forEach(doc => {
-            if (doc.id !== firebaseUser?.uid) { // Don't show self
-                foundUsers.push({ id: doc.id, ...doc.data() } as UserResult);
+            const data = doc.data();
+            const handle = (data.handle || "").toLowerCase();
+            const name = (data.displayName || "").toLowerCase();
+            
+            if (doc.id !== firebaseUser?.uid && (handle.includes(lowerQuery) || name.includes(lowerQuery))) {
+                foundUsers.push({ id: doc.id, ...data } as UserResult);
             }
         });
         setResults(foundUsers);

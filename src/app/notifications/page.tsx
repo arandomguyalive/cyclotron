@@ -38,13 +38,27 @@ export default function NotificationsPage() {
         limit(50)
       );
 
+      // Timeout fallback in case Firestore hangs
+      const timeoutId = setTimeout(() => {
+          setFetching(false);
+          console.warn("Notification fetch timed out - check permissions.");
+      }, 5000);
+
       const unsubscribe = onSnapshot(q, (snapshot) => {
+        clearTimeout(timeoutId); // Clear timeout on success
         const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notification));
         setNotifications(items);
         setFetching(false);
+      }, (error) => {
+        clearTimeout(timeoutId);
+        console.error("Error fetching notifications:", error);
+        setFetching(false); // Stop loading on error
       });
 
-      return () => unsubscribe();
+      return () => {
+          unsubscribe();
+          clearTimeout(timeoutId);
+      };
     }
   }, [firebaseUser, loading, router]);
 
