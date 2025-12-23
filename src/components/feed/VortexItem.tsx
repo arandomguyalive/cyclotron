@@ -5,7 +5,11 @@ import { motion } from "framer-motion";
 import { Heart, MessageCircle, Share2, Disc, Music, Plus, Play, AlertTriangle, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SecurePlayer } from "./SecurePlayer";
-import { Timestamp } from "firebase/firestore";
+import { Timestamp, collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useScreenshot } from "@/lib/useScreenshot";
+import { useUser } from "@/lib/UserContext";
+import { useToast } from "@/lib/ToastContext";
 
 export interface Post {
   id: string;
@@ -40,8 +44,50 @@ interface VortexProps {
 export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }: VortexProps) {
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState((post as Post).likes || 0);
+  const { firebaseUser, user: currentUserProfile } = useUser();
+  const { toast } = useToast();
 
-  // ... (Ad Rendering - omitted for brevity in replace, keep existing)
+  useScreenshot(async () => {
+      if (post.type === 'ad' || !firebaseUser || (post as Post).userId === firebaseUser.uid) return;
+      
+      // Throttle
+      const key = `shot_post_${post.id}`;
+      const last = sessionStorage.getItem(key);
+      if (last && Date.now() - parseInt(last) < 5000) return;
+      sessionStorage.setItem(key, Date.now().toString());
+
+      toast("⚠️ Content Protected. Owner notified.", "error");
+
+      try {
+          await addDoc(collection(db, "users", (post as Post).userId, "notifications"), {
+              type: "SCREENSHOT_POST",
+              actorId: firebaseUser.uid,
+              actorHandle: currentUserProfile?.handle || "Unknown",
+              postId: post.id,
+              caption: (post as Post).caption?.substring(0, 20) || "Media",
+              timestamp: serverTimestamp(),
+              read: false
+          });
+      } catch (e) {
+          console.error("Failed to log screenshot", e);
+      }
+  });
+
+  if (post.type === 'ad') {
+    return (
+      <div className={cn("relative h-full w-full overflow-hidden bg-cyber-black rounded-xl border border-white/10 shadow-2xl flex flex-col items-center justify-center p-8 text-center", post.color)}>
+        <div className="absolute inset-0 opacity-20 bg-gradient-to-br from-black via-transparent to-black" />
+        <h2 className="text-4xl font-black uppercase mb-4 tracking-tighter relative z-10">{post.title}</h2>
+        <p className="text-sm font-mono mb-8 opacity-80 relative z-10">{post.description}</p>
+        <button className="px-8 py-3 bg-white text-black font-bold uppercase tracking-widest hover:scale-105 transition-transform relative z-10">
+          {post.cta}
+        </button>
+        <div className="absolute top-4 right-4 bg-black/50 px-2 py-1 rounded text-[10px] font-bold uppercase border border-white/20">
+          Sponsored
+        </div>
+      </div>
+    );
+  }
 
   // --- STANDARD POST RENDERING ---
   const p = post as Post; // Type assertion

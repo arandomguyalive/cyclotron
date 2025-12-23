@@ -93,7 +93,7 @@ export function UserSearchModal({ isOpen, onClose }: UserSearchModalProps) {
 
         if (existingChatId) {
             // Chat exists, navigate to it
-            router.push(`/chat/${existingChatId}`);
+            router.push(`/chat?id=${existingChatId}`);
             onClose();
         } else {
             // 2. Create new chat
@@ -104,7 +104,7 @@ export function UserSearchModal({ isOpen, onClose }: UserSearchModalProps) {
                 createdAt: serverTimestamp(),
             });
             
-            router.push(`/chat/${newChatRef.id}`);
+            router.push(`/chat?id=${newChatRef.id}`);
             onClose();
         }
 
