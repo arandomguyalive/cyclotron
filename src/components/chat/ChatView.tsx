@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import AES from "crypto-js/aes";
 import encUtf8 from "crypto-js/enc-utf8";
 import { useSonic } from "@/lib/SonicContext";
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, setDoc, Timestamp, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
 import { useToast } from "@/lib/ToastContext";
@@ -22,6 +22,7 @@ interface ChatMessage {
   senderAvatar: string;
   timestamp: Timestamp | Date;
   isBurner?: boolean;
+  isBurnt?: boolean; // Server-side burnt flag
   type?: 'text' | 'system';
 }
 
@@ -101,6 +102,54 @@ export function ChatView({ chatId }: ChatViewProps) {
         console.error("Failed to send screenshot alert", e);
     }
   });
+
+  // Track messages for cleanup
+  const messagesRef = useRef<ChatMessage[]>([]);
+  useEffect(() => {
+      messagesRef.current = messages;
+  }, [messages]);
+
+  // 🔥 Self-Destruct on Tab Switch or Unmount
+  useEffect(() => {
+      if (chatId.startsWith("mock-")) return;
+
+      const burnMessages = async () => {
+          const burnerMessages = messagesRef.current.filter(m => m.isBurner && !m.isBurnt);
+          if (burnerMessages.length === 0) return;
+
+          console.log(`🔥 Incinerating ${burnerMessages.length} messages due to session exit.`);
+          
+          const batch = writeBatch(db);
+          burnerMessages.forEach(msg => {
+              const msgRef = doc(db, "chats", chatId, "messages", msg.id);
+              batch.update(msgRef, {
+                  isBurnt: true,
+                  text: "",
+                  encrypted: "U2FsdGVkX1+... [INCINERATED]", // Dummy encrypted string
+              });
+          });
+
+          try {
+              await batch.commit();
+              toast("Secure Protocol: Burner messages incinerated.", "info");
+          } catch (e) {
+              console.error("Failed to burn messages", e);
+          }
+      };
+
+      const handleVisibilityChange = () => {
+          if (document.hidden) {
+              burnMessages();
+          }
+      };
+
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      
+      return () => {
+          document.removeEventListener("visibilitychange", handleVisibilityChange);
+          burnMessages(); // Also burn on unmount
+      };
+  }, [chatId]);
 
   useEffect(() => {
     if (!userLoading && !firebaseUser) {
@@ -374,8 +423,13 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = 
   const [isRevealed, setIsRevealed] = useState(isMine); // Sent messages are always revealed
   const [scratchProgress, setScratchProgress] = useState(0);
   const [burnProgress, setBurnProgress] = useState(0);
-  const [isBurnt, setIsBurnt] = useState(false);
+  const [isBurnt, setIsBurnt] = useState(message.isBurnt || false); // Sync with server state
   const { playClick } = useSonic();
+
+  // Update local state if server updates (e.g. other user burned it or we rejoined)
+  useEffect(() => {
+      if (message.isBurnt) setIsBurnt(true);
+  }, [message.isBurnt]);
 
   // Decrypt message when revealed (derived state)
   const displayDecryptedText = useMemo(() => {
