@@ -19,7 +19,7 @@ type SettingsView = 'main' | 'privacy' | 'appearance';
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { playClick } = useSonic();
-  const { user, updateUser } = useUser();
+  const { user, updateUser, logout } = useUser();
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
   const [currentView, setCurrentView] = useState<SettingsView>('main');
@@ -259,7 +259,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             </div>
 
                             <button 
-                                onClick={handleButtonClick}
+                                onClick={() => {
+                                    handleButtonClick();
+                                    logout();
+                                    onClose();
+                                    router.push("/login");
+                                }}
                                 className="w-full py-4 flex items-center justify-center gap-2 text-brand-orange bg-brand-orange/10 rounded-xl border border-brand-orange/20 hover:bg-brand-orange/20 transition-colors"
                             >
                                 <LogOut className="w-5 h-5" />
