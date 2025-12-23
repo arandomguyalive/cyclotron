@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Home, Aperture, User, Plus, Search } from "lucide-react";
+import { Home, Aperture, User, Plus, Search, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSonic } from "@/lib/SonicContext";
 import { useUser } from "@/lib/UserContext";
@@ -15,6 +15,7 @@ const navItems = [
   { name: "Home", href: "/home", icon: Home },
   { name: "Vortex", href: "/vortex", icon: Aperture },
   { name: "Search", href: "/chat", icon: Search },
+  { name: "Activity", href: "/notifications", icon: Bell },
   { name: "Profile", href: "/profile", icon: User },
 ];
 
