@@ -92,7 +92,6 @@ function ProfileContent() {
             const postsQ = query(
                 collection(db, "posts"),
                 where("userId", "==", uidToFetch),
-                orderBy("createdAt", "desc"),
                 limit(18)
             );
             const postsSnap = await getDocs(postsQ);
@@ -166,7 +165,14 @@ function ProfileContent() {
       );
   }
 
-  const canViewDetail = currentUser?.tier === 'sovereign' || currentUser?.tier === 'lifetime' || currentUser?.tier === targetUser.tier || isOwnProfile;
+  const targetTier = (targetUser?.tier || 'free').toLowerCase();
+  const currentTier = (currentUser?.tier || 'free').toLowerCase();
+
+  const canViewDetail = 
+      isOwnProfile ||
+      currentTier === 'sovereign' || 
+      currentTier === 'lifetime' || 
+      currentTier === targetTier;
 
   return (
     <div className="min-h-screen bg-primary-bg text-primary-text pb-24">
