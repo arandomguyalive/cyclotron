@@ -72,6 +72,21 @@ function ProfileContent() {
             const uidToFetch = viewId || firebaseUser?.uid;
             if (!uidToFetch) return;
 
+            // Handle Mock Users
+            if (uidToFetch.startsWith("mock-")) {
+                setTargetUser({
+                    uid: uidToFetch,
+                    displayName: "Operative " + uidToFetch.split('-')[1],
+                    handle: "mock_agent_" + uidToFetch.split('-')[1],
+                    bio: "This is a simulated profile. Real data encrypted.",
+                    avatarSeed: uidToFetch,
+                    tier: "premium", // Mock users are premium
+                    stats: { following: "10", followers: "50", likes: "100", credits: "5000", reputation: "20" }
+                } as UserProfileData);
+                setFetching(false);
+                return;
+            }
+
             // Fetch User Data
             let profileData: UserProfileData;
             if (isOwnProfile && currentUser) {
