@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Heart, MessageCircle, Share2, Disc, Music, Plus, Play, AlertTriangle, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SecurePlayer } from "./SecurePlayer";
-import { Timestamp, collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { Timestamp, collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useScreenshot } from "@/lib/useScreenshot";
 import { useUser } from "@/lib/UserContext";
@@ -92,9 +92,34 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
   // --- STANDARD POST RENDERING ---
   const p = post as Post; // Type assertion
 
-  const toggleLike = () => {
-    setLiked(!liked);
-    setLikes(prev => liked ? prev - 1 : prev + 1);
+  const toggleLike = async () => {
+    if (!firebaseUser) {
+        toast("Access Denied. Login required.", "error");
+        return;
+    }
+
+    const newLiked = !liked;
+    setLiked(newLiked);
+    setLikes(prev => newLiked ? prev + 1 : prev - 1);
+
+    try {
+        const postRef = doc(db, "posts", post.id);
+        const userLikeRef = doc(db, "users", firebaseUser.uid, "likes", post.id);
+
+        if (newLiked) {
+            await updateDoc(postRef, { likes: increment(1) });
+            await setDoc(userLikeRef, {
+                postId: post.id,
+                mediaUrl: p.mediaUrl,
+                timestamp: serverTimestamp()
+            });
+        } else {
+            await updateDoc(postRef, { likes: increment(-1) });
+            await deleteDoc(userLikeRef);
+        }
+    } catch (e) {
+        console.error("Like failed", e);
+    }
   };
 
   // ... (Gradients - omitted for brevity)

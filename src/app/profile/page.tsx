@@ -4,11 +4,20 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { Settings, Grid, Film, Heart, MessageCircle, ShoppingBag, Wallet, ShieldCheck, Star } from "lucide-react";
+import { Settings, Grid, Film, Heart, MessageCircle, ShoppingBag, Wallet, ShieldCheck, Star, Lock } from "lucide-react";
 import { SettingsModal } from "@/components/profile/SettingsModal";
 import { BlacklistCertificate } from "@/components/profile/BlacklistCertificate";
 import { useSonic } from "@/lib/SonicContext";
 import { useUser } from "@/lib/UserContext";
+import { collection, query, where, getDocs, orderBy, limit, doc, getDoc, Timestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useToast } from "@/lib/ToastContext";
+
+interface MinimalPost {
+    id: string;
+    mediaUrl: string;
+    mediaType: "image" | "video";
+}
 
 export default function ProfilePage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -16,8 +25,12 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'grid' | 'likes' | 'wallet'>('grid');
   const { playClick } = useSonic();
   const { user, loading, firebaseUser } = useUser();
+  const { toast } = useToast();
   const router = useRouter();
   
+  const [userPosts, setUserPosts] = useState<MinimalPost[]>([]);
+  const [likedPosts, setLikedPosts] = useState<MinimalPost[]>([]);
+
   // Parallax Scroll Logic
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 300], [0, 150]);
@@ -27,7 +40,46 @@ export default function ProfilePage() {
     if (!loading && !firebaseUser) {
         router.push("/login");
     }
+    
+    if (firebaseUser) {
+        const fetchData = async () => {
+            try {
+                // Fetch User Posts
+                const postsQ = query(
+                    collection(db, "posts"),
+                    where("userId", "==", firebaseUser.uid),
+                    orderBy("createdAt", "desc"),
+                    limit(18)
+                );
+                const postsSnap = await getDocs(postsQ);
+                setUserPosts(postsSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
+
+                // Fetch Liked Posts
+                const likesQ = query(
+                    collection(db, "users", firebaseUser.uid, "likes"),
+                    orderBy("timestamp", "desc"),
+                    limit(18)
+                );
+                const likesSnap = await getDocs(likesQ);
+                setLikedPosts(likesSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
+            } catch (e) {
+                console.error("Failed to fetch profile data", e);
+            }
+        };
+        fetchData();
+    }
   }, [loading, firebaseUser, router]);
+
+  const handleStatClick = (type: string) => {
+      handleButtonClick();
+      if (user?.tier === 'free') {
+          playClick(150, 0.2, 'sawtooth');
+          if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
+          toast(`UPGRADE REQUIRED: ${type} list is encrypted.`, "error");
+      } else {
+          toast(`${type} module online. (Mock)`, "success");
+      }
+  };
 
   const handleButtonClick = () => {
     playClick(300, 0.05, 'square'); // A softer click for general buttons
@@ -137,9 +189,9 @@ export default function ProfilePage() {
 
             {/* Stats */}
             <div className="flex gap-6 mt-6 py-4 border-y border-border-color relative z-30 overflow-x-auto">
-              <Stat label="Following" value={user.stats?.following || '0'} />
-              <Stat label="Followers" value={user.stats?.followers || '0'} />
-              <Stat label="Likes" value={user.stats?.likes || '0'} />
+              <button onClick={() => handleStatClick('Following')}><Stat label="Following" value={user.stats?.following || '0'} /></button>
+              <button onClick={() => handleStatClick('Followers')}><Stat label="Followers" value={user.stats?.followers || '0'} /></button>
+              <button onClick={() => handleStatClick('Likes')}><Stat label="Likes" value={user.stats?.likes || '0'} /></button>
               <Stat label="Reputation" value={user.stats?.reputation || '0'} />
               <Stat label="Credits" value={`${user.stats?.credits || '0'} ₵`} />
               
@@ -181,20 +233,43 @@ export default function ProfilePage() {
         <div className="mt-4 min-h-[300px]">
             {activeTab === 'grid' && (
                 <div className="grid grid-cols-3 gap-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  {Array.from({ length: 9 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-secondary-bg/5 relative overflow-hidden group rounded-sm">
-                        <div className={`absolute inset-0 bg-gradient-to-br ${
-                            ['from-pink-500 to-purple-500', 'from-blue-500 to-cyan-500', 'from-green-500 to-emerald-500'][i % 3]
-                        } opacity-50 group-hover:opacity-80 transition-opacity`}/>
+                  {userPosts.length > 0 ? userPosts.map((post) => (
+                    <div key={post.id} className="aspect-square bg-secondary-bg/5 relative overflow-hidden group rounded-sm border border-transparent hover:border-accent-1/50 transition-colors">
+                        {post.mediaType === 'video' ? (
+                            <video src={post.mediaUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" muted />
+                        ) : (
+                            <img src={post.mediaUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                        )}
                     </div>
-                  ))}
+                  )) : (
+                    // Empty State
+                    <div className="col-span-3 flex flex-col items-center justify-center h-48 text-zinc-500">
+                        <Grid className="w-12 h-12 mb-4 opacity-20" />
+                        <p className="text-sm font-mono uppercase tracking-widest">No transmissions found</p>
+                    </div>
+                  )}
                 </div>
             )}
 
             {activeTab === 'likes' && (
-                <div className="flex flex-col items-center justify-center h-48 text-zinc-500 animate-in fade-in zoom-in duration-300">
-                    <Heart className="w-12 h-12 mb-4 opacity-20" />
-                    <p className="text-sm font-mono uppercase tracking-widest">No signals saved</p>
+                <div className="grid grid-cols-3 gap-1 animate-in fade-in zoom-in duration-300">
+                    {likedPosts.length > 0 ? likedPosts.map((post) => (
+                        <div key={post.id} className="aspect-square bg-secondary-bg/5 relative overflow-hidden group rounded-sm border border-transparent hover:border-brand-hot-pink/50 transition-colors">
+                            {post.mediaType === 'video' ? (
+                                <video src={post.mediaUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" muted />
+                            ) : (
+                                <img src={post.mediaUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                            )}
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40 transition-opacity">
+                                <Heart className="w-6 h-6 text-brand-hot-pink fill-brand-hot-pink" />
+                            </div>
+                        </div>
+                    )) : (
+                        <div className="col-span-3 flex flex-col items-center justify-center h-48 text-zinc-500">
+                            <Heart className="w-12 h-12 mb-4 opacity-20" />
+                            <p className="text-sm font-mono uppercase tracking-widest">No signals saved</p>
+                        </div>
+                    )}
                 </div>
             )}
 
