@@ -137,11 +137,11 @@ export default function ProfilePage() {
 
             {/* Stats */}
             <div className="flex gap-6 mt-6 py-4 border-y border-border-color relative z-30 overflow-x-auto">
-              <Stat label="Following" value={user.stats.following} />
-              <Stat label="Followers" value={user.stats.followers} />
-              <Stat label="Likes" value={user.stats.likes} />
-              <Stat label="Reputation" value={user.stats.reputation || '0'} />
-              <Stat label="Credits" value={`${user.stats.credits || '0'} ₵`} />
+              <Stat label="Following" value={user.stats?.following || '0'} />
+              <Stat label="Followers" value={user.stats?.followers || '0'} />
+              <Stat label="Likes" value={user.stats?.likes || '0'} />
+              <Stat label="Reputation" value={user.stats?.reputation || '0'} />
+              <Stat label="Credits" value={`${user.stats?.credits || '0'} ₵`} />
               
               {user.tier === 'lifetime' && (
                   <button 
