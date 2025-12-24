@@ -35,7 +35,7 @@ const mockStories: Story[] = [
     },
     {
         id: "mock-s2",
-        mediaUrl: "https://images.unsplash.com/photo-1480796927426-f609979314bd?q=80&w=1000",
+        mediaUrl: "https://images.unsplash.com/photo-1535905557558-afc4877a26fc?q=80&w=1000",
         mediaType: "image",
         userId: "mock-u2",
         userHandle: "cyber_punk",

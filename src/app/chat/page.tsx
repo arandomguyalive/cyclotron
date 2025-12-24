@@ -64,7 +64,14 @@ function ChatListContent() {
         where("participants", "array-contains", firebaseUser.uid)
       );
 
+      // Timeout fallback in case Firestore hangs (adblockers/permissions)
+      const timeoutId = setTimeout(() => {
+          setChatsLoading(false);
+          console.warn("Chat fetch timed out - check permissions.");
+      }, 5000);
+
       const unsubscribe = onSnapshot(q, (snapshot) => {
+        clearTimeout(timeoutId);
         const fetchedChats: Chat[] = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -72,11 +79,15 @@ function ChatListContent() {
         setRealChats(fetchedChats);
         setChatsLoading(false);
       }, (error) => {
+        clearTimeout(timeoutId);
         console.error("Error fetching chat list:", error);
-        setChatsLoading(false);
+        setChatsLoading(false); // Stop loading so UI renders (will show mocks or empty)
       });
 
-      return () => unsubscribe();
+      return () => {
+          unsubscribe();
+          clearTimeout(timeoutId);
+      };
     }
   }, [firebaseUser, userLoading, router]);
 
