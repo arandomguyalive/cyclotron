@@ -123,6 +123,36 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
     }
   };
 
+  const handleShare = async () => {
+      if (isFree) {
+          toast("UPGRADE REQUIRED: Secure sharing is restricted to Premium tiers.", "error");
+          return;
+      }
+      if (navigator.share) {
+          try {
+              await navigator.share({
+                  title: "ABHED Signal",
+                  text: `Intercepted transmission from @${p.userHandle}`,
+                  url: window.location.origin + `/profile?view=${p.userId}`
+              });
+          } catch (err) {
+              console.log("Share aborted");
+          }
+      } else {
+          // Fallback for desktop/unsupported
+          navigator.clipboard.writeText(window.location.origin + `/profile?view=${p.userId}`);
+          toast("Link copied to clipboard.", "success");
+      }
+  };
+
+  const handleComment = () => {
+      if (isFree) {
+          toast("UPGRADE REQUIRED: Frequency modulation (comments) restricted.", "error");
+      } else {
+          toast("Comms Channel Open (Mock Interface)", "info");
+      }
+  };
+
   // ... (Gradients - omitted for brevity)
   const gradients = [
     "bg-gradient-to-br from-brand-purple via-cyber-black to-brand-blue",
@@ -221,7 +251,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
 
           {/* Comment Button */}
           <div className="flex flex-col items-center gap-1">
-            <button className="p-2">
+            <button onClick={handleComment} className="p-2">
               <MessageCircle className="w-8 h-8 text-white drop-shadow-md" />
             </button>
             <span className="text-xs font-bold text-white drop-shadow-md">0</span>
@@ -229,7 +259,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
 
           {/* Share Button */}
           <div className="flex flex-col items-center gap-1">
-            <button className="p-2">
+            <button onClick={handleShare} className="p-2">
               <Share2 className="w-8 h-8 text-white drop-shadow-md" />
             </button>
             <span className="text-xs font-bold text-white drop-shadow-md">Share</span>
