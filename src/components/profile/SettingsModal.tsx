@@ -322,6 +322,15 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                         onClick={() => handleToggle('oblivion_screenshotAlert', screenshotAlert, setScreenshotAlert)} 
                                     />
                                     <SettingItem 
+                                        icon={CameraOff} 
+                                        label="Test Alert (Simulate)" 
+                                        onClick={() => {
+                                            handleButtonClick();
+                                            // Dispatch synthetic event to test the notification logic
+                                            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'PrintScreen' }));
+                                        }} 
+                                    />
+                                    <SettingItem 
                                         icon={Lock} 
                                         label="Burner Key" 
                                         value="Active"

@@ -14,7 +14,8 @@ import { useEffect } from 'react';
 export const useScreenshot = (onScreenshot: () => void) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'PrintScreen') {
+      // Standard "PrintScreen" check with fallbacks for Linux/Legacy browsers
+      if (e.key === 'PrintScreen' || e.key === 'Print' || e.code === 'PrintScreen') {
         onScreenshot();
       }
       // Attempt to detect Mac Shortcuts (Cmd+Shift+3 or Cmd+Shift+4)
