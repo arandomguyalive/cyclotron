@@ -5,10 +5,41 @@ import { useUser } from "@/lib/UserContext";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { motion, AnimatePresence } from "framer-motion";
 import { BackgroundMesh } from "@/components/ui/BackgroundMesh";
+import { useScreenshot } from "@/lib/useScreenshot";
+import { useToast } from "@/lib/ToastContext";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { firebaseUser, loading } = useUser();
+  const { firebaseUser, user, loading } = useUser();
+  const { toast } = useToast();
   const [showSplash, setShowSplash] = useState(true);
+
+  // Global Screenshot Detection
+  useScreenshot(async () => {
+      // Throttle global alerts to avoid spamming if multiple components listen
+      const lastGlobal = sessionStorage.getItem('global_screenshot_alert');
+      if (lastGlobal && Date.now() - parseInt(lastGlobal) < 2000) return;
+      sessionStorage.setItem('global_screenshot_alert', Date.now().toString());
+
+      toast("⚠️ SCREENSHOT DETECTED. SYSTEM LOGGING ACTIVE.", "error");
+
+      // Log to self (System Log)
+      if (firebaseUser) {
+          try {
+              await addDoc(collection(db, "users", firebaseUser.uid, "notifications"), {
+                  type: "SYSTEM",
+                  actorId: "SYSTEM",
+                  actorHandle: "PROTOCOL_DROID",
+                  caption: "Screenshot detected during session.",
+                  timestamp: serverTimestamp(),
+                  read: false
+              });
+          } catch (e) {
+              console.error("Failed to log global screenshot", e);
+          }
+      }
+  });
 
   useEffect(() => {
     // Artificial delay for branding sequence
