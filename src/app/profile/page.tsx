@@ -168,6 +168,9 @@ function ProfileContent() {
   const targetTier = (targetUser?.tier || 'free').toLowerCase();
   const currentTier = (currentUser?.tier || 'free').toLowerCase();
 
+  console.log(`[Profile Debug] View: ${viewId || 'Own'}, Own: ${isOwnProfile}`);
+  console.log(`[Profile Debug] Current Tier: ${currentTier}, Target Tier: ${targetTier}`);
+
   const canViewDetail = 
       isOwnProfile ||
       currentTier === 'sovereign' || 
