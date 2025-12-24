@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { Settings, Grid, Film, Heart, MessageCircle, ShoppingBag, Wallet, ShieldCheck, Star, Lock } from "lucide-react";
+import { Settings, Grid, Heart, MessageCircle, ShoppingBag, Wallet, ShieldCheck, Star, Lock, UserPlus, UserCheck, ShieldAlert, Loader2 } from "lucide-react";
 import { SettingsModal } from "@/components/profile/SettingsModal";
 import { BlacklistCertificate } from "@/components/profile/BlacklistCertificate";
 import { useSonic } from "@/lib/SonicContext";
 import { useUser } from "@/lib/UserContext";
-import { collection, query, where, getDocs, orderBy, limit, doc, getDoc, Timestamp } from "firebase/firestore";
+import { collection, query, where, getDocs, orderBy, limit, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/lib/ToastContext";
 
@@ -19,17 +19,41 @@ interface MinimalPost {
     mediaType: "image" | "video";
 }
 
-export default function ProfilePage() {
+interface UserProfileData {
+    uid: string;
+    displayName: string;
+    handle: string;
+    bio: string;
+    avatarSeed: string;
+    coverImage?: string;
+    tier: string;
+    stats?: {
+        following: string;
+        followers: string;
+        likes: string;
+        credits: string;
+        reputation: string;
+    };
+}
+
+function ProfileContent() {
+  const { user: currentUser, loading: userLoading, firebaseUser } = useUser();
+  const { playClick } = useSonic();
+  const { toast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const viewId = searchParams.get('view');
+
+  const isOwnProfile = !viewId || viewId === firebaseUser?.uid;
+
+  const [targetUser, setTargetUser] = useState<UserProfileData | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
   const [activeTab, setActiveTab] = useState<'grid' | 'likes' | 'wallet'>('grid');
-  const { playClick } = useSonic();
-  const { user, loading, firebaseUser } = useUser();
-  const { toast } = useToast();
-  const router = useRouter();
-  
+  const [isFollowing, setIsFollowing] = useState(false);
   const [userPosts, setUserPosts] = useState<MinimalPost[]>([]);
   const [likedPosts, setLikedPosts] = useState<MinimalPost[]>([]);
+  const [fetching, setFetching] = useState(false);
 
   // Parallax Scroll Logic
   const { scrollY } = useScroll();
@@ -37,336 +61,227 @@ export default function ProfilePage() {
   const opacity = useTransform(scrollY, [0, 300], [1, 0.5]);
 
   useEffect(() => {
-    if (!loading && !firebaseUser) {
+    if (!userLoading && !firebaseUser) {
         router.push("/login");
+        return;
     }
     
-    if (firebaseUser) {
-        const fetchData = async () => {
-            try {
-                // Fetch User Posts
-                const postsQ = query(
-                    collection(db, "posts"),
-                    where("userId", "==", firebaseUser.uid),
-                    orderBy("createdAt", "desc"),
-                    limit(18)
-                );
-                const postsSnap = await getDocs(postsQ);
-                setUserPosts(postsSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
+    const fetchData = async () => {
+        setFetching(true);
+        try {
+            const uidToFetch = viewId || firebaseUser?.uid;
+            if (!uidToFetch) return;
 
-                // Fetch Liked Posts
+            // Fetch User Data
+            let profileData: UserProfileData;
+            if (isOwnProfile && currentUser) {
+                profileData = { uid: firebaseUser!.uid, ...currentUser } as UserProfileData;
+            } else {
+                const userDoc = await getDoc(doc(db, "users", uidToFetch));
+                if (userDoc.exists()) {
+                    profileData = { uid: userDoc.id, ...userDoc.data() } as UserProfileData;
+                } else {
+                    toast("User not found", "error");
+                    router.push("/profile");
+                    return;
+                }
+            }
+            setTargetUser(profileData);
+
+            // Fetch Posts
+            const postsQ = query(
+                collection(db, "posts"),
+                where("userId", "==", uidToFetch),
+                orderBy("createdAt", "desc"),
+                limit(18)
+            );
+            const postsSnap = await getDocs(postsQ);
+            setUserPosts(postsSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
+
+            // Fetch Likes (Only if own profile or high tier - for now just own)
+            if (isOwnProfile) {
                 const likesQ = query(
-                    collection(db, "users", firebaseUser.uid, "likes"),
+                    collection(db, "users", firebaseUser!.uid, "likes"),
                     orderBy("timestamp", "desc"),
                     limit(18)
                 );
                 const likesSnap = await getDocs(likesQ);
                 setLikedPosts(likesSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
-            } catch (e) {
-                console.error("Failed to fetch profile data", e);
             }
-        };
-        fetchData();
-    }
-  }, [loading, firebaseUser, router]);
+
+            // Check Follow Status
+            if (!isOwnProfile && firebaseUser) {
+                const followRef = doc(db, "users", firebaseUser.uid, "following", uidToFetch);
+                const followSnap = await getDoc(followRef);
+                setIsFollowing(followSnap.exists());
+            }
+
+        } catch (e) {
+            console.error("Profile fetch error", e);
+        } finally {
+            setFetching(false);
+        }
+    };
+
+    if (firebaseUser) fetchData();
+  }, [viewId, firebaseUser, userLoading, currentUser, isOwnProfile]);
+
+  const handleFollow = async () => {
+      if (!firebaseUser || !targetUser) return;
+      playClick(600, 0.1, 'square');
+      const followRef = doc(db, "users", firebaseUser.uid, "following", targetUser.uid);
+      try {
+          if (isFollowing) {
+              await deleteDoc(followRef);
+              setIsFollowing(false);
+              toast(`Unfollowed @${targetUser.handle}`, "info");
+          } else {
+              await setDoc(followRef, { timestamp: new Date() });
+              setIsFollowing(true);
+              toast(`Following @${targetUser.handle}`, "success");
+          }
+      } catch (e) { toast("Follow protocol failed", "error"); }
+  };
 
   const handleStatClick = (type: string) => {
       handleButtonClick();
-      if (user?.tier === 'free') {
+      if (currentUser?.tier === 'free') {
           playClick(150, 0.2, 'sawtooth');
-          if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
           toast(`UPGRADE REQUIRED: ${type} list is encrypted.`, "error");
       } else {
-          toast(`${type} module online. (Mock)`, "success");
+          toast(`${type} module online.`, "success");
       }
   };
 
   const handleButtonClick = () => {
-    playClick(300, 0.05, 'square'); // A softer click for general buttons
-    if (navigator.vibrate) {
-      navigator.vibrate(20); // Even shorter vibration
-    }
+    playClick(300, 0.05, 'square');
+    if (navigator.vibrate) navigator.vibrate(20);
   };
 
-  if (loading || !user) {
+  if (userLoading || fetching || !targetUser) {
       return (
           <div className="min-h-screen flex items-center justify-center bg-primary-bg text-accent-1 font-mono animate-pulse">
-              LOADING PROFILE DATA...
+              SYNCHRONIZING PROFILE DATA...
           </div>
       );
   }
 
+  const canViewDetail = currentUser?.tier === 'sovereign' || currentUser?.tier === 'lifetime' || currentUser?.tier === targetUser.tier || isOwnProfile;
+
   return (
     <div className="min-h-screen bg-primary-bg text-primary-text pb-24">
-      {/* Header / Cover */}
+      {/* Cover */}
       <div className="h-64 relative bg-gradient-to-r from-accent-2 via-primary-bg to-accent-1 opacity-50 overflow-hidden">
-        {user.coverImage ? (
-            <motion.img 
-                style={{ y, opacity }}
-                src={user.coverImage} 
-                alt="Cover" 
-                className="w-full h-full object-cover scale-110"
-            />
+        {targetUser.coverImage ? (
+            <motion.img style={{ y, opacity }} src={targetUser.coverImage} className="w-full h-full object-cover scale-110" />
         ) : (
-            <motion.div 
-                style={{ y, opacity }}
-                className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40 mix-blend-overlay scale-110" 
-            />
+            <motion.div style={{ y, opacity }} className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40 mix-blend-overlay scale-110" />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-bg/20 to-primary-bg" />
       </div>
 
-      {/* Holo-Profile Card Container */}
       <div className="px-4 -mt-20 relative z-10">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="relative rounded-3xl bg-secondary-bg/90 border border-border-color backdrop-blur-xl shadow-2xl p-6 overflow-hidden"
-          >
-              {/* Neon Pulse Glow Border */}
-              <motion.div 
-                 className="absolute inset-0 rounded-3xl border-2 border-accent-1/60 pointer-events-none"
-                 animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.02, 1] }}
-                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              />
-              
-              {/* Subtle Background Gradient Animation */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-tr from-accent-1/5 via-transparent to-accent-2/5 pointer-events-none"
-                animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
-                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-              />
-
-            <div className="flex justify-between items-end relative z-30">
-              <motion.div 
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="w-28 h-28 rounded-full border-4 border-primary-bg bg-primary-bg overflow-hidden shadow-lg -mb-4"
-              >
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.avatarSeed}`} alt="Profile" className="w-full h-full" />
-              </motion.div>
-              <div className="flex gap-2 mb-2">
-                <Link 
-                  href="/market" 
-                  onClick={handleButtonClick}
-                  className="p-2 bg-secondary-bg/10 rounded-full backdrop-blur-md border border-border-color hover:bg-secondary-bg/20 transition-colors shadow-lg cursor-pointer z-50 text-brand-orange"
-                >
-                  <ShoppingBag className="w-6 h-6" />
-                </Link>
-                <Link 
-                  href="/chat" 
-                  onClick={handleButtonClick}
-                  className="p-2 bg-secondary-bg/10 rounded-full backdrop-blur-md border border-border-color hover:bg-secondary-bg/20 transition-colors shadow-lg cursor-pointer z-50"
-                >
-                  <MessageCircle className="w-6 h-6 text-primary-text" />
-                </Link>
-                <button 
-                  onClick={() => {
-                    setIsSettingsOpen(true);
-                    handleButtonClick();
-                  }}
-                  className="p-2 bg-secondary-bg/10 rounded-full backdrop-blur-md border border-border-color hover:bg-secondary-bg/20 transition-colors shadow-lg cursor-pointer z-50"
-                >
-                  <Settings className="w-6 h-6 text-primary-text" />
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-8 relative z-30">
-              <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold drop-shadow-md">{user.displayName}</h1>
-                  {user.tier === 'lifetime' && (
-                      <div className="bg-amber-500/10 border border-amber-500/50 p-1 rounded-full animate-pulse">
-                          <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                      </div>
-                  )}
-              </div>
-              <p className="text-accent-1 drop-shadow-sm font-mono text-sm">@{user.handle}</p>
-              <p className="mt-2 text-sm text-secondary-text leading-relaxed whitespace-pre-wrap">
-                {user.bio}
-              </p>
-            </div>
-
-            {/* Stats */}
-            <div className="flex gap-6 mt-6 py-4 border-y border-border-color relative z-30 overflow-x-auto">
-              <button onClick={() => handleStatClick('Following')}><Stat label="Following" value={user.stats?.following || '0'} /></button>
-              <button onClick={() => handleStatClick('Followers')}><Stat label="Followers" value={user.stats?.followers || '0'} /></button>
-              <button onClick={() => handleStatClick('Likes')}><Stat label="Likes" value={user.stats?.likes || '0'} /></button>
-              <Stat label="Reputation" value={user.stats?.reputation || '0'} />
-              <Stat label="Credits" value={`${user.stats?.credits || '0'} ₵`} />
-              
-              {user.tier === 'lifetime' && (
-                  <button 
-                    onClick={() => setShowCertificate(true)}
-                    className="flex flex-col items-center justify-center text-amber-500 animate-pulse"
-                  >
-                      <ShieldCheck className="w-6 h-6 mb-1" />
-                      <span className="text-[10px] uppercase tracking-widest font-bold">Certificate</span>
-                  </button>
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="relative rounded-3xl bg-secondary-bg/90 border border-border-color backdrop-blur-xl shadow-2xl p-6 overflow-hidden">
+              {!canViewDetail && (
+                  <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center text-center p-6">
+                      <ShieldAlert className="w-16 h-16 text-red-500 mb-4 animate-pulse" />
+                      <h2 className="text-xl font-bold text-red-500 uppercase tracking-tighter">Encryption Mismatch</h2>
+                      <p className="text-xs text-zinc-400 mt-2 font-mono">Target is on {targetUser.tier.toUpperCase()} band.<br/>Your signal is incompatible.</p>
+                      <button onClick={() => router.back()} className="mt-6 px-6 py-2 border border-red-500 text-red-500 rounded text-xs font-bold uppercase hover:bg-red-500/10 transition-colors">Abort</button>
+                  </div>
               )}
-            </div>
+
+              <div className="flex justify-between items-end relative z-30">
+                <div className="w-28 h-28 rounded-full border-4 border-primary-bg bg-primary-bg overflow-hidden shadow-lg -mb-4">
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${targetUser.avatarSeed}`} alt="Profile" className="w-full h-full" />
+                </div>
+                <div className="flex gap-2 mb-2">
+                  {isOwnProfile ? (
+                    <>
+                      <Link href="/market" onClick={handleButtonClick} className="p-2 bg-secondary-bg/10 rounded-full border border-border-color text-brand-orange"><ShoppingBag className="w-6 h-6" /></Link>
+                      <Link href="/chat" onClick={handleButtonClick} className="p-2 bg-secondary-bg/10 rounded-full border border-border-color"><MessageCircle className="w-6 h-6" /></Link>
+                      <button onClick={() => { setIsSettingsOpen(true); handleButtonClick(); }} className="p-2 bg-secondary-bg/10 rounded-full border border-border-color"><Settings className="w-6 h-6" /></button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => router.push(`/chat?userId=${targetUser.uid}`)} className="p-2 bg-secondary-bg/10 rounded-full border border-border-color"><MessageCircle className="w-6 h-6 text-primary-text" /></button>
+                      <button onClick={handleFollow} className={`p-2 rounded-full border transition-colors ${isFollowing ? 'bg-accent-1 text-black border-accent-1' : 'bg-secondary-bg/10 border-border-color text-accent-1'}`}>
+                        {isFollowing ? <UserCheck className="w-6 h-6" /> : <UserPlus className="w-6 h-6" />}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-8 relative z-30">
+                <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold">{targetUser.displayName}</h1>
+                    {targetUser.tier === 'lifetime' && <Star className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" />}
+                </div>
+                <p className="text-accent-1 font-mono text-sm">@{targetUser.handle}</p>
+                <p className="mt-2 text-sm text-secondary-text leading-relaxed whitespace-pre-wrap">{targetUser.bio}</p>
+              </div>
+
+              <div className="flex gap-6 mt-6 py-4 border-y border-border-color relative z-30 overflow-x-auto">
+                <button onClick={() => handleStatClick('Following')}><Stat label="Following" value={targetUser.stats?.following || '0'} /></button>
+                <button onClick={() => handleStatClick('Followers')}><Stat label="Followers" value={targetUser.stats?.followers || '0'} /></button>
+                <button onClick={() => handleStatClick('Likes')}><Stat label="Likes" value={targetUser.stats?.likes || '0'} /></button>
+                <Stat label="Rep" value={targetUser.stats?.reputation || '0'} />
+                
+                {targetUser.tier === 'lifetime' && isOwnProfile && (
+                    <button onClick={() => setShowCertificate(true)} className="flex flex-col items-center justify-center text-amber-500 animate-pulse">
+                        <ShieldCheck className="w-6 h-6 mb-1" />
+                        <span className="text-[10px] uppercase font-bold">Certificate</span>
+                    </button>
+                )}
+              </div>
           </motion.div>
 
         {/* Tabs */}
         <div className="flex mt-6 gap-4 border-b border-white/10 pb-2">
-          <button 
-            onClick={() => { setActiveTab('grid'); handleButtonClick(); }}
-            className={`flex-1 py-2 flex justify-center transition-colors ${activeTab === 'grid' ? 'text-accent-1 border-b-2 border-accent-1' : 'text-zinc-500'}`}
-          >
-            <Grid className="w-5 h-5" />
-          </button>
-          <button 
-            onClick={() => { setActiveTab('likes'); handleButtonClick(); }}
-            className={`flex-1 py-2 flex justify-center transition-colors ${activeTab === 'likes' ? 'text-accent-1 border-b-2 border-accent-1' : 'text-zinc-500'}`}
-          >
-            <Heart className="w-5 h-5" />
-          </button>
-          <button 
-            onClick={() => { setActiveTab('wallet'); handleButtonClick(); }}
-            className={`flex-1 py-2 flex justify-center transition-colors ${activeTab === 'wallet' ? 'text-brand-orange border-b-2 border-brand-orange' : 'text-zinc-500'}`}
-          >
-            <Wallet className="w-5 h-5" />
-          </button>
+          <button onClick={() => setActiveTab('grid')} className={`flex-1 py-2 flex justify-center transition-colors ${activeTab === 'grid' ? 'text-accent-1 border-b-2 border-accent-1' : 'text-zinc-500'}`}><Grid className="w-5 h-5" /></button>
+          {isOwnProfile && (
+            <>
+              <button onClick={() => setActiveTab('likes')} className={`flex-1 py-2 flex justify-center transition-colors ${activeTab === 'likes' ? 'text-accent-1 border-b-2 border-accent-1' : 'text-zinc-500'}`}><Heart className="w-5 h-5" /></button>
+              <button onClick={() => setActiveTab('wallet')} className={`flex-1 py-2 flex justify-center transition-colors ${activeTab === 'wallet' ? 'text-brand-orange border-b-2 border-brand-orange' : 'text-zinc-500'}`}><Wallet className="w-5 h-5" /></button>
+            </>
+          )}
         </div>
 
-        {/* Tab Content */}
         <div className="mt-4 min-h-[300px]">
             {activeTab === 'grid' && (
                 <div className="grid grid-cols-3 gap-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   {userPosts.length > 0 ? userPosts.map((post) => (
                     <div key={post.id} className="aspect-square bg-secondary-bg/5 relative overflow-hidden group rounded-sm border border-transparent hover:border-accent-1/50 transition-colors">
-                        {post.mediaType === 'video' ? (
-                            <video src={post.mediaUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" muted />
-                        ) : (
-                            <img src={post.mediaUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                        )}
+                        {post.mediaType === 'video' ? <video src={post.mediaUrl} className="w-full h-full object-cover" muted /> : <img src={post.mediaUrl} className="w-full h-full object-cover" />}
                     </div>
-                  )) : (
-                    // Empty State
-                    <div className="col-span-3 flex flex-col items-center justify-center h-48 text-zinc-500">
-                        <Grid className="w-12 h-12 mb-4 opacity-20" />
-                        <p className="text-sm font-mono uppercase tracking-widest">No transmissions found</p>
-                    </div>
-                  )}
+                  )) : <div className="col-span-3 flex flex-col items-center justify-center h-48 text-zinc-500"><Lock className="w-12 h-12 mb-4 opacity-20" /><p className="text-sm font-mono uppercase tracking-widest">No transmissions</p></div>}
                 </div>
             )}
 
-            {activeTab === 'likes' && (
-                <div className="grid grid-cols-3 gap-1 animate-in fade-in zoom-in duration-300">
+            {isOwnProfile && activeTab === 'likes' && (
+                <div className="grid grid-cols-3 gap-1">
                     {likedPosts.length > 0 ? likedPosts.map((post) => (
-                        <div key={post.id} className="aspect-square bg-secondary-bg/5 relative overflow-hidden group rounded-sm border border-transparent hover:border-brand-hot-pink/50 transition-colors">
-                            {post.mediaType === 'video' ? (
-                                <video src={post.mediaUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" muted />
-                            ) : (
-                                <img src={post.mediaUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                            )}
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40 transition-opacity">
-                                <Heart className="w-6 h-6 text-brand-hot-pink fill-brand-hot-pink" />
-                            </div>
+                        <div key={post.id} className="aspect-square bg-secondary-bg/5 relative overflow-hidden group rounded-sm">
+                            <img src={post.mediaUrl} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"><Heart className="w-6 h-6 text-brand-hot-pink fill-brand-hot-pink" /></div>
                         </div>
-                    )) : (
-                        <div className="col-span-3 flex flex-col items-center justify-center h-48 text-zinc-500">
-                            <Heart className="w-12 h-12 mb-4 opacity-20" />
-                            <p className="text-sm font-mono uppercase tracking-widest">No signals saved</p>
-                        </div>
-                    )}
+                    )) : <div className="col-span-3 flex flex-col items-center justify-center h-48 text-zinc-500"><Heart className="w-12 h-12 mb-4 opacity-20" /><p className="text-sm font-mono uppercase tracking-widest">No saved signals</p></div>}
                 </div>
             )}
 
-            {activeTab === 'wallet' && (
-                <div className="p-4 animate-in fade-in slide-in-from-right-8 duration-500">
-                    <div className="bg-black/80 border border-brand-orange/30 rounded-xl p-6 relative overflow-hidden shadow-[0_0_30px_rgba(235,121,85,0.1)]">
-                        {/* Background Tech Elements */}
-                        <div className="absolute top-0 right-0 p-4 opacity-5">
-                            <Wallet className="w-32 h-32 text-brand-orange" />
-                        </div>
-                        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-brand-orange/10 to-transparent pointer-events-none" />
-                        
-                        {/* Header */}
-                        <div className="flex justify-between items-start mb-6 relative z-10">
-                            <div>
-                                <h3 className="text-xs text-brand-orange/70 uppercase tracking-widest mb-1 flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-brand-orange rounded-full animate-pulse" />
-                                    Total Asset Value
-                                </h3>
-                                <motion.div 
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="text-4xl font-mono text-white font-bold tracking-tight"
-                                >
-                                    ₹0.00
-                                </motion.div>
-                            </div>
-                            <div className="px-3 py-1 bg-brand-orange/10 border border-brand-orange/30 rounded text-[10px] text-brand-orange font-bold uppercase tracking-wider">
-                                Beta Access
-                            </div>
-                        </div>
-
-                        {/* Fake Graph */}
-                        <div className="h-24 w-full mb-6 relative z-10">
-                            <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
-                                <defs>
-                                    <linearGradient id="graphGradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="#EB7955" stopOpacity="0.2" />
-                                        <stop offset="100%" stopColor="#EB7955" stopOpacity="0" />
-                                    </linearGradient>
-                                </defs>
-                                <motion.path
-                                    initial={{ pathLength: 0 }}
-                                    animate={{ pathLength: 1 }}
-                                    transition={{ duration: 1.5, ease: "easeInOut" }}
-                                    d="M0,80 C20,80 40,60 60,60 C80,60 100,75 120,75 C140,75 160,40 180,40 C200,40 220,55 240,55 C260,55 280,20 300,20"
-                                    fill="none"
-                                    stroke="#EB7955"
-                                    strokeWidth="2"
-                                    vectorEffect="non-scaling-stroke"
-                                />
-                                <path d="M0,80 C20,80 40,60 60,60 C80,60 100,75 120,75 C140,75 160,40 180,40 C200,40 220,55 240,55 C260,55 280,20 300,20 V100 H0 Z" fill="url(#graphGradient)" opacity="0.5" />
-                            </svg>
-                            <div className="absolute bottom-0 left-0 w-full h-px bg-white/10"></div>
-                        </div>
-                        
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-2 gap-4 mb-8 relative z-10">
-                            <div className="p-3 bg-white/5 rounded-lg border border-white/5">
-                                <span className="text-[10px] text-zinc-500 uppercase block mb-1">Pending</span>
-                                <span className="text-sm font-mono text-zinc-300">₹0.00</span>
-                            </div>
-                            <div className="p-3 bg-white/5 rounded-lg border border-white/5">
-                                <span className="text-[10px] text-zinc-500 uppercase block mb-1">Creator Fund</span>
-                                <span className="text-sm font-mono text-green-500 flex items-center gap-1">
-                                    <ShieldCheck className="w-3 h-3" /> Active
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="relative z-10 space-y-3">
-                             <button className="w-full py-3 bg-brand-orange text-black font-bold uppercase tracking-widest text-sm hover:bg-white transition-colors flex items-center justify-center gap-2">
-                                <Wallet className="w-4 h-4" />
-                                Connect Payout Method
-                            </button>
-                            <p className="text-[10px] text-zinc-500 text-center leading-relaxed">
-                                * Withdrawals are processed on the 1st of every month.<br/> 
-                                Minimum threshold: ₹5,000.
-                            </p>
-                        </div>
-                    </div>
+            {isOwnProfile && activeTab === 'wallet' && (
+                <div className="p-4 bg-black/80 border border-brand-orange/30 rounded-xl">
+                    <h3 className="text-xs text-brand-orange/70 uppercase mb-4">Total Asset Value</h3>
+                    <div className="text-4xl font-mono text-white font-bold mb-6">₹0.00</div>
+                    <button className="w-full py-3 bg-brand-orange text-black font-bold uppercase text-sm">Connect Payout</button>
                 </div>
             )}
         </div>
       </div>
 
-      {/* Modals */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-      {showCertificate && user && (
-          <BlacklistCertificate 
-            handle={user.handle} 
-            dateJoined={new Date().toLocaleDateString()} 
-            id={firebaseUser?.uid.substring(0, 8).toUpperCase() || 'UNKNOWN'} 
-            onClose={() => setShowCertificate(false)} 
-          />
-      )}
+      {showCertificate && isOwnProfile && <BlacklistCertificate handle={currentUser?.handle || ''} dateJoined={new Date().toLocaleDateString()} id={firebaseUser?.uid.substring(0, 8).toUpperCase() || ''} onClose={() => setShowCertificate(false)} />}
     </div>
   );
 }
@@ -378,4 +293,8 @@ function Stat({ label, value }: { label: string, value: string }) {
       <span className="text-xs text-secondary-text uppercase tracking-wider whitespace-nowrap">{label}</span>
     </div>
   );
+}
+
+export default function ProfilePage() {
+    return <Suspense><ProfileContent /></Suspense>;
 }

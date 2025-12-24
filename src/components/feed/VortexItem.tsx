@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, Share2, Disc, Music, Plus, Play, AlertTriangle, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -194,14 +195,14 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
         <div className="absolute right-2 bottom-24 flex flex-col items-center gap-6">
           
           {/* Profile Avatar with Follow + */}
-          <div className="relative mb-4">
+          <Link href={`/profile?view=${p.userId}`} className="relative mb-4">
              <div className="w-12 h-12 rounded-full border-2 border-cyber-white bg-gray-800 overflow-hidden">
                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${p.userAvatar}`} alt="User" className="w-full h-full" />
              </div>
              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-brand-hot-pink rounded-full p-0.5">
                  <Plus className="w-3 h-3 text-white" />
              </div>
-          </div>
+          </Link>
 
           {/* Like Button */}
           <div className="flex flex-col items-center gap-1">
@@ -246,10 +247,12 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
 
         {/* Bottom Text Info */}
         <div className="max-w-[80%] space-y-2">
-          <h3 className="font-bold text-lg text-white drop-shadow-md flex items-center gap-2">
-            @{p.userHandle}
-            <span className="text-xs bg-brand-cyan/20 text-brand-cyan px-1.5 py-0.5 rounded border border-brand-cyan/50">PRO</span>
-          </h3>
+          <Link href={`/profile?view=${p.userId}`}>
+            <h3 className="font-bold text-lg text-white drop-shadow-md flex items-center gap-2">
+                @{p.userHandle}
+                <span className="text-xs bg-brand-cyan/20 text-brand-cyan px-1.5 py-0.5 rounded border border-brand-cyan/50">PRO</span>
+            </h3>
+          </Link>
           <p className="text-sm text-gray-200 drop-shadow-sm line-clamp-2 whitespace-pre-wrap">
             {p.caption}
           </p>

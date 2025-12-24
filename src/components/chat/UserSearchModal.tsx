@@ -69,50 +69,10 @@ export function UserSearchModal({ isOpen, onClose }: UserSearchModalProps) {
     return () => clearTimeout(timer);
   }, [searchQuery, firebaseUser]);
 
-  const handleStartChat = async (targetUserId: string) => {
-    if (!firebaseUser || isCreating) return;
-    
-    setIsCreating(true);
+  const handleViewProfile = (targetUserId: string) => {
     playClick(600, 0.1, 'square');
-
-    try {
-        // 1. Check if chat already exists
-        const chatsRef = collection(db, "chats");
-        const q = query(chatsRef, where("participants", "array-contains", firebaseUser.uid));
-        const snapshot = await getDocs(q);
-        
-        let existingChatId = null;
-        
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            if (data.participants.includes(targetUserId)) {
-                existingChatId = doc.id;
-            }
-        });
-
-        if (existingChatId) {
-            // Chat exists, navigate to it
-            router.push(`/chat?id=${existingChatId}`);
-            onClose();
-        } else {
-            // 2. Create new chat
-            const newChatRef = await addDoc(chatsRef, {
-                participants: [firebaseUser.uid, targetUserId],
-                lastMessage: "",
-                lastMessageTimestamp: serverTimestamp(),
-                createdAt: serverTimestamp(),
-            });
-            
-            router.push(`/chat?id=${newChatRef.id}`);
-            onClose();
-        }
-
-    } catch (error) {
-        console.error("Failed to start chat", error);
-        alert("Connection refused. Target unavailable.");
-    } finally {
-        setIsCreating(false);
-    }
+    router.push(`/profile?view=${targetUserId}`);
+    onClose();
   };
 
   return (
@@ -168,8 +128,7 @@ export function UserSearchModal({ isOpen, onClose }: UserSearchModalProps) {
                       results.map(user => (
                           <button 
                             key={user.id}
-                            onClick={() => handleStartChat(user.id)}
-                            disabled={isCreating}
+                            onClick={() => handleViewProfile(user.id)}
                             className="w-full flex items-center gap-3 p-3 hover:bg-primary-bg rounded-xl transition-colors group text-left"
                           >
                               <div className="w-10 h-10 rounded-full bg-secondary-bg overflow-hidden border border-border-color group-hover:border-accent-1/50">

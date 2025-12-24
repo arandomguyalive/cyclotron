@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { MessageCircle, Search, PlusCircle, Loader2, Users, Globe } from "lucide-react";
 import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
-import { collection, query, where, onSnapshot, Timestamp } from "firebase/firestore";
+import { collection, query, where, onSnapshot, Timestamp, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { UserSearchModal } from "@/components/chat/UserSearchModal";
 import { ChatView } from "@/components/chat/ChatView";
@@ -46,11 +46,48 @@ function ChatListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const chatId = searchParams.get('id');
+  const targetUserId = searchParams.get('userId');
 
   const [realChats, setRealChats] = useState<Chat[]>([]);
   const [chatsLoading, setChatsLoading] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [view, setView] = useState<'direct' | 'factions'>('direct');
+
+  // Handle auto-starting chat from userId param
+  useEffect(() => {
+      if (!firebaseUser || !targetUserId) return;
+
+      const autoStartChat = async () => {
+          try {
+              const chatsRef = collection(db, "chats");
+              const q = query(chatsRef, where("participants", "array-contains", firebaseUser.uid));
+              const snapshot = await getDocs(q);
+              
+              let existingChatId = null;
+              snapshot.forEach(doc => {
+                  if (doc.data().participants.includes(targetUserId)) {
+                      existingChatId = doc.id;
+                  }
+              });
+
+              if (existingChatId) {
+                  router.replace(`/chat?id=${existingChatId}`);
+              } else {
+                  const newChatRef = await addDoc(chatsRef, {
+                      participants: [firebaseUser.uid, targetUserId],
+                      lastMessage: "",
+                      lastMessageTimestamp: serverTimestamp(),
+                      createdAt: serverTimestamp()
+                  });
+                  router.replace(`/chat?id=${newChatRef.id}`);
+              }
+          } catch (e) {
+              console.error("Auto-chat failed", e);
+          }
+      };
+
+      autoStartChat();
+  }, [firebaseUser, targetUserId, router]);
 
   useEffect(() => {
     if (!userLoading && !firebaseUser) {
