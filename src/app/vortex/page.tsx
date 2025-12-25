@@ -115,7 +115,8 @@ export default function VortexPage() {
         
         // Filter for Reels (Videos) only
         newItems = newItems.filter(item => 
-            (item as Post).type === 'reel' || (item as Post).mediaType === 'video'
+            // Allow all media types in Vortex as requested
+            true 
         );
         
         if (newItems.length === 0) {
@@ -314,7 +315,7 @@ function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkTex
                 justifyContent: 'center',
                 willChange: 'transform, opacity' // Force hardware acceleration layer
             }}
-            className="origin-center p-4"
+            className="origin-center p-4 pointer-events-auto"
         >
              {/* The Card Content */}
              <VortexItem post={post} index={index} watermarkText={watermarkText} isFree={isFree} tier={tier} />
