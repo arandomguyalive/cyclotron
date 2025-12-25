@@ -28,11 +28,11 @@ interface UserProfileData {
     coverImage?: string;
     tier: string;
     stats?: {
-        following: string;
-        followers: string;
-        likes: string;
-        credits: string;
-        reputation: string;
+        following: number;
+        followers: number;
+        likes: number;
+        credits: number;
+        reputation: number;
     };
 }
 
@@ -79,7 +79,7 @@ function ProfileContent() {
                  bio: "Connection timed out.",
                  avatarSeed: uidToFetch,
                  tier: "free",
-                 stats: { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' }
+                 stats: { following: 0, followers: 0, likes: 0, credits: 0, reputation: 0 }
              } as UserProfileData);
         }, 5000);
 
@@ -92,7 +92,7 @@ function ProfileContent() {
                     bio: "Simulated operative data.",
                     avatarSeed: uidToFetch,
                     tier: "premium", 
-                    stats: { following: "10", followers: "50", likes: "100", credits: "5000", reputation: "20" }
+                    stats: { following: 10, followers: 50, likes: 100, credits: 5000, reputation: 20 }
                 } as UserProfileData);
                 return;
             }
@@ -120,7 +120,7 @@ function ProfileContent() {
                          bio: "Data restricted.",
                          avatarSeed: uidToFetch,
                          tier: "free",
-                         stats: { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' }
+                         stats: { following: 0, followers: 0, likes: 0, credits: 0, reputation: 0 }
                      };
                 }
             }
@@ -305,10 +305,10 @@ function ProfileContent() {
               </div>
 
               <div className="flex gap-6 mt-6 py-4 border-y border-border-color relative z-30 overflow-x-auto">
-                <button onClick={() => handleStatClick('Following')}><Stat label="Following" value={targetUser.stats?.following || '0'} /></button>
-                <button onClick={() => handleStatClick('Followers')}><Stat label="Followers" value={targetUser.stats?.followers || '0'} /></button>
-                <button onClick={() => handleStatClick('Likes')}><Stat label="Likes" value={targetUser.stats?.likes || '0'} /></button>
-                <Stat label="Rep" value={targetUser.stats?.reputation || '0'} />
+                <button onClick={() => handleStatClick('Following')}><Stat label="Following" value={targetUser.stats?.following || 0} /></button>
+                <button onClick={() => handleStatClick('Followers')}><Stat label="Followers" value={targetUser.stats?.followers || 0} /></button>
+                <button onClick={() => handleStatClick('Likes')}><Stat label="Likes" value={targetUser.stats?.likes || 0} /></button>
+                <Stat label="Rep" value={targetUser.stats?.reputation || 0} />
                 
                 {targetUser.tier === 'lifetime' && isOwnProfile && (
                     <button onClick={() => setShowCertificate(true)} className="flex flex-col items-center justify-center text-amber-500 animate-pulse">
@@ -367,7 +367,7 @@ function ProfileContent() {
   );
 }
 
-function Stat({ label, value }: { label: string, value: string }) {
+function Stat({ label, value }: { label: string, value: string | number }) {
   return (
     <div className="flex flex-col min-w-[60px]">
       <span className="font-bold text-lg whitespace-nowrap">{value}</span>

@@ -94,17 +94,16 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
       });
 
       // 3. Award Gamification Rewards
-      const repReward = missionMode ? 50 : (mode === 'signal' ? 5 : 10);
-      const credReward = missionMode ? 200 : (mode === 'signal' ? 25 : 50);
-      
-      const currentRep = parseInt(user.stats.reputation || '0');
-      const currentCreds = parseInt(user.stats.credits || '0');
-      
-      updateUser({
+      const repReward = 10;
+      const credReward = 50;
+      const currentRep = user.stats.reputation || 0;
+      const currentCreds = user.stats.credits || 0;
+
+      await updateUser({
           stats: {
               ...user.stats,
-              reputation: (currentRep + repReward).toString(),
-              credits: (currentCreds + credReward).toString()
+              reputation: currentRep + repReward,
+              credits: currentCreds + credReward
           }
       });
 

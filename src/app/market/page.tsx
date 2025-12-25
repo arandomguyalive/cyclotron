@@ -65,7 +65,7 @@ export default function MarketPage() {
     
     const [purchasing, setPurchasing] = useState<string | null>(null);
 
-    const credits = parseInt(user?.stats?.credits || "0");
+    const credits = user?.stats?.credits || 0;
 
     const handlePurchase = async (item: MarketItem) => {
         playClick(600, 0.05, 'square');
@@ -85,8 +85,8 @@ export default function MarketPage() {
                 await updateUser({ 
                     inventory: newInventory,
                     stats: { 
-                        ...(user?.stats || { following: "0", followers: "0", likes: "0", credits: "0", reputation: "0" }), 
-                        credits: newCredits.toString() 
+                        ...(user?.stats || { following: 0, followers: 0, likes: 0, credits: 0, reputation: 0 }), 
+                        credits: newCredits 
                     } 
                 });
 

@@ -31,11 +31,11 @@ export interface UserProfile {
     selfDestructTimer: string;
   };
   stats: {
-    following: string;
-    followers: string;
-    likes: string;
-    credits: string;
-    reputation: string;
+    following: number;
+    followers: number;
+    likes: number;
+    credits: number;
+    reputation: number;
   };
 }
 
@@ -51,27 +51,18 @@ interface UserContextType {
 }
 
 const defaultUser: UserProfile = {
-  displayName: "Cyber Drifter",
-  handle: "neon_genesis",
-  bio: "Building digital dreams in the void.\nFull-stack Developer | UI Enthusiast",
-  avatarSeed: "User123",
-  faction: "Netrunner",
-  tier: "free",
-  billingCycle: "monthly",
-  inventory: [],
-  privacy: {
-    ghostMode: false,
-    bioLock: false,
-    screenshotAlert: true,
-    dataSaver: false,
-    selfDestructTimer: "24h"
-  },
+  displayName: "KM18 Sovereign",
+  handle: "km18_nexus",
+  bio: "Architect of the Cyclotron. Digital sovereignty is the only truth.",
+  avatarSeed: "KM18",
+  faction: "Ghost",
+  tier: "sovereign",
   stats: {
-    following: "245",
-    followers: "12.4K",
-    likes: "84.2K",
-    credits: "2450",
-    reputation: "50",
+    following: 245,
+    followers: 12400,
+    likes: 84200,
+    credits: 2450,
+    reputation: 50,
   },
 };
 
@@ -185,7 +176,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               avatarSeed: "Agent",
               faction: "Drifter",
               tier: "free",
-              stats: { following: "0", followers: "0", likes: "0", credits: "500", reputation: "10" }
+              stats: { following: 0, followers: 0, likes: 0, credits: 500, reputation: 10 }
           };
           await setDoc(doc(db, "users", cred.user.uid), newUser);
           setUser(newUser);
