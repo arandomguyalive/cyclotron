@@ -71,7 +71,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
       let allowedTiers: string[] = [];
       if (selectedTier === 'premium') allowedTiers = ['premium', 'gold', 'platinum', 'sovereign', 'lifetime'];
       if (selectedTier === 'gold') allowedTiers = ['gold', 'platinum', 'sovereign', 'lifetime'];
-      if (selectedTier === 'platinum') allowedTiers = ['platinum', 'sovereign', 'lifetime'];
+      if (selectedTier === 'platinum') allowedTiers = ['platinum', 'sovereign'];
 
       // 2. Create Firestore Document
       const collectionName = mode === "story" ? "stories" : "posts";

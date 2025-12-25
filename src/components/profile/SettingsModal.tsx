@@ -83,7 +83,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   // Tier Access Helpers
   const canAccessGhost = ['gold', 'platinum', 'sovereign', 'lifetime'].includes(user?.tier || '');
-  const canAccessHardening = ['platinum', 'sovereign', 'lifetime'].includes(user?.tier || '');
+  const canAccessHardening = ['platinum', 'sovereign'].includes(user?.tier || '');
 
   const privacy = user?.privacy || {
       ghostMode: false,

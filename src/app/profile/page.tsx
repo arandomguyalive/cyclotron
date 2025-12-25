@@ -233,7 +233,10 @@ function ProfileContent() {
   const targetTier = (targetUser?.tier || 'free').toLowerCase();
   const currentTier = (currentUser?.tier || 'free').toLowerCase();
 
-  const canViewDetail = isOwnProfile || currentTier === 'sovereign' || currentTier === 'lifetime' || currentTier === targetTier;
+  const canViewDetail = isOwnProfile || 
+                       currentTier === 'sovereign' || 
+                       (currentTier === 'lifetime' && (targetTier === 'lifetime' || targetTier === 'gold' || targetTier === 'premium' || targetTier === 'free')) ||
+                       currentTier === targetTier;
 
   return (
     <div className="min-h-screen bg-primary-bg text-primary-text pb-24">

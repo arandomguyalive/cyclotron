@@ -31,7 +31,7 @@ export default function UpgradePage() {
                     id: "lifetime",
                     name: "The Blacklist",
                     price: "₹20,000",
-                    features: ["Lifetime Access (One-time)", "Forensic Watermarking", "Dead Man's Switch", "Sovereign Wallet", "Limit: 500 Spots"],
+                    features: ["Lifetime Access (One-time)", "Forensic Watermarking", "Geo-Fencing Control", "Ghost Mode", "Sovereign Wallet"],
                     buttonText: "Join Blacklist",
                     bgColor: "bg-amber-500/10",
                     borderColor: "border-amber-500/50",

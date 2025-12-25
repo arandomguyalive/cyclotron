@@ -223,7 +223,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
   ];
   const bgGradient = gradients[index % gradients.length];
 
-  const isForensicTier = ['gold', 'platinum', 'sovereign', 'lifetime'].includes(tier);
+  const isForensicTier = ['gold', 'platinum', 'sovereign'].includes(tier);
   const isShieldTier = tier === 'premium';
 
   return (

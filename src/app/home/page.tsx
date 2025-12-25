@@ -364,7 +364,7 @@ export default function HomePage() {
                 </div>
             )}
 
-            {(tier === 'premium' || tier === 'gold') && (
+            {(tier === 'premium' || tier === 'gold' || tier === 'lifetime') && (
                 <div 
                     onClick={() => setIsScannerOpen(true)}
                     className={`col-span-2 p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left relative overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform`}
@@ -377,7 +377,7 @@ export default function HomePage() {
                 </div>
             )}
 
-            {(tier === 'platinum' || tier === 'sovereign' || tier === 'lifetime') && (
+            {(tier === 'platinum' || tier === 'sovereign') && (
                 <div className={`col-span-2 p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left`}>
                      <Server className={`w-8 h-8 mb-3 ${config.color}`} />
                      <h3 className="font-bold text-lg">The Vault</h3>
