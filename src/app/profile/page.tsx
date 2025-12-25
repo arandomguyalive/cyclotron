@@ -122,24 +122,32 @@ function ProfileContent() {
                 }
             }
 
-            // Apply simulated stats (Persistence for Permission Denied scenario)
-            const postsQ = query(
-                collection(db, "posts"),
-                where("userId", "==", uidToFetch),
-                limit(18)
-            );
-            const postsSnap = await getDocs(postsQ);
-            setUserPosts(postsSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
+            // Fetch Posts
+            try {
+                const postsQ = query(
+                    collection(db, "posts"),
+                    where("userId", "==", uidToFetch),
+                    limit(18)
+                );
+                const postsSnap = await getDocs(postsQ);
+                setUserPosts(postsSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
+            } catch (err) {
+                console.warn("Posts fetch failed:", err);
+            }
 
             // Fetch Likes (Only if own profile or high tier - for now just own)
             if (isOwnProfile) {
-                const likesQ = query(
-                    collection(db, "users", firebaseUser!.uid, "likes"),
-                    orderBy("timestamp", "desc"),
-                    limit(18)
-                );
-                const likesSnap = await getDocs(likesQ);
-                setLikedPosts(likesSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
+                try {
+                    const likesQ = query(
+                        collection(db, "users", firebaseUser!.uid, "likes"),
+                        orderBy("timestamp", "desc"),
+                        limit(18)
+                    );
+                    const likesSnap = await getDocs(likesQ);
+                    setLikedPosts(likesSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
+                } catch (err) {
+                    console.warn("Likes fetch failed:", err);
+                }
             }
 
             // Check Follow Status
