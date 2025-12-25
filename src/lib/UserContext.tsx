@@ -149,7 +149,30 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
             setUser({ ...data, uid: currentUser.uid, isBlacklist: data.isBlacklist || false, isOwner });
           } else {
-            setUser(null);
+            // Document doesn't exist - Check if it's an owner logging in for the first time
+            const ownerEmails = ['abhi18@abhed.network', 'kinjal18@abhed.network'];
+            if (currentUser.email && ownerEmails.includes(currentUser.email)) {
+                const handle = currentUser.email.split('@')[0].toUpperCase();
+                const newOwner: UserProfile = {
+                    fullName: `${handle} Architect`,
+                    displayName: `${handle} Owner`,
+                    handle: handle,
+                    email: currentUser.email,
+                    phoneNumber: "+0000000000",
+                    dob: "1990-01-01",
+                    bio: "System Architect of ABHED.",
+                    avatarSeed: handle,
+                    faction: "Ghost",
+                    tier: "sovereign",
+                    isBlacklist: true,
+                    isOwner: true,
+                    stats: { following: 0, followers: 0, likes: 0, credits: 1000, reputation: 100 }
+                };
+                await setDoc(userRef, newOwner);
+                // The snapshot listener will trigger again and set the user state
+            } else {
+                setUser(null);
+            }
           }
           setLoading(false);
         });
@@ -181,22 +204,29 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
       // If not an email, lookup by handle or phone
       if (!identifier.includes("@")) {
-          const { collection, query, where, getDocs } = await import("firebase/firestore");
+          const upperIdentifier = identifier.toUpperCase();
+          const ownerHandles = ['ABHI18', 'KINJAL18'];
           
-          // Try Handle (Upper case)
-          let q = query(collection(db, "users"), where("handle", "==", identifier.toUpperCase()));
-          let snap = await getDocs(q);
-          
-          if (snap.empty) {
-              // Try Phone Number
-              q = query(collection(db, "users"), where("phoneNumber", "==", identifier));
-              snap = await getDocs(q);
-          }
-
-          if (!snap.empty) {
-              email = snap.docs[0].data().email;
+          if (ownerHandles.includes(upperIdentifier)) {
+              email = `${identifier.toLowerCase()}@abhed.network`;
           } else {
-              throw new Error("Identifier not found. Use Email, Handle, or Phone.");
+              const { collection, query, where, getDocs } = await import("firebase/firestore");
+              
+              // Try Handle (Upper case)
+              let q = query(collection(db, "users"), where("handle", "==", upperIdentifier));
+              let snap = await getDocs(q);
+              
+              if (snap.empty) {
+                  // Try Phone Number
+                  q = query(collection(db, "users"), where("phoneNumber", "==", identifier));
+                  snap = await getDocs(q);
+              }
+
+              if (!snap.empty) {
+                  email = snap.docs[0].data().email;
+              } else {
+                  throw new Error(`Identity "${identifier}" not recognized in the ABHED Registry.`);
+              }
           }
       }
 
