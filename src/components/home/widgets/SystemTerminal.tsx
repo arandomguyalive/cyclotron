@@ -61,6 +61,9 @@ export function SystemTerminal() {
                      setTimeout(() => setAlert(null), 8000);
                 }
             }
+        }, (error) => {
+            // Silently fail if permissions denied (User likely knows via other means)
+            // console.warn("System alert listener failed:", error); 
         });
 
         return () => unsubscribe();
