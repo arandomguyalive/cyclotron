@@ -105,7 +105,12 @@ function ProfileContent() {
             // Apply simulated stats (Persistence for Permission Denied scenario)
             if (!uidToFetch.startsWith("mock-")) {
                 const simStats = JSON.parse(localStorage.getItem(`sim_stats_${uidToFetch}`) || '{}');
-                if (simStats.followers && profileData.stats) {
+                if (simStats.followers) {
+                    // Initialize stats if missing from DB
+                    if (!profileData.stats) {
+                        profileData.stats = { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' };
+                    }
+                    console.log(`[Profile] Applying simulated followers: ${simStats.followers}`);
                     profileData.stats = { ...profileData.stats, followers: simStats.followers };
                 }
             }
@@ -175,10 +180,27 @@ function ProfileContent() {
           ? parseInt(targetUser.stats?.followers || '0') + 1 
           : Math.max(0, parseInt(targetUser.stats?.followers || '0') - 1);
 
-      // Persist stat simulation
+      // Persist stat simulation (Target's Followers)
       const statsKey = `sim_stats_${targetUser.uid}`;
       const existingSim = JSON.parse(localStorage.getItem(statsKey) || '{}');
       localStorage.setItem(statsKey, JSON.stringify({ ...existingSim, followers: newFollowersCount.toString() }));
+
+      // Persist stat simulation (My Following)
+      if (currentUser && firebaseUser) {
+          const myStatsKey = `sim_stats_${firebaseUser.uid}`;
+          const myCurrentFollowing = parseInt(currentUser.stats?.following || '0');
+          // Note: This is a simple increment based on loaded state. 
+          // Ideally we read from localStorage first to handle multiple follows in one session if not reloaded.
+          // But for a prototype, this works.
+          const myExistingSim = JSON.parse(localStorage.getItem(myStatsKey) || '{}');
+          // If we already have a simulated value, use that as base? 
+          // Actually, currentUser.stats might NOT include the simulation yet if we didn't reload.
+          // So better to use the simulated value if present.
+          const baseFollowing = myExistingSim.following ? parseInt(myExistingSim.following) : myCurrentFollowing;
+          const myNewFollowing = !wasFollowing ? baseFollowing + 1 : Math.max(0, baseFollowing - 1);
+          
+          localStorage.setItem(myStatsKey, JSON.stringify({ ...myExistingSim, following: myNewFollowing.toString() }));
+      }
 
       setTargetUser(prev => {
           if (!prev) return null;
