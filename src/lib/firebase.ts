@@ -1,5 +1,5 @@
 import { initializeApp, getApps, FirebaseApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
@@ -43,6 +43,9 @@ try {
     throw error;
 }
 
-export const db = getFirestore(app);
+// Initialize Firestore with Long Polling enabled to bypass AdBlockers/Firewalls
+export const db = initializeFirestore(app, {
+    experimentalForceLongPolling: true
+});
 export const auth = getAuth(app);
 export const storage = getStorage(app);

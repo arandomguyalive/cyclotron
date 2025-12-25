@@ -82,22 +82,29 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             let data = docSnap.data() as UserProfile;
             
             // --- DATA FIXER (Resilience Layer) ---
-            // If we detect legacy string stats, convert them to numbers and fix the doc
             let needsFix = false;
-            const fixedStats = { ...data.stats };
             
-            Object.keys(data.stats || {}).forEach(key => {
-                const val = (data.stats as any)[key];
-                if (typeof val === 'string') {
-                    (fixedStats as any)[key] = Number(val.replace(/[^\d.-]/g, '')) || 0;
-                    needsFix = true;
-                }
-            });
+            // 1. Initialize stats if missing or corrupted
+            if (!data.stats || typeof data.stats !== 'object') {
+                data.stats = { following: 0, followers: 0, likes: 0, credits: 500, reputation: 10 };
+                needsFix = true;
+            } else {
+                // 2. Convert existing string stats to numbers
+                const keys: (keyof UserProfile['stats'])[] = ['following', 'followers', 'likes', 'credits', 'reputation'];
+                keys.forEach(key => {
+                    const val = data.stats[key];
+                    if (typeof val === 'string') {
+                        (data.stats as any)[key] = Number((val as string).replace(/[^\d.-]/g, '')) || 0;
+                        needsFix = true;
+                    }
+                });
+            }
 
             if (needsFix) {
-                console.log("Legacy Data Detected. Converting to Numeric Signal...");
-                await updateDoc(userRef, { stats: fixedStats });
-                return; // Let the next snapshot trigger with fixed data
+                console.log("Legacy Data Detected. Synchronizing Numeric Signal...");
+                // Force an atomic update to fix the database record
+                await setDoc(userRef, { stats: data.stats }, { merge: true });
+                return; 
             }
 
             if (data.accessType === "LIFETIME_BLACKLIST") data.tier = "lifetime";
