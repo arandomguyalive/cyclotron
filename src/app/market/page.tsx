@@ -58,25 +58,29 @@ const items: MarketItem[] = [
 ];
 
 export default function MarketPage() {
-    const { user, updateUser, loading } = useUser();
+    const { user, updateUser, loading, firebaseUser } = useUser();
     const router = useRouter();
     const { playClick } = useSonic();
     const { toast } = useToast();
     
     const [purchasing, setPurchasing] = useState<string | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const credits = user?.stats?.credits || 0;
 
     const handlePurchase = async (item: MarketItem) => {
+        if (isProcessing) return;
+        
         playClick(600, 0.05, 'square');
         if (credits < item.price) {
             toast("Insufficient Funds. Complete directives to earn cycles.", "error");
             return;
         }
 
+        setIsProcessing(true);
         setPurchasing(item.id);
         
-        // Simulate Network Latency for immersion
+        // Immerisve Delay
         setTimeout(async () => {
             try {
                 const newCredits = credits - item.price;
@@ -87,13 +91,14 @@ export default function MarketPage() {
                     "stats.credits": newCredits 
                 });
 
-                setPurchasing(null);
                 toast(`Acquired: ${item.name}`, "success");
                 playClick(880, 0.2, 'sine');
             } catch (err) {
                 console.error("Market transaction failed", err);
-                setPurchasing(null);
                 toast("Transaction Failed: Connection Lost.", "error");
+            } finally {
+                setPurchasing(null);
+                setIsProcessing(false);
             }
         }, 1500);
     };

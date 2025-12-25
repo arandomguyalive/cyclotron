@@ -84,7 +84,8 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
       });
       
       // Notify Post Owner (if not self)
-      if (postOwnerId !== firebaseUser.uid) {
+      if (postOwnerId && postOwnerId !== firebaseUser.uid) {
+          console.log(`[COMMENT] Delivering notification to owner: ${postOwnerId}`);
           const notifRef = doc(collection(db, "users", postOwnerId, "notifications"));
           batch.set(notifRef, {
               type: "COMMENT",
@@ -98,7 +99,7 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
       }
 
       await batch.commit();
-      console.log("[COMMENT] Batch committed successfully.");
+      console.log("[COMMENT] Transaction finalized.");
 
     } catch (e) {
       console.error("[COMMENT] Batch failed:", e);

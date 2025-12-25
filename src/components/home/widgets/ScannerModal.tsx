@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Radar, MapPin, User, ArrowRight, Package, PackageOpen, CheckCircle, Camera } from "lucide-react";
-import { collection, query, where, getDocs, limit, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, limit, deleteDoc, doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useSonic } from "@/lib/SonicContext";
 import { useUser } from "@/lib/UserContext";
@@ -22,6 +23,7 @@ interface ScannerModalProps {
 }
 
 export function ScannerModal({ isOpen, onClose, userRegion = "global" }: ScannerModalProps) {
+  const router = useRouter();
   const [signals, setSignals] = useState<SignalPost[]>([]);
   const [scanning, setScanning] = useState(true);
   const [arMode, setArMode] = useState(false);
@@ -35,52 +37,29 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
       setSignals([]);
       playClick(800, 0.5, 'sine'); // Long scan sound
 
-      const scan = async () => {
-        // Simulate scanning delay for immersion
-        setTimeout(async () => {
-            try {
-                // Query posts matching the region OR global
-                // Note: Firestore doesn't support OR across fields easily without multiple queries
-                const qRegion = query(
-                    collection(db, "posts"), 
-                    where("region", "==", userRegion.toLowerCase()),
-                    limit(15)
-                );
-                const qGlobal = query(
-                    collection(db, "posts"), 
-                    where("region", "==", "global"),
-                    limit(15)
-                );
+      // 1. Listen to signals matching region or global
+      const q = query(
+          collection(db, "posts"),
+          where("region", "in", [userRegion.toLowerCase(), "global"]),
+          limit(20)
+      );
 
-                const [snapRegion, snapGlobal] = await Promise.all([getDocs(qRegion), getDocs(qGlobal)]);
-                
-                // Combine and deduplicate
-                const allDocs = [...snapRegion.docs, ...snapGlobal.docs];
-                const uniqueIds = new Set();
-                const found: SignalPost[] = [];
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+          const found: SignalPost[] = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data(),
+              arX: Math.random() * 80 + 10,
+              arY: Math.random() * 60 + 20,
+          } as SignalPost));
+          
+          setSignals(found);
+          setScanning(false);
+      }, (err) => {
+          console.error("Scanner signal fail", err);
+          setScanning(false);
+      });
 
-                allDocs.forEach(doc => {
-                    if (!uniqueIds.has(doc.id)) {
-                        uniqueIds.add(doc.id);
-                        found.push({
-                            id: doc.id,
-                            ...doc.data(),
-                            arX: Math.random() * 80 + 10,
-                            arY: Math.random() * 60 + 20,
-                        } as SignalPost);
-                    }
-                });
-
-                setSignals(found);
-            } catch (e) {
-                console.error("Scanner failed to query signals", e);
-            } finally {
-                setScanning(false);
-                playClick(440, 0.1, 'square'); 
-            }
-        }, 2000);
-      };
-      scan();
+      return () => unsubscribe();
     }
   }, [isOpen, userRegion, playClick]);
 
@@ -98,15 +77,21 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
               "stats.credits": (user.stats.credits || 0) + 100
           });
 
-          // 3. Update local state
-          setSignals(prev => prev.filter(s => s.id !== signal.id));
-          
           toast("Dead Drop Claimed: +100 Credits", "success");
           playClick(880, 0.3, 'triangle');
 
       } catch (e) {
           console.error("Failed to claim drop", e);
           toast("Signal Lost. Claim failed.", "error");
+      }
+  };
+
+  const handleSignalClick = (signal: SignalPost) => {
+      if (signal.type === 'drop') {
+          handleClaim(signal);
+      } else {
+          onClose();
+          router.push(`/profile?view=${signal.userId}`);
       }
   };
 
