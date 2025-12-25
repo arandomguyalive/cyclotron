@@ -29,6 +29,7 @@ export interface UserProfile {
   tier: UserTier;
   isBlacklist?: boolean; // First 500 lifetime creators
   isOwner?: boolean;
+  visualOverride?: boolean;
   accessType?: "LIFETIME_BLACKLIST";
   billingCycle?: "monthly" | "annual";
   inventory?: string[];

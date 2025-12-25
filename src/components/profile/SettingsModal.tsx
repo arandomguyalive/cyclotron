@@ -286,6 +286,22 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                         >
                                             {user?.isBlacklist ? "Blacklist Active" : "Inject Blacklist Clearance"}
                                         </button>
+
+                                        <button
+                                            onClick={() => {
+                                                if (user) {
+                                                    updateUser({ visualOverride: !user.visualOverride });
+                                                    handleButtonClick();
+                                                }
+                                            }}
+                                            className={`w-full py-3 rounded-xl text-[10px] font-bold uppercase transition-all border ${
+                                                user?.visualOverride 
+                                                    ? "bg-brand-cyan text-black border-brand-cyan shadow-[0_0_10px_#00D4E5]" 
+                                                    : "bg-black/40 text-secondary-text border-white/5 hover:border-brand-cyan/50"
+                                            }`}
+                                        >
+                                            {user?.visualOverride ? "Visual Override: ON" : "Visual Override: OFF (Mirror Reality)"}
+                                        </button>
                                     </div>
                                 </div>
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, Share2, Disc, Music, Plus, Play, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Heart, MessageCircle, Share2, Disc, Music, Plus, Play, AlertTriangle, ShieldCheck, Cpu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SecurePlayer } from "./SecurePlayer";
 import { Timestamp, collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc, deleteDoc, getCountFromServer, writeBatch, onSnapshot } from "firebase/firestore";
@@ -198,7 +198,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' 
 
   const isForensicTier = ['professional', 'ultra_elite', 'sovereign'].includes(tier);
   const isShieldTier = tier === 'shield';
-  const showGlitched = isFree && !currentUserProfile?.isOwner;
+  const showGlitched = isFree && !currentUserProfile?.visualOverride;
 
   return (
     <div className={cn("relative h-full w-full overflow-hidden bg-cyber-black rounded-xl border border-white/10 shadow-lg translate-z-0 backface-hidden")}>
@@ -211,6 +211,11 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' 
                       <AlertTriangle className="w-8 h-8 text-brand-orange animate-pulse" />
                       <span className="text-xs font-bold text-brand-orange uppercase tracking-widest">Signal Throttled</span>
                   </div>
+              </div>
+          )}
+          {isFree && currentUserProfile?.isOwner && (
+              <div className="absolute top-4 left-4 p-1.5 bg-brand-cyan/20 rounded-lg border border-brand-cyan/50 z-20" title="Architect Bypass Active">
+                  <Cpu className="w-4 h-4 text-brand-cyan" />
               </div>
           )}
       </div>

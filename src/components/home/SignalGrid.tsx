@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "@/lib/UserContext";
 import { collection, query, orderBy, limit, onSnapshot, Timestamp, doc, updateDoc, increment, setDoc, serverTimestamp, writeBatch, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Heart, MessageCircle, Share2, MoreHorizontal, Bookmark, Eye } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Bookmark, Eye, Cpu } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/lib/ToastContext";
 import { extractMessageFromImage } from "@/lib/steg";
@@ -315,7 +315,7 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
         );
     }
 
-    const showGlitched = isFree && !user?.isOwner;
+    const showGlitched = isFree && !user?.visualOverride;
 
     return (
         <div className="w-full border-b border-white/5 pb-6 font-sans">
@@ -347,6 +347,11 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                 <div className="relative w-full aspect-[4/5] bg-black overflow-hidden" onClick={() => showGlitched && toast("Upgrade for HD Access", "warning")}>
                     <img src={post.mediaUrl} className={`w-full h-full object-cover transition-all duration-500 ${showGlitched ? 'grayscale blur-[1px]' : ''}`} />
                     {showGlitched && <div className="absolute top-4 right-4 bg-brand-orange text-white text-[10px] font-bold px-2 py-1 rounded">LOCKED</div>}
+                    {isFree && user?.isOwner && (
+                        <div className="absolute top-4 left-4 p-1 bg-brand-cyan/20 rounded border border-brand-cyan/50" title="Architect Bypass Active">
+                            <Cpu className="w-3 h-3 text-brand-cyan" />
+                        </div>
+                    )}
                 </div>
             )}
 
