@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, Share2, Disc, Music, Plus, Play, AlertTriangle, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SecurePlayer } from "./SecurePlayer";
-import { Timestamp, collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc, deleteDoc } from "firebase/firestore";
+import { Timestamp, collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc, deleteDoc, getCountFromServer } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useScreenshot } from "@/lib/useScreenshot";
 import { useUser } from "@/lib/UserContext";
@@ -23,6 +23,7 @@ export interface Post {
   userHandle: string;
   userAvatar: string;
   likes: number;
+  shares?: number; // Added shares
   createdAt: Timestamp | Date;
 }
 
@@ -46,9 +47,33 @@ interface VortexProps {
 export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }: VortexProps) {
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState((post as Post).likes || 0);
+  const [shares, setShares] = useState((post as Post).shares || 0);
+  const [commentsCount, setCommentsCount] = useState(0);
   const [isCommentOpen, setIsCommentOpen] = useState(false);
   const { firebaseUser, user: currentUserProfile } = useUser();
   const { toast } = useToast();
+
+  useEffect(() => {
+      if (post.type === 'ad' || !firebaseUser) return;
+
+      // 1. Sync Local/Simulated Likes
+      const simLikes = JSON.parse(localStorage.getItem(`sim_likes_${firebaseUser.uid}`) || '[]');
+      if (simLikes.find((i: any) => i.id === post.id)) {
+          setLiked(true);
+          // Visually correct the count if it seems low
+          setLikes(prev => Math.max(prev, (post as Post).likes + 1)); 
+      }
+
+      // 2. Fetch Comment Count
+      const fetchCount = async () => {
+          try {
+              const coll = collection(db, "posts", post.id, "comments");
+              const snapshot = await getCountFromServer(coll);
+              setCommentsCount(snapshot.data().count);
+          } catch (e) { }
+      };
+      fetchCount();
+  }, [post.id, firebaseUser]);
 
   useScreenshot(async () => {
       if (post.type === 'ad' || !firebaseUser || (post as Post).userId === firebaseUser.uid) return;
@@ -149,6 +174,15 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
           toast("UPGRADE REQUIRED: Secure sharing is restricted to Premium tiers.", "error");
           return;
       }
+      
+      setShares(prev => (prev || 0) + 1);
+      
+      try {
+          await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });
+      } catch (e) {
+          // Simulation fallback handled by optimistic update
+      }
+
       if (navigator.share) {
           try {
               await navigator.share({
@@ -275,7 +309,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
             <button onClick={handleComment} className="p-2">
               <MessageCircle className="w-8 h-8 text-white drop-shadow-md" />
             </button>
-            <span className="text-xs font-bold text-white drop-shadow-md">0</span>
+            <span className="text-xs font-bold text-white drop-shadow-md">{commentsCount}</span>
           </div>
 
           {/* Share Button */}
@@ -283,7 +317,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
             <button onClick={handleShare} className="p-2">
               <Share2 className="w-8 h-8 text-white drop-shadow-md" />
             </button>
-            <span className="text-xs font-bold text-white drop-shadow-md">Share</span>
+            <span className="text-xs font-bold text-white drop-shadow-md">{shares}</span>
           </div>
 
           {/* Spinning Disc (Music) */}

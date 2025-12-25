@@ -279,7 +279,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                                 type="file" 
                                 ref={fileInputRef} 
                                 onChange={handleFileSelect} 
-                                accept={mode === 'reel' ? "video/*" : "image/*,video/*"}
+                                accept="image/*,video/*"
                                 className="hidden" 
                              />
                            </div>
