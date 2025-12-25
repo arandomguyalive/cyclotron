@@ -31,15 +31,18 @@ export function IdentityBadges({ tier = "lobby", faction, isBlacklist = false, i
 
     return (
         <div className={cn("flex items-center gap-1.5", className)}>
-            {/* System Architect (Owner Only) */}
+            {/* System Architect (Owner Only) - Ultimate Priority */}
             {isOwner && (
                 <motion.div 
-                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    animate={{ 
+                        filter: ["drop-shadow(0 0 2px #00D4E5)", "drop-shadow(0 0 10px #00D4E5)", "drop-shadow(0 0 2px #00D4E5)"],
+                        scale: [1, 1.05, 1]
+                    }}
                     transition={{ duration: 2, repeat: Infinity }}
-                    className="text-brand-cyan drop-shadow-[0_0_8px_#00D4E5]"
+                    className="text-brand-cyan"
                     title="System Architect"
                 >
-                    <Cpu className={cn(iconSize)} />
+                    <Cpu className={cn(iconSize, "fill-current/20")} />
                 </motion.div>
             )}
 

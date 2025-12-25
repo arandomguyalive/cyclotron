@@ -290,7 +290,7 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
         } catch (error) {}
     };
 
-    const isTierAllowed = !post.allowedTiers || post.allowedTiers.length === 0 || post.allowedTiers.includes(viewerTier);
+    const isTierAllowed = user?.isOwner || !post.allowedTiers || post.allowedTiers.length === 0 || post.allowedTiers.includes(viewerTier);
     if (!isTierAllowed) {
         return (
             <div className="w-full border-b border-white/5 pb-6">
@@ -304,14 +304,16 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
         );
     }
 
+    const showGlitched = isFree && !user?.isOwner;
+
     return (
         <div className="w-full border-b border-white/5 pb-6 font-sans">
             <div className="px-4 flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                    <UserAvatar seed={post.userHandle} url={post.userAvatarUrl} size="sm" isBlacklist={post.userIsBlacklist} showRing={false} />
+                    <UserAvatar seed={post.userHandle} url={post.userAvatarUrl} size="sm" isBlacklist={post.userIsBlacklist} isOwner={post.userIsOwner} showRing={false} />
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                            <span className={`text-sm font-bold ${isFree ? 'text-secondary-text' : 'text-primary-text'}`}>@{post.userHandle}</span>
+                            <span className={`text-sm font-bold ${showGlitched ? 'text-secondary-text' : 'text-primary-text'}`}>@{post.userHandle}</span>
                             <IdentityBadges tier={post.userTier} faction={post.userFaction} isBlacklist={post.userIsBlacklist} isOwner={post.userIsOwner} size="sm" />
                             {firebaseUser && post.userId !== firebaseUser.uid && (
                                 <button onClick={handleFollow} className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${followingSet.has(post.userId) ? 'border-accent-1 text-accent-1 bg-accent-1/10' : 'border-secondary-text text-secondary-text'}`}>{followingSet.has(post.userId) ? 'Linked' : 'Link+'}</button>
@@ -331,9 +333,9 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                     </div>
                 </div>
             ) : (
-                <div className="relative w-full aspect-[4/5] bg-black overflow-hidden" onClick={() => isFree && toast("Upgrade for HD Access", "warning")}>
-                    <img src={post.mediaUrl} className={`w-full h-full object-cover transition-all duration-500 ${isFree ? 'grayscale blur-[1px]' : ''}`} />
-                    {isFree && <div className="absolute top-4 right-4 bg-brand-orange text-white text-[10px] font-bold px-2 py-1 rounded">LOCKED</div>}
+                <div className="relative w-full aspect-[4/5] bg-black overflow-hidden" onClick={() => showGlitched && toast("Upgrade for HD Access", "warning")}>
+                    <img src={post.mediaUrl} className={`w-full h-full object-cover transition-all duration-500 ${showGlitched ? 'grayscale blur-[1px]' : ''}`} />
+                    {showGlitched && <div className="absolute top-4 right-4 bg-brand-orange text-white text-[10px] font-bold px-2 py-1 rounded">LOCKED</div>}
                 </div>
             )}
 

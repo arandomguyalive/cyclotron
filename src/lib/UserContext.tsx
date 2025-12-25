@@ -142,9 +142,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
             const isOwner = ['ABHI18', 'KINJAL18'].includes(data.handle?.toUpperCase());
             if (isOwner) {
-                data.tier = "sovereign";
-                data.isBlacklist = true;
                 data.isOwner = true;
+                // If tier isn't set yet (newly created), default to sovereign
+                if (!data.tier) data.tier = "sovereign";
+                data.isBlacklist = true;
             }
 
             setUser({ ...data, uid: currentUser.uid, isBlacklist: data.isBlacklist || false, isOwner });

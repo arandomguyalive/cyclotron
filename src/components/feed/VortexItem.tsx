@@ -162,7 +162,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' 
   };
 
   const handleShare = async () => {
-      if (isFree) {
+      if (isFree && !currentUserProfile?.isOwner) {
           toast("UPGRADE REQUIRED: Secure sharing restricted.", "error");
           return;
       }
@@ -197,12 +197,13 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' 
 
   const isForensicTier = ['professional', 'ultra_elite', 'sovereign'].includes(tier);
   const isShieldTier = tier === 'shield';
+  const showGlitched = isFree && !currentUserProfile?.isOwner;
 
   return (
     <div className={cn("relative h-full w-full overflow-hidden bg-cyber-black rounded-xl border border-white/10 shadow-lg translate-z-0 backface-hidden")}>
       <div className={cn("absolute inset-0 bg-black")}>
           {p.mediaType === 'video' ? <SecurePlayer src={p.mediaUrl} /> : <img src={p.mediaUrl} alt="Post Content" className="w-full h-full object-cover opacity-70" />}
-          {isFree && (
+          {showGlitched && (
               <div className="absolute inset-0 bg-black/40 backdrop-grayscale-[0.5] flex items-center justify-center">
                   <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-screen" />
                   <div className="z-10 flex flex-col items-center gap-2">

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Moon, Shield, Database, LogOut, ChevronRight, ChevronLeft, User, EyeOff, Clock, Fingerprint, CameraOff, Lock, Crown } from "lucide-react";
+import { X, Moon, Shield, Database, LogOut, ChevronRight, ChevronLeft, User, EyeOff, Clock, Fingerprint, CameraOff, Lock, Crown, Cpu } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useSonic } from "@/lib/SonicContext";
@@ -203,9 +203,92 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             </button>
                         </div>
 
-                        {/* Section: Danger Zone (Testers Only) */}
+                        {/* Section: ARCHITECT CORE (Owners Only) */}
                         {isTester && (
-                            <div className="pt-4 space-y-4">
+                            <div className="pt-4 space-y-6">
+                                <div className="p-6 rounded-3xl bg-brand-cyan/5 border border-brand-cyan/30 relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-4 opacity-10 rotate-12">
+                                        <Cpu className="w-20 h-20 text-brand-cyan" />
+                                    </div>
+                                    <h3 className="text-sm font-black text-brand-cyan uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                                        <Cpu className="w-4 h-4" />
+                                        Architect Core
+                                    </h3>
+                                    
+                                    <div className="space-y-4 relative z-10">
+                                        {/* Tier Simulator */}
+                                        <div>
+                                            <label className="text-[10px] font-bold text-secondary-text uppercase tracking-widest block mb-2 ml-1">Simulate Identity Tier</label>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {(["lobby", "shield", "professional", "ultra_elite", "sovereign"] as const).map((t) => (
+                                                    <button
+                                                        key={t}
+                                                        onClick={() => {
+                                                            if (user) {
+                                                                updateUser({ tier: t });
+                                                                handleButtonClick();
+                                                            }
+                                                        }}
+                                                        className={`px-2 py-2 rounded-xl text-[10px] font-bold uppercase transition-all border ${
+                                                            user?.tier === t 
+                                                                ? "bg-brand-cyan text-black border-brand-cyan shadow-[0_0_10px_#00D4E5]" 
+                                                                : "bg-black/40 text-secondary-text border-white/5 hover:border-brand-cyan/50"
+                                                        }`}
+                                                    >
+                                                        {t}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Power Controls */}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    if (user) {
+                                                        updateUser({ 
+                                                            "stats.credits": 999999,
+                                                            "stats.reputation": 9999 
+                                                        });
+                                                        handleButtonClick();
+                                                        alert("ARCHITECT STATS FORGED: ∞ Credits / MAX Rep");
+                                                    }
+                                                }}
+                                                className="py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold uppercase hover:bg-white/10 transition-colors"
+                                            >
+                                                Forge Stats
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    if (user) {
+                                                        updateUser({ tier: "sovereign", isBlacklist: true });
+                                                        handleButtonClick();
+                                                    }
+                                                }}
+                                                className="py-3 rounded-xl bg-brand-cyan/20 border border-brand-cyan/30 text-brand-cyan text-[10px] font-bold uppercase hover:bg-brand-cyan/30 transition-colors"
+                                            >
+                                                Restore Sovereign
+                                            </button>
+                                        </div>
+
+                                        <button
+                                            onClick={() => {
+                                                if (user) {
+                                                    updateUser({ isBlacklist: !user.isBlacklist });
+                                                    handleButtonClick();
+                                                }
+                                            }}
+                                            className={`w-full py-3 rounded-xl text-[10px] font-bold uppercase transition-all border ${
+                                                user?.isBlacklist 
+                                                    ? "bg-amber-500 text-black border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" 
+                                                    : "bg-black/40 text-secondary-text border-white/5 hover:border-amber-500/50"
+                                            }`}
+                                        >
+                                            {user?.isBlacklist ? "Blacklist Active" : "Inject Blacklist Clearance"}
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <button 
                                     onClick={async () => {
                                         handleButtonClick();
@@ -243,7 +326,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                 stats: { following: 0, followers: 0, likes: 0, credits: 1000, reputation: 100 }
                                             });
 
-                                            alert("Test users ABHI18 and KINJAL18 seeded in Firestore. Ensure Auth accounts exist with password 'Eternity'.");
+                                            alert("Owner identities synced with Registry. Relogin may be required for full effect.");
                                         } catch (e: unknown) {
                                             console.error(e);
                                             alert("Failed to seed users.");
@@ -252,54 +335,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     className="w-full py-4 flex items-center justify-center gap-2 text-accent-2 bg-accent-2/10 rounded-xl border border-accent-2/20 hover:bg-accent-2/20 transition-colors"
                                 >
                                     <Database className="w-5 h-5" />
-                                    <span className="font-bold">Seed Authorized Testers</span>
+                                    <span className="font-bold">Sync Owner Identities</span>
                                 </button>
-
-                                {/* Tier Simulator */}
-                                <div className="space-y-4">
-                                    <div>
-                                        <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider ml-2 mb-2">Simulate Tier</h3>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {(["lobby", "shield", "professional", "ultra_elite", "sovereign"] as const).map((t) => (
-                                                <button
-                                                    key={t}
-                                                    onClick={() => {
-                                                        if (user) {
-                                                            updateUser({ tier: t });
-                                                            handleButtonClick();
-                                                        }
-                                                    }}
-                                                    className={`px-2 py-2 rounded-lg text-xs font-bold uppercase transition-colors border ${
-                                                        user?.tier === t 
-                                                            ? "bg-primary-text text-primary-bg border-primary-text" 
-                                                            : "bg-primary-bg text-secondary-text border-border-color hover:border-primary-text"
-                                                    }`}
-                                                >
-                                                    {t}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider ml-2 mb-2">Special Status</h3>
-                                        <button
-                                            onClick={() => {
-                                                if (user) {
-                                                    updateUser({ isBlacklist: !user.isBlacklist });
-                                                    handleButtonClick();
-                                                }
-                                            }}
-                                            className={`w-full py-2 rounded-lg text-xs font-bold uppercase transition-colors border ${
-                                                user?.isBlacklist 
-                                                    ? "bg-amber-500 text-black border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" 
-                                                    : "bg-primary-bg text-secondary-text border-border-color hover:border-amber-500/50"
-                                            }`}
-                                        >
-                                            {user?.isBlacklist ? "Blacklist Active" : "Enable Blacklist Member Status"}
-                                        </button>
-                                    </div>
-                                </div>
                             </div>
                         )}
 

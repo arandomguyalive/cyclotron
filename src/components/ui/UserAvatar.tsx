@@ -11,12 +11,14 @@ interface UserAvatarProps {
     url?: string;
     tier?: string;
     isBlacklist?: boolean;
+    isOwner?: boolean;
 }
 
-export function UserAvatar({ className, size = "md", showRing = true, seed, url, tier: propTier, isBlacklist: propBlacklist }: UserAvatarProps) {
+export function UserAvatar({ className, size = "md", showRing = true, seed, url, tier: propTier, isBlacklist: propBlacklist, isOwner: propOwner }: UserAvatarProps) {
     const { user } = useUser();
     const tier = (propTier || user?.tier || 'lobby') as keyof typeof ringColors;
     const isBlacklist = propBlacklist ?? user?.isBlacklist;
+    const isOwner = propOwner ?? user?.isOwner;
 
     const sizeClasses = {
         sm: "w-8 h-8",
@@ -40,16 +42,26 @@ export function UserAvatar({ className, size = "md", showRing = true, seed, url,
 
     return (
         <div className={cn(
-            "relative rounded-full overflow-hidden shrink-0",
+            "relative rounded-full shrink-0 flex items-center justify-center",
             sizeClasses[size],
-            showRing ? `border-2 ${activeRingColor}` : "",
             className
         )}>
-            <img 
-                src={avatarSrc} 
-                alt="Avatar" 
-                className="w-full h-full object-cover bg-black"
-            />
+            {/* Owner Glow / Outer Ring */}
+            {isOwner && showRing && (
+                <div className="absolute inset-[-3px] rounded-full border-2 border-brand-cyan animate-pulse shadow-[0_0_15px_#00D4E5]" />
+            )}
+            
+            {/* Standard/Blacklist Ring */}
+            <div className={cn(
+                "absolute inset-0 rounded-full overflow-hidden flex items-center justify-center bg-black",
+                showRing ? `border-2 ${activeRingColor}` : ""
+            )}>
+                <img 
+                    src={avatarSrc} 
+                    alt="Avatar" 
+                    className="w-full h-full object-cover"
+                />
+            </div>
         </div>
     );
 }
