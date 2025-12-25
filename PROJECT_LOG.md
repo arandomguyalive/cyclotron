@@ -24,9 +24,9 @@
 3.  **Sonic & Haptic UI**:
     *   The interface isn't silent. It features a continuous "background hum" and haptic feedback (Sonic UI) that simulates the feeling of operating heavy, secure machinery or a futuristic terminal.
 
-4.  **Data-Driven Sovereignty**:
-    *   **Real-Time Sync:** Every interaction (Follow, Like, Comment) is synced live across the network using Firestore listeners, removing all simulated mock data.
-    *   **AdBlocker Resilience:** Employs "Sovereign" network protocols (Long Polling) to bypass invasive browser extensions and firewalls.
+4.  **Neural Identity & Faction Warfare**:
+    *   **Neural Signatures:** Identity is more than a handle; users upload unique signatures (Profile Pictures) or maintain "encrypted" seeds.
+    *   **Faction Allegiance:** Every operative must choose a faction (**Netrunner, Corp, Drifter, Ghost**) during recruitment, influencing their digital footprint and social standing.
 
 5.  **Privacy as a Core Mechanic**:
     *   Chats aren't just "private"; they are "Encrypted Channels."
@@ -37,37 +37,36 @@
 
 ## 2. Comprehensive Project Log (Chronological)
 
-### Phases 1 - 12: Development & Native Ascension (See Archives)
-*   Established core UI, 3D Vortex, Sonic UI, Auth, Tiered Security, and Capacitor Native integration.
+### Phases 1 - 13: Development & Resilience (See Archives)
+*   Established core UI, 3D Vortex, Auth, Tiered Security, real-time sync, and AdBlocker resilience.
 
-### Phase 13: Data-Driven Sovereignty & Resilience (Dec 25, 2025)
-*   **Goal:** Kill all mock data and stabilize the social ecosystem for real-world traffic.
+### Phase 14: Hierarchy Hardening & Loophole Closure (Dec 25, 2025)
+*   **Goal:** Enforce tiered restrictions and stabilize layout stacking context.
 *   **Key Actions:**
-    *   **Mock Data Purge:** Completely removed all hardcoded posts, stories, and chats.
-    *   **Real-Time Sync:** Transitioned Profiles and Vortex feed to `onSnapshot` listeners.
-    *   **Atomic Social Logic:** Implemented `writeBatch` and dot-notation updates.
-    *   **AdBlocker Resilience:** Enabled Long Polling in Firestore.
+    *   **Restricted Creation:** Gated Reels/Stories to non-free tiers with "Pro" visual indicators.
+    *   **Stacking Context Fix:** Resolved modal/navbar overlap by optimizing root `AppShell` and boosting z-indexes.
+    *   **Archive Persistence:** Finalized real-time bookmark system with media previews.
 
-### Phase 14: Hierarchy Hardening & Loophole Closure (Dec 25, 2025 - Present)
-*   **Goal:** Enforce the tiered security model across every social interaction and resolve UX loopholes.
+### Phase 15: Identity Overhaul & Neural Signatures (Dec 25, 2025 - Present)
+*   **Goal:** Redesign the onboarding experience and implement custom profile identity.
 *   **Key Actions:**
-    *   **Synchronized Profile Stats**: Liking a post now atomically increments the **Post Owner's total likes and reputation** live.
-    *   **Inclusive Comments**: Opened the `CommentModal` for all users to view, while strictly gating the "Broadcast" input to non-free tiers.
-    *   **Creation Protocol Hardening**: Restricted "Reel" and "Story" creation to non-free tiers with visual "Pro" badges and system-level alerts.
-    *   **Functional Flux Access**: Wired the "Add Story" button in the `StoriesTray` to the functional `CreatePostModal` with tier-based access control.
-    *   **Secure Sharing Audit**: Standardized the "Secure Share" restriction across both Vortex and SignalGrid feeds.
-    *   **Stacking Context Stabilization**: Resolved modal overlap issues by fixing the root `AppShell` stacking context and boosting all modal z-indexes to `z-[200]`.
-    *   **Bookmark Persistence**: Fully implemented the Archive system, allowing users to save posts with real media previews and persistent state.
+    *   **Neural Signatures (Profile Pics):** Enabled real image uploads for avatars using Firebase Storage (`/avatars/{uid}`).
+    *   **Universal Avatar Logic:** Refactored the entire UI to use a centralized `UserAvatar` component that prioritizes `avatarUrl` over generated seeds.
+    *   **"The Fortress Gate" Login UI:** Overhauled the Login page with a state-of-the-art "Neural Scan" (Bio-metric) animation sequence and fluid tab transitions.
+    *   **Recruitment Overhaul (Signup):** Expanded the registration flow to include **Faction Selection** and unique handle validation.
+    *   **Identity Hardening:** Implemented real-time **Codename Uniqueness** checks and strict security policy validation for Access Keys.
+    *   **Personalized Navigation:** Integrated the user's active Neural Signature directly into the `BottomNav` for a high-fidelity, personalized UX.
 
 ---
 
 ## 3. Current System Status (As of Dec 25, 2025)
 
-*   ✅ **Authentication:** Guests and Email/Password users fully functional.
-*   ✅ **Feeds:** Dynamic Vortex (3D) and Signal Grid (2D) powered by real Firestore data.
+*   ✅ **Authentication:** Redesigned "Fortress Gate" active with Faction Recruitment and Neural Scan tech.
+*   ✅ **Identity:** Custom Profile Picture uploads enabled and synced across all social features.
+*   ✅ **Feeds:** Dynamic Vortex (3D) and Signal Grid (2D) 100% data-driven.
 *   ✅ **Social Metrics:** Live sync for Followers, Following, Likes, and Comments.
-*   ✅ **Hierarchy:** Strict tier-based restrictions enforced for Sharing, High-bandwidth creation, and Flux viewing.
-*   ✅ **Resilience:** Long Polling active; Data Fixer automatically migrates user schemas.
-*   ✅ **Layout:** 100% stable stacking context; no navigation bar overlaps.
+*   ✅ **Hierarchy:** Tier-based restrictions active for creation, sharing, and viewing.
+*   ✅ **Security:** Handle uniqueness check, password validation, and AdBlocker resilience protocols active.
+*   ✅ **Layout:** Optimized stacking context; high-precision haptics integrated.
 
-**Conclusion:** ABHED is a battle-hardened, tiered social fortress verified for production deployment.
+**Conclusion:** ABHED has reached a state of "Commercial Readiness," featuring a highly personalized, secure, and immersive social onboarding experience.
