@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@/lib/UserContext";
-import { collection, query, orderBy, limit, onSnapshot, Timestamp } from "firebase/firestore";
+import { collection, query, orderBy, limit, onSnapshot, Timestamp, doc, updateDoc, increment, setDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Heart, MessageCircle, Share2, MoreHorizontal, Bookmark, Eye } from "lucide-react";
 import { motion } from "framer-motion";
@@ -11,12 +11,14 @@ import { extractMessageFromImage } from "@/lib/steg";
 
 interface Post {
     id: string;
+    userId: string;
     caption: string;
     mediaUrl: string;
     mediaType: "image" | "video";
     userHandle: string;
     createdAt: Timestamp | Date;
     type: "post" | "text";
+    likes: number;
     hasHiddenMessage?: boolean;
     allowedTiers?: string[];
     blockedRegions?: string[];
@@ -32,45 +34,6 @@ interface MockAd {
     color: string;
 }
 
-const mockPosts: Post[] = [
-    {
-        id: "m1",
-        caption: "Target acquired in Sector 4. Moving to intercept.",
-        mediaUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=500",
-        mediaType: "image",
-        userHandle: "neon_ghost",
-        createdAt: new Date(),
-        type: "post"
-    },
-    {
-        id: "m2",
-        caption: "The data packet has been secured.",
-        mediaUrl: "https://images.unsplash.com/photo-1515630278258-407f66498911?q=80&w=500",
-        mediaType: "image",
-        userHandle: "cipher_punk",
-        createdAt: new Date(),
-        type: "post"
-    },
-    {
-        id: "m3",
-        caption: "System override complete. We are in.",
-        mediaUrl: "https://images.unsplash.com/photo-1555680202-c86f0e12f086?q=80&w=500",
-        mediaType: "image",
-        userHandle: "root_admin",
-        createdAt: new Date(),
-        type: "post"
-    },
-    {
-        id: "m4",
-        caption: "Found a backdoor into the mainframe. Almost in.",
-        mediaUrl: "https://images.unsplash.com/photo-1596541223405-b04b6c31885f?q=80&w=500",
-        mediaType: "image",
-        userHandle: "matrix_diver",
-        createdAt: new Date(Date.now() - 1000 * 60 * 60),
-        type: "post"
-    }
-];
-
 const mockAd: MockAd = {
     id: "ad-km18-upgrade",
     type: "ad",
@@ -82,10 +45,12 @@ const mockAd: MockAd = {
 };
 
 export function SignalGrid() {
-    const { user } = useUser();
+    const { user, firebaseUser } = useUser();
     const { toast } = useToast();
-    const [posts, setPosts] = useState<(Post | MockAd)[]>([]); // Allow MockAd type
+    const [posts, setPosts] = useState<(Post | MockAd)[]>([]); 
     const [loading, setLoading] = useState(true);
+    const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+    const [followingSet, setFollowingSet] = useState<Set<string>>(new Set());
     const [dataSaver, setDataSaver] = useState(() => {
         if (typeof window !== 'undefined') {
             return localStorage.getItem('oblivion_dataSaver') === 'true';
@@ -93,47 +58,121 @@ export function SignalGrid() {
         return false;
     });
 
-    const isFree = user?.tier === 'free';
     const viewerTier = user?.tier || 'free';
+    const isFree = viewerTier === 'free';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const viewerRegion = (user as any)?.region || 'global';
     const isShield = viewerTier === 'premium';
     const isForensic = ['gold', 'platinum', 'sovereign', 'lifetime'].includes(viewerTier);
 
     useEffect(() => {
-        const handleStorageChange = () => {
-            setDataSaver(localStorage.getItem('oblivion_dataSaver') === 'true');
-        };
-        window.addEventListener("storage", handleStorageChange);
+        if (!firebaseUser) return;
 
-        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(4)); // Fetch more posts to insert ad
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+        // Listen to User's Likes
+        const unsubscribeLikes = onSnapshot(collection(db, "users", firebaseUser.uid, "likes"), (snap) => {
+            const ids = new Set(snap.docs.map(doc => doc.id));
+            setLikedPosts(ids);
+        });
+
+        // Listen to User's Following
+        const unsubscribeFollowing = onSnapshot(collection(db, "users", firebaseUser.uid, "following"), (snap) => {
+            const ids = new Set(snap.docs.map(doc => doc.id));
+            setFollowingSet(ids);
+        });
+
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(10));
+        const unsubscribePosts = onSnapshot(q, (snapshot) => {
             let fetchedPosts: (Post | MockAd)[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Post[];
-            
-            // Filter for standard Posts (Images/Text) only
             fetchedPosts = fetchedPosts.filter(p => (p as Post).type === 'post' || (p as Post).type === 'text' || (!(p as Post).type && (p as Post).mediaType === 'image'));
 
-            if (fetchedPosts.length === 0) {
-                fetchedPosts = mockPosts;
-            }
-
-            // Inject mock ad for free users
             if (isFree && fetchedPosts.length > 1) {
-                const adIndex = 1; // After the first real post
+                const adIndex = 1;
                 fetchedPosts.splice(adIndex, 0, mockAd);
             }
             setPosts(fetchedPosts);
             setLoading(false);
         }, (err) => {
             console.error(err);
-            setPosts(mockPosts); // Fallback
             setLoading(false);
         });
+
         return () => {
-            unsubscribe();
-            window.removeEventListener("storage", handleStorageChange);
+            unsubscribeLikes();
+            unsubscribeFollowing();
+            unsubscribePosts();
         };
-    }, [isFree]); // Re-run effect if tier changes
+    }, [firebaseUser, isFree]);
+
+    const handleLike = async (post: Post) => {
+        if (!firebaseUser || !user) return;
+        const isLiked = likedPosts.has(post.id);
+        const batch = writeBatch(db);
+        const postRef = doc(db, "posts", post.id);
+        const likeRef = doc(db, "users", firebaseUser.uid, "likes", post.id);
+
+        try {
+            if (!isLiked) {
+                batch.update(postRef, { likes: increment(1) });
+                batch.set(likeRef, { postId: post.id, timestamp: serverTimestamp() });
+                if (post.userId !== firebaseUser.uid) {
+                    const notifRef = doc(collection(db, "users", post.userId, "notifications"));
+                    batch.set(notifRef, {
+                        type: "LIKE",
+                        actorId: firebaseUser.uid,
+                        actorHandle: user.handle,
+                        postId: post.id,
+                        timestamp: serverTimestamp(),
+                        read: false
+                    });
+                }
+                toast("Signal Acknowledged", "success");
+            } else {
+                batch.update(postRef, { likes: increment(-1) });
+                batch.delete(likeRef);
+            }
+            await batch.commit();
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleFollow = async (post: Post) => {
+        if (!firebaseUser || !user || post.userId === firebaseUser.uid) return;
+        const isFollowing = followingSet.has(post.userId);
+        const batch = writeBatch(db);
+        const myFollowingRef = doc(db, "users", firebaseUser.uid, "following", post.userId);
+        const targetFollowerRef = doc(db, "users", post.userId, "followers", firebaseUser.uid);
+        const meRef = doc(db, "users", firebaseUser.uid);
+        const themRef = doc(db, "users", post.userId);
+
+        try {
+            if (!isFollowing) {
+                batch.set(myFollowingRef, { timestamp: serverTimestamp() });
+                batch.set(targetFollowerRef, { timestamp: serverTimestamp() });
+                batch.update(meRef, { "stats.following": increment(1) });
+                batch.update(themRef, { "stats.followers": increment(1) });
+                
+                const notifRef = doc(collection(db, "users", post.userId, "notifications"));
+                batch.set(notifRef, {
+                    type: "FOLLOW",
+                    actorId: firebaseUser.uid,
+                    actorHandle: user.handle,
+                    timestamp: serverTimestamp(),
+                    read: false
+                });
+                toast(`Linked with @${post.userHandle}`, "success");
+            } else {
+                batch.delete(myFollowingRef);
+                batch.delete(targetFollowerRef);
+                batch.update(meRef, { "stats.following": increment(-1) });
+                batch.update(themRef, { "stats.followers": increment(-1) });
+                toast(`Disconnected from @${post.userHandle}`, "info");
+            }
+            await batch.commit();
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     const handleExtractHiddenMessage = async (post: Post) => {
         if (!post.hasHiddenMessage || post.mediaType !== 'image') {
@@ -193,8 +232,6 @@ export function SignalGrid() {
                         );
                     } else {
                         const post = item as Post;
-                        
-                        // --- ENFORCEMENT LOGIC ---
                         const isTierAllowed = !post.allowedTiers || post.allowedTiers.length === 0 || post.allowedTiers.includes(viewerTier);
                         const isRegionBlocked = post.blockedRegions && post.blockedRegions.includes(viewerRegion);
 
@@ -224,26 +261,34 @@ export function SignalGrid() {
 
                         return (
                             <div key={post.id} className="w-full border-b border-white/5 pb-6">
-                                {/* Header */}
                                 <div className="px-4 flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-secondary-bg overflow-hidden">
+                                        <div className="w-8 h-8 rounded-full bg-secondary-bg overflow-hidden relative">
                                             <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userHandle}`} className="w-full h-full" />
                                         </div>
-                                        <span className={`text-sm font-bold ${isFree ? 'text-secondary-text' : 'text-primary-text'}`}>
-                                            @{post.userHandle}
-                                        </span>
+                                        <div className="flex flex-col">
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-sm font-bold ${isFree ? 'text-secondary-text' : 'text-primary-text'}`}>
+                                                    @{post.userHandle}
+                                                </span>
+                                                {firebaseUser && post.userId !== firebaseUser.uid && (
+                                                    <button 
+                                                        onClick={() => handleFollow(post)}
+                                                        className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border transition-colors ${followingSet.has(post.userId) ? 'border-accent-1 text-accent-1 bg-accent-1/10' : 'border-secondary-text text-secondary-text hover:border-primary-text hover:text-primary-text'}`}
+                                                    >
+                                                        {followingSet.has(post.userId) ? 'Linked' : 'Link+'}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                     <MoreHorizontal className="w-5 h-5 text-secondary-text" />
                                 </div>
 
-                                {/* Content: Signal (Text) vs Post (Image) */}
                                 {post.type === 'text' ? (
                                     <div className="relative w-full aspect-[4/5] bg-black border-y border-green-900/30 p-8 flex flex-col justify-center overflow-hidden font-mono">
-                                        {/* CRT Scanline Effect */}
                                         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,6px_100%] pointer-events-none" />
                                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_50%,rgba(0,0,0,0.4)_100%)] pointer-events-none" />
-                                        
                                         <div className="relative z-10 text-green-500 text-lg leading-relaxed whitespace-pre-wrap break-words">
                                             <span className="text-green-700 text-xs block mb-4 uppercase tracking-widest border-b border-green-900/50 pb-2">
                                                 Incoming Transmission_
@@ -251,7 +296,6 @@ export function SignalGrid() {
                                             {post.caption}
                                             <span className="inline-block w-2 h-4 bg-green-500 ml-1 animate-pulse"/>
                                         </div>
-
                                         <div className="absolute bottom-4 right-4 text-[10px] text-green-800 uppercase tracking-widest">
                                             END OF LINE
                                         </div>
@@ -270,11 +314,10 @@ export function SignalGrid() {
                                             className={`w-full h-full object-cover transition-all duration-500 ${isFree || dataSaver ? 'grayscale contrast-125 blur-[1px] opacity-70' : ''}`}
                                             alt="Signal"
                                         />
-                                        
                                         {post.hasHiddenMessage && post.mediaType === 'image' && (
                                             <button 
                                                 onClick={(e) => {
-                                                    e.stopPropagation(); // Prevent parent image click
+                                                    e.stopPropagation(); 
                                                     handleExtractHiddenMessage(post);
                                                 }}
                                                 className="absolute top-4 left-4 bg-brand-cyan/20 backdrop-blur-md text-brand-cyan px-3 py-1 rounded-full flex items-center gap-2 hover:bg-brand-cyan/30 transition-colors z-10"
@@ -283,14 +326,11 @@ export function SignalGrid() {
                                                 <span className="text-[10px] font-bold uppercase">Decrypt</span>
                                             </button>
                                         )}
-                                        
                                         {isFree && (
                                             <div className="absolute top-4 right-4 bg-brand-orange text-white text-[10px] font-bold px-2 py-1 rounded-md z-10 shadow-lg">
                                                 LOCKED
                                             </div>
                                         )}
-
-                                        {/* Forensic Watermark (Gold+) */}
                                         {isForensic && user?.handle && (
                                             <div 
                                                 className="absolute inset-0 flex flex-wrap content-around justify-around pointer-events-none opacity-10 font-mono text-white text-xs z-10"
@@ -304,8 +344,6 @@ export function SignalGrid() {
                                                 ))}
                                             </div>
                                         )}
-
-                                        {/* Shield Watermark (Premium) */}
                                         {isShield && user?.handle && (
                                             <div className="absolute bottom-4 right-4 pointer-events-none z-10 bg-black/50 px-2 py-1 rounded backdrop-blur-sm border border-brand-cyan/20">
                                                 <span className="text-brand-cyan/50 text-[10px] font-mono tracking-widest uppercase">
@@ -316,19 +354,24 @@ export function SignalGrid() {
                                     </div>
                                 )}
 
-                                {/* Actions */}
                                 <div className="px-4 mt-3 flex items-center justify-between">
                                     <div className="flex items-center gap-4">
                                         <Heart 
-                                            onClick={() => toast("Signal Acknowledged", "success")}
-                                            className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" 
+                                            onClick={() => handleLike(post)}
+                                            className={`w-6 h-6 transition-colors cursor-pointer ${likedPosts.has(post.id) ? 'text-brand-hot-pink fill-brand-hot-pink' : 'text-primary-text hover:text-accent-1'}`} 
                                         />
                                         <MessageCircle 
                                             onClick={() => toast("Encrypted Channel Open", "info")}
                                             className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" 
                                         />
                                         <Share2 
-                                            onClick={() => toast("Link Copied to Clipboard", "info")}
+                                            onClick={async () => {
+                                                try {
+                                                    await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });
+                                                    navigator.clipboard.writeText(`${window.location.origin}/vortex`);
+                                                    toast("Link Copied to Clipboard", "info");
+                                                } catch (e) {}
+                                            }}
                                             className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" 
                                         />
                                     </div>
@@ -338,18 +381,14 @@ export function SignalGrid() {
                                     />
                                 </div>
 
-                                {/* Content Details */}
                                 <div className="px-4 mt-2 space-y-1">
-                                    <p className="text-sm font-bold text-primary-text">2,492 likes</p>
-                                    
-                                    {/* Don't show duplicate caption for text posts */}
+                                    <p className="text-sm font-bold text-primary-text">{post.likes || 0} acknowledgments</p>
                                     {post.type !== 'text' && (
                                         <p className="text-sm text-secondary-text line-clamp-2">
                                             <span className="font-bold text-primary-text mr-2">@{post.userHandle}</span>
                                             {post.caption}
                                         </p>
                                     )}
-
                                     <p className="text-[10px] text-secondary-text/50 uppercase tracking-wide mt-1">
                                         {(() => {
                                             const ts = post.createdAt;

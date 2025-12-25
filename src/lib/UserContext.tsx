@@ -13,6 +13,7 @@ import {
 import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 
 export interface UserProfile {
+  uid?: string;
   displayName: string;
   handle: string;
   bio: string;
@@ -108,10 +109,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             }
 
             if (data.accessType === "LIFETIME_BLACKLIST") data.tier = "lifetime";
-            setUser(data);
+            setUser({ ...data, uid: currentUser.uid });
           } else {
             // New user or guest
-            setUser(defaultUser);
+            setUser({ ...defaultUser, uid: currentUser.uid });
           }
           setLoading(false);
         });
@@ -129,13 +130,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const updateUser = async (updates: any) => {
     if (!firebaseUser) return;
+    console.log(`[updateUser] Attempting update for ${firebaseUser.uid}`, updates);
     try {
-        // Use updateDoc for targeted key updates (prevents wiping nested objects)
         await updateDoc(doc(db, "users", firebaseUser.uid), updates);
+        console.log(`[updateUser] Success.`);
     } catch (e) {
-        console.error("Profile sync failed", e);
-        // Fallback to setDoc merge if updateDoc fails (e.g. stats object missing)
+        console.warn("[updateUser] updateDoc failed, trying setDoc merge", e);
         await setDoc(doc(db, "users", firebaseUser.uid), updates, { merge: true });
+        console.log(`[updateUser] Success via setDoc.`);
     }
   };
 

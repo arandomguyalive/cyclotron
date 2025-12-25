@@ -411,16 +411,16 @@ export default function HomePage() {
                  <div className="col-span-2 p-4 rounded-2xl bg-secondary-bg/30 border border-border-color flex items-center justify-between">
                      <div className="flex items-center gap-3">
                          <Globe className="w-5 h-5 text-secondary-text" />                         <div>
-                             <p className="text-xs text-secondary-text uppercase">Global Signals</p>
-                             <p className="font-mono font-bold">8,492</p>
+                             <p className="text-xs text-secondary-text uppercase">Identity Rep</p>
+                             <p className="font-mono font-bold">{user.stats.reputation}</p>
                          </div>
                      </div>
                      <div className="h-8 w-[1px] bg-border-color" />
                      <div className="flex items-center gap-3">
                          <Activity className="w-5 h-5 text-secondary-text" />
                          <div>
-                             <p className="text-xs text-secondary-text uppercase">Net Stability</p>
-                             <p className="font-mono font-bold text-green-400">98.4%</p>
+                             <p className="text-xs text-secondary-text uppercase">Signal Integrity</p>
+                             <p className="font-mono font-bold text-green-400">{(user.stats.reputation / 10).toFixed(1)}%</p>
                          </div>
                      </div>
                  </div>
