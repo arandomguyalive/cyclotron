@@ -104,7 +104,11 @@ function ProfileContent() {
             
             // Apply simulated stats (Persistence for Permission Denied scenario)
             if (!uidToFetch.startsWith("mock-")) {
-                const simStats = JSON.parse(localStorage.getItem(`sim_stats_${uidToFetch}`) || '{}');
+                const storageKey = `sim_stats_${uidToFetch}`;
+                const rawSim = localStorage.getItem(storageKey);
+                console.log(`[Profile] Checking storage key: ${storageKey}, Found: ${rawSim}`);
+                
+                const simStats = JSON.parse(rawSim || '{}');
                 if (simStats.followers) {
                     // Initialize stats if missing from DB
                     if (!profileData.stats) {
