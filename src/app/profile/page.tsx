@@ -194,22 +194,19 @@ function ProfileContent() {
       // Persist stat simulation (Target's Followers)
       const statsKey = `sim_stats_${targetUser.uid}`;
       const existingSim = JSON.parse(localStorage.getItem(statsKey) || '{}');
+      console.log(`[Profile] Writing sim stats for TARGET ${statsKey}:`, { ...existingSim, followers: newFollowersCount.toString() });
       localStorage.setItem(statsKey, JSON.stringify({ ...existingSim, followers: newFollowersCount.toString() }));
 
       // Persist stat simulation (My Following)
       if (currentUser && firebaseUser) {
           const myStatsKey = `sim_stats_${firebaseUser.uid}`;
           const myCurrentFollowing = parseInt(currentUser.stats?.following || '0');
-          // Note: This is a simple increment based on loaded state. 
-          // Ideally we read from localStorage first to handle multiple follows in one session if not reloaded.
-          // But for a prototype, this works.
+          
           const myExistingSim = JSON.parse(localStorage.getItem(myStatsKey) || '{}');
-          // If we already have a simulated value, use that as base? 
-          // Actually, currentUser.stats might NOT include the simulation yet if we didn't reload.
-          // So better to use the simulated value if present.
           const baseFollowing = myExistingSim.following ? parseInt(myExistingSim.following) : myCurrentFollowing;
           const myNewFollowing = !wasFollowing ? baseFollowing + 1 : Math.max(0, baseFollowing - 1);
           
+          console.log(`[Profile] Writing sim stats for ME ${myStatsKey}:`, { ...myExistingSim, following: myNewFollowing.toString() });
           localStorage.setItem(myStatsKey, JSON.stringify({ ...myExistingSim, following: myNewFollowing.toString() }));
       }
 
