@@ -13,7 +13,28 @@ import { collection, query, where, getDocs, doc, onSnapshot, deleteDoc, orderBy,
 import { db } from "@/lib/firebase";
 import { useToast } from "@/lib/ToastContext";
 
-// ... (keep MinimalPost and UserProfileData)
+interface MinimalPost {
+    id: string;
+    mediaUrl: string;
+    mediaType: "image" | "video";
+}
+
+interface UserProfileData {
+    uid: string;
+    displayName: string;
+    handle: string;
+    bio: string;
+    avatarSeed: string;
+    coverImage?: string;
+    tier: string;
+    stats?: {
+        following: number;
+        followers: number;
+        likes: number;
+        credits: number;
+        reputation: number;
+    };
+}
 
 function ProfileContent() {
   const { user: currentUser, loading: userLoading, firebaseUser } = useUser();

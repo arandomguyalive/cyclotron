@@ -199,14 +199,14 @@ function ChatListContent() {
                 >
                     <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-accent-1 to-accent-2 flex items-center justify-center p-[2px] overflow-hidden">
                     <img 
-                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${chat.mockAvatar || chat.id}`} 
+                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${chat.id}`} 
                         alt="Avatar" 
                         className="w-full h-full rounded-full bg-primary-bg"
                     />
                     </div>
                     <div className="flex-1">
                     <h3 className="font-bold text-primary-text">
-                        {chat.mockName || `Encrypted Channel ${chat.id.substring(0, 5)}...`}
+                        {`Encrypted Channel ${chat.id.substring(0, 5)}...`}
                     </h3>
                     <p className="text-sm text-secondary-text line-clamp-1 font-mono opacity-80">
                         {chat.lastMessage || "No messages yet."}

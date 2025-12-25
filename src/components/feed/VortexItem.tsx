@@ -8,8 +8,33 @@ import { cn } from "@/lib/utils";
 import { SecurePlayer } from "./SecurePlayer";
 import { Timestamp, collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc, deleteDoc, getCountFromServer, writeBatch, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useScreenshot } from "@/lib/useScreenshot";
+import { useUser } from "@/lib/UserContext";
+import { useToast } from "@/lib/ToastContext";
+import { CommentModal } from "./CommentModal";
 
-// ... (keep Post interface)
+export interface Post {
+  id: string;
+  type?: "post" | "reel" | "story" | "text" | "drop";
+  caption: string;
+  mediaUrl: string;
+  mediaType: "image" | "video";
+  userId: string;
+  userHandle: string;
+  userAvatar: string;
+  likes: number;
+  shares?: number;
+  createdAt: Timestamp | Date;
+}
+
+export interface Ad {
+  id: string;
+  type: "ad";
+  title: string;
+  description: string;
+  cta: string;
+  color: string;
+}
 
 interface VortexProps {
   post: Post; 

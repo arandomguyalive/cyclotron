@@ -8,7 +8,7 @@ import { db } from "@/lib/firebase";
 import { useSonic } from "@/lib/SonicContext";
 import { useUser } from "@/lib/UserContext";
 import { useToast } from "@/lib/ToastContext";
-import { Post, Ad } from "@/components/feed/VortexItem"; // Assuming Post and Ad interfaces are exported
+import { Post } from "@/components/feed/VortexItem";
 
 interface SignalPost extends Post {
     arX: number;
