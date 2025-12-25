@@ -55,7 +55,6 @@ function ProfileContent() {
   const [likedPosts, setLikedPosts] = useState<MinimalPost[]>([]);
   const [fetching, setFetching] = useState(false);
 
-  // Parallax Scroll Logic
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 300], [0, 150]);
   const opacity = useTransform(scrollY, [0, 300], [1, 0.5]);
@@ -73,9 +72,7 @@ function ProfileContent() {
         setFetching(true);
         let safetyTimer: NodeJS.Timeout;
 
-        // Safety timeout to prevent infinite spinner
         safetyTimer = setTimeout(() => {
-            console.warn("Profile fetch timed out, forcing render.");
             setFetching(false);
             setTargetUser(prev => prev || {
                  uid: uidToFetch,
@@ -89,24 +86,20 @@ function ProfileContent() {
         }, 5000);
 
         try {
-            // Handle Mock Users
             if (uidToFetch.startsWith("mock-")) {
                 setTargetUser({
                     uid: uidToFetch,
                     displayName: "Operative " + uidToFetch.split('-')[1],
                     handle: "mock_agent_" + uidToFetch.split('-')[1],
-                    bio: "This is a simulated profile. Real data encrypted.",
+                    bio: "Simulated operative data.",
                     avatarSeed: uidToFetch,
                     tier: "premium", 
                     stats: { following: "10", followers: "50", likes: "100", credits: "5000", reputation: "20" }
                 } as UserProfileData);
-                setFetching(false);
                 return;
             }
 
-            // Fetch User Data
             let profileData: UserProfileData | null = null;
-            
             try {
                 if (isOwnProfile && currentUser) {
                     profileData = { uid: firebaseUser!.uid, ...currentUser } as UserProfileData;
@@ -116,39 +109,21 @@ function ProfileContent() {
                         profileData = { uid: userDoc.id, ...userDoc.data() } as UserProfileData;
                     }
                 }
-            } catch (err) {
-                // Silently ignore permission errors
-            }
+            } catch (err) {}
 
-            // Fallback if data missing (Permissions or Not Found)
             if (!profileData) {
                 if (isOwnProfile && currentUser) {
                      profileData = { uid: firebaseUser!.uid, ...currentUser } as UserProfileData;
                 } else {
                      profileData = {
                          uid: uidToFetch,
-                         displayName: isOwnProfile ? "Ghost User" : "Unknown User",
-                         handle: "encrypted_signal",
-                         bio: "Profile data unavailable due to network restrictions.",
+                         displayName: "Unknown Operative",
+                         handle: "encrypted",
+                         bio: "Data restricted.",
                          avatarSeed: uidToFetch,
                          tier: "free",
                          stats: { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' }
                      };
-                }
-            }
-
-            // Apply simulated stats
-            if (!uidToFetch.startsWith("mock-")) {
-                const storageKey = `sim_stats_${uidToFetch}`;
-                const simStats = JSON.parse(localStorage.getItem(storageKey) || '{}');
-                
-                if (simStats.followers) {
-                    if (!profileData.stats) profileData.stats = { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' };
-                    profileData.stats = { ...profileData.stats, followers: simStats.followers };
-                }
-                if (simStats.following) {
-                    if (!profileData.stats) profileData.stats = { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' };
-                    profileData.stats = { ...profileData.stats, following: simStats.following };
                 }
             }
             
@@ -163,21 +138,11 @@ function ProfileContent() {
 
             // Fetch Likes
             if (isOwnProfile) {
-                let fetchedLikes: MinimalPost[] = [];
                 try {
                     const likesQ = query(collection(db, "users", firebaseUser!.uid, "likes"), orderBy("timestamp", "desc"), limit(18));
                     const likesSnap = await getDocs(likesQ);
-                    fetchedLikes = likesSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost));
+                    setLikedPosts(likesSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
                 } catch (err) {}
-
-                const simLikes = JSON.parse(localStorage.getItem(`sim_likes_${firebaseUser!.uid}`) || '[]');
-                if (simLikes.length > 0) {
-                    const existingIds = new Set(fetchedLikes.map(p => p.id));
-                    simLikes.forEach((p: any) => {
-                        if (!existingIds.has(p.id)) fetchedLikes.unshift(p as MinimalPost);
-                    });
-                }
-                setLikedPosts(fetchedLikes);
             }
 
             // Check Follow Status
@@ -185,15 +150,12 @@ function ProfileContent() {
                 try {
                     const followRef = doc(db, "users", firebaseUser.uid, "following", uidToFetch);
                     const followSnap = await getDoc(followRef);
-                    if (followSnap.exists()) setIsFollowing(true);
-                    else setIsFollowing(localStorage.getItem(`sim_following_${uidToFetch}`) === "true");
-                } catch (e) {
-                    setIsFollowing(localStorage.getItem(`sim_following_${uidToFetch}`) === "true");
-                }
+                    setIsFollowing(followSnap.exists());
+                } catch (e) {}
             }
 
         } catch (e) {
-            console.error("Profile logic error", e);
+            console.error("Profile sync error", e);
         } finally {
             clearTimeout(safetyTimer);
             setFetching(false);
@@ -210,66 +172,18 @@ function ProfileContent() {
       const wasFollowing = isFollowing;
       const followRef = doc(db, "users", firebaseUser.uid, "following", targetUser.uid);
       
-      // Optimistic UI Update
-      setIsFollowing(!wasFollowing);
-      
-      const newFollowersCount = !wasFollowing 
-          ? parseInt(targetUser.stats?.followers || '0') + 1 
-          : Math.max(0, parseInt(targetUser.stats?.followers || '0') - 1);
-
-      // Persist stat simulation (Target's Followers)
-      const statsKey = `sim_stats_${targetUser.uid}`;
-      const existingSim = JSON.parse(localStorage.getItem(statsKey) || '{}');
-      console.log(`[Profile] Writing sim stats for TARGET ${statsKey}:`, { ...existingSim, followers: newFollowersCount.toString() });
-      localStorage.setItem(statsKey, JSON.stringify({ ...existingSim, followers: newFollowersCount.toString() }));
-
-      // Persist stat simulation (My Following)
-      if (currentUser && firebaseUser) {
-          const myStatsKey = `sim_stats_${firebaseUser.uid}`;
-          const myCurrentFollowing = parseInt(currentUser.stats?.following || '0');
-          
-          const myExistingSim = JSON.parse(localStorage.getItem(myStatsKey) || '{}');
-          const baseFollowing = myExistingSim.following ? parseInt(myExistingSim.following) : myCurrentFollowing;
-          const myNewFollowing = !wasFollowing ? baseFollowing + 1 : Math.max(0, baseFollowing - 1);
-          
-          console.log(`[Profile] Writing sim stats for ME ${myStatsKey}:`, { ...myExistingSim, following: myNewFollowing.toString() });
-          localStorage.setItem(myStatsKey, JSON.stringify({ ...myExistingSim, following: myNewFollowing.toString() }));
-      }
-
-      setTargetUser(prev => {
-          if (!prev) return null;
-          return {
-              ...prev,
-              stats: {
-                  ...prev.stats,
-                  followers: newFollowersCount.toString(),
-                  following: prev.stats?.following || '0',
-                  likes: prev.stats?.likes || '0',
-                  credits: prev.stats?.credits || '0',
-                  reputation: prev.stats?.reputation || '0'
-              }
-          };
-      });
-
       try {
           if (wasFollowing) {
               await deleteDoc(followRef);
+              setIsFollowing(false);
               toast(`Unfollowed @${targetUser.handle}`, "info");
           } else {
               await setDoc(followRef, { timestamp: new Date() });
+              setIsFollowing(true);
               toast(`Following @${targetUser.handle}`, "success");
           }
       } catch (e) { 
-          // console.warn("Firestore write failed, using local simulation.", e);
-          const key = `sim_following_${targetUser.uid}`;
-          
-          if (wasFollowing) {
-              localStorage.removeItem(key);
-              toast(`Unfollowed @${targetUser.handle} (Simulated)`, "info");
-          } else {
-              localStorage.setItem(key, "true");
-              toast(`Following @${targetUser.handle} (Simulated)`, "success");
-          }
+          toast(`Protocol Error: Access Denied. Check Rules.`, "error");
       }
   };
 
@@ -291,7 +205,7 @@ function ProfileContent() {
   if (userLoading || fetching || !targetUser) {
       return (
           <div className="min-h-screen flex items-center justify-center bg-primary-bg text-accent-1 font-mono animate-pulse">
-              SYNCHRONIZING PROFILE DATA...
+              ESTABLISHING ENCRYPTED UPLINK...
           </div>
       );
   }
@@ -299,18 +213,10 @@ function ProfileContent() {
   const targetTier = (targetUser?.tier || 'free').toLowerCase();
   const currentTier = (currentUser?.tier || 'free').toLowerCase();
 
-  console.log(`[Profile Debug] View: ${viewId || 'Own'}, Own: ${isOwnProfile}`);
-  console.log(`[Profile Debug] Current Tier: ${currentTier}, Target Tier: ${targetTier}`);
-
-  const canViewDetail = 
-      isOwnProfile ||
-      currentTier === 'sovereign' || 
-      currentTier === 'lifetime' || 
-      currentTier === targetTier;
+  const canViewDetail = isOwnProfile || currentTier === 'sovereign' || currentTier === 'lifetime' || currentTier === targetTier;
 
   return (
     <div className="min-h-screen bg-primary-bg text-primary-text pb-24">
-      {/* Cover */}
       <div className="h-64 relative bg-gradient-to-r from-accent-2 via-primary-bg to-accent-1 opacity-50 overflow-hidden">
         {targetUser.coverImage ? (
             <motion.img style={{ y, opacity }} src={targetUser.coverImage} className="w-full h-full object-cover scale-110" />
@@ -377,7 +283,6 @@ function ProfileContent() {
               </div>
           </motion.div>
 
-        {/* Tabs */}
         <div className="flex mt-6 gap-4 border-b border-white/10 pb-2">
           <button onClick={() => setActiveTab('grid')} className={`flex-1 py-2 flex justify-center transition-colors ${activeTab === 'grid' ? 'text-accent-1 border-b-2 border-accent-1' : 'text-zinc-500'}`}><Grid className="w-5 h-5" /></button>
           {isOwnProfile && (
