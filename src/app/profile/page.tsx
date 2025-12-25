@@ -101,6 +101,15 @@ function ProfileContent() {
                     return;
                 }
             }
+            
+            // Apply simulated stats (Persistence for Permission Denied scenario)
+            if (!uidToFetch.startsWith("mock-")) {
+                const simStats = JSON.parse(localStorage.getItem(`sim_stats_${uidToFetch}`) || '{}');
+                if (simStats.followers && profileData.stats) {
+                    profileData.stats = { ...profileData.stats, followers: simStats.followers };
+                }
+            }
+            
             setTargetUser(profileData);
 
             // Fetch Posts
@@ -162,15 +171,22 @@ function ProfileContent() {
       // Optimistic UI Update
       setIsFollowing(!wasFollowing);
       
+      const newFollowersCount = !wasFollowing 
+          ? parseInt(targetUser.stats?.followers || '0') + 1 
+          : Math.max(0, parseInt(targetUser.stats?.followers || '0') - 1);
+
+      // Persist stat simulation
+      const statsKey = `sim_stats_${targetUser.uid}`;
+      const existingSim = JSON.parse(localStorage.getItem(statsKey) || '{}');
+      localStorage.setItem(statsKey, JSON.stringify({ ...existingSim, followers: newFollowersCount.toString() }));
+
       setTargetUser(prev => {
           if (!prev) return null;
-          const current = parseInt(prev.stats?.followers || '0');
-          const next = !wasFollowing ? current + 1 : Math.max(0, current - 1);
           return {
               ...prev,
               stats: {
                   ...prev.stats,
-                  followers: next.toString(),
+                  followers: newFollowersCount.toString(),
                   following: prev.stats?.following || '0',
                   likes: prev.stats?.likes || '0',
                   credits: prev.stats?.credits || '0',
