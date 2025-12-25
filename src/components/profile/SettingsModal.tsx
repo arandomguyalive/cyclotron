@@ -217,6 +217,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             await setDoc(doc(db, "users", "tester-abhi"), {
                                                 displayName: "Abhi Tester",
                                                 handle: "ABHI18",
+                                                email: "abhi18@abhed.network",
+                                                phoneNumber: "+911818181818",
                                                 bio: "KM18 System Validator",
                                                 avatarSeed: "Abhi",
                                                 faction: "Ghost",
@@ -229,6 +231,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             await setDoc(doc(db, "users", "tester-kinjal"), {
                                                 displayName: "Kinjal Tester",
                                                 handle: "KINJAL18",
+                                                email: "kinjal18@abhed.network",
+                                                phoneNumber: "+911818181819",
                                                 bio: "KM18 System Validator",
                                                 avatarSeed: "Kinjal",
                                                 faction: "Netrunner",
@@ -237,7 +241,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                 stats: { following: 0, followers: 0, likes: 0, credits: 1000, reputation: 100 }
                                             });
 
-                                            alert("Test users ABHI18 and KINJAL18 seeded in Firestore.");
+                                            alert("Test users ABHI18 and KINJAL18 seeded in Firestore. Ensure Auth accounts exist with password 'Eternity'.");
                                         } catch (e: unknown) {
                                             console.error(e);
                                             alert("Failed to seed users.");

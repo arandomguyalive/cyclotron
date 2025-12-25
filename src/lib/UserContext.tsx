@@ -166,9 +166,32 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (identifier: string, password: string) => {
     setLoading(true);
     try {
+      let email = identifier;
+
+      // If not an email, lookup by handle or phone
+      if (!identifier.includes("@")) {
+          const { collection, query, where, getDocs } = await import("firebase/firestore");
+          
+          // Try Handle (Upper case)
+          let q = query(collection(db, "users"), where("handle", "==", identifier.toUpperCase()));
+          let snap = await getDocs(q);
+          
+          if (snap.empty) {
+              // Try Phone Number
+              q = query(collection(db, "users"), where("phoneNumber", "==", identifier));
+              snap = await getDocs(q);
+          }
+
+          if (!snap.empty) {
+              email = snap.docs[0].data().email;
+          } else {
+              throw new Error("Identifier not found. Use Email, Handle, or Phone.");
+          }
+      }
+
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
       setLoading(false);

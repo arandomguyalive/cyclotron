@@ -152,7 +152,7 @@ export default function LoginPage() {
                         </motion.div>
                     ) : (
                         <motion.div key="login" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-4 py-4">
-                            <InputGroup label="Email Address" icon={Mail} value={email} onChange={setEmail} placeholder="Enter your email" />
+                            <InputGroup label="Identity Identifier" icon={Globe} value={email} onChange={setEmail} placeholder="Email, Handle, or Phone" />
                         </motion.div>
                     )}
                 </AnimatePresence>
