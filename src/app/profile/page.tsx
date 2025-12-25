@@ -71,6 +71,23 @@ function ProfileContent() {
         if (!uidToFetch) return;
 
         setFetching(true);
+        let safetyTimer: NodeJS.Timeout;
+
+        // Safety timeout to prevent infinite spinner
+        safetyTimer = setTimeout(() => {
+            console.warn("Profile fetch timed out, forcing render.");
+            setFetching(false);
+            setTargetUser(prev => prev || {
+                 uid: uidToFetch,
+                 displayName: "Network Error",
+                 handle: "timeout_signal",
+                 bio: "Connection timed out.",
+                 avatarSeed: uidToFetch,
+                 tier: "free",
+                 stats: { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' }
+             } as UserProfileData);
+        }, 5000);
+
         try {
             // Handle Mock Users
             if (uidToFetch.startsWith("mock-")) {
@@ -178,6 +195,7 @@ function ProfileContent() {
         } catch (e) {
             console.error("Profile logic error", e);
         } finally {
+            clearTimeout(safetyTimer);
             setFetching(false);
         }
     };
