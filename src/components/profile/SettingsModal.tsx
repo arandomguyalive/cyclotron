@@ -79,7 +79,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       setCurrentView(view);
   }
 
-  const isTester = ['abhi18', 'kinjal18'].includes(user?.handle?.toLowerCase() || '');
+  const isOwner = user?.isOwner || ['abhi18', 'kinjal18'].includes(user?.handle?.toLowerCase() || '');
 
   // Tier Access Helpers
   const canAccessGhost = ['professional', 'ultra_elite', 'sovereign'].includes(user?.tier || '');
@@ -204,7 +204,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         </div>
 
                         {/* Section: ARCHITECT CORE (Owners Only) */}
-                        {isTester && (
+                        {isOwner && (
                             <div className="pt-4 space-y-6">
                                 <div className="p-6 rounded-3xl bg-brand-cyan/5 border border-brand-cyan/30 relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-4 opacity-10 rotate-12">
