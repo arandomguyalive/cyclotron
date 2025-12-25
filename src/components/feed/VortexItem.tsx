@@ -134,6 +134,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' 
                     actorId: firebaseUser.uid,
                     actorHandle: currentUserProfile?.handle || "Unknown",
                     postId: post.id,
+                    caption: p.caption?.substring(0, 20) || "Transmission",
                     timestamp: serverTimestamp(),
                     read: false
                 });

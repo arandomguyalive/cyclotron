@@ -55,7 +55,7 @@ export function SystemTerminal() {
                 const data = snapshot.docs[0].data();
                 // Check if notification is recent (last 10 seconds)
                 const notifTime = data.timestamp?.toMillis ? data.timestamp.toMillis() : Date.now();
-                if (Date.now() - notifTime < 10000) {
+                if (Date.now() - notifTime < 10000 && data.type === 'SCREENSHOT_POST') {
                      setAlert(`⚠️ ALERT: ${data.actorHandle} captured your post!`);
                      // Clear alert after 8 seconds
                      setTimeout(() => setAlert(null), 8000);

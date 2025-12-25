@@ -212,6 +212,17 @@ export function ChatView({ chatId }: ChatViewProps) {
       });
       setInput("");
       await updateDoc(doc(db, "chats", chatId), { lastMessage: encrypted, lastMessageTimestamp: serverTimestamp() });
+
+      if (chatPartner && chatPartner.uid && !chatPartner.uid.startsWith("mock-")) {
+          await addDoc(collection(db, "users", chatPartner.uid, "notifications"), {
+              type: "MESSAGE",
+              actorId: firebaseUser.uid,
+              actorHandle: currentUserProfile.handle,
+              caption: input.trim().substring(0, 30),
+              timestamp: serverTimestamp(),
+              read: false
+          });
+      }
     } catch (error) {}
   };
 

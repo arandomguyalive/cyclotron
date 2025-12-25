@@ -189,6 +189,7 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                         actorId: firebaseUser.uid,
                         actorHandle: user.handle,
                         postId: post.id,
+                        caption: post.caption?.substring(0, 20) || "Signal",
                         timestamp: serverTimestamp(),
                         read: false
                     });
@@ -247,6 +248,16 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                 batch.set(targetFollowerRef, { timestamp: serverTimestamp() });
                 batch.update(meRef, { "stats.following": increment(1) });
                 batch.update(themRef, { "stats.followers": increment(1) });
+                
+                const notifRef = doc(collection(db, "users", post.userId, "notifications"));
+                batch.set(notifRef, {
+                    type: "FOLLOW",
+                    actorId: firebaseUser.uid,
+                    actorHandle: user.handle,
+                    timestamp: serverTimestamp(),
+                    read: false
+                });
+
                 await batch.commit();
                 toast(`Linked with @${post.userHandle}`, "success");
             } else {

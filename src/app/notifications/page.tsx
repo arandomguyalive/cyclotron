@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface Notification {
   id: string;
-  type: "SCREENSHOT_POST" | "LIKE" | "COMMENT" | "FOLLOW" | "SYSTEM";
+  type: "SCREENSHOT_POST" | "LIKE" | "COMMENT" | "FOLLOW" | "SYSTEM" | "MESSAGE";
   actorId: string;
   actorHandle: string;
   postId?: string;
@@ -113,10 +113,12 @@ export default function NotificationsPage() {
                             <div className={`p-2 rounded-full shrink-0 ${
                                 item.type === 'SCREENSHOT_POST' ? 'bg-red-500/20 text-red-500' :
                                 item.type === 'LIKE' ? 'bg-pink-500/20 text-pink-500' :
+                                item.type === 'MESSAGE' ? 'bg-blue-500/20 text-blue-500' :
                                 'bg-accent-1/20 text-accent-1'
                             }`}>
                                 {item.type === 'SCREENSHOT_POST' && <ShieldAlert className="w-5 h-5" />}
                                 {item.type === 'LIKE' && <Heart className="w-5 h-5" />}
+                                {item.type === 'MESSAGE' && <MessageCircle className="w-5 h-5" />}
                                 {(item.type === 'COMMENT' || item.type === 'SYSTEM') && <MessageCircle className="w-5 h-5" />}
                                 {item.type === 'FOLLOW' && <UserPlus className="w-5 h-5" />}
                             </div>
@@ -135,8 +137,16 @@ export default function NotificationsPage() {
                                     {item.type === 'SCREENSHOT_POST' && (
                                         <span>captured your post: <span className="text-primary-text font-mono">&quot;{item.caption}&quot;</span></span>
                                     )}
-                                    {item.type === 'LIKE' && "liked your transmission."}
+                                    {item.type === 'LIKE' && (
+                                        <span>liked your transmission: <span className="text-primary-text font-mono">&quot;{item.caption}&quot;</span></span>
+                                    )}
                                     {item.type === 'FOLLOW' && "is now tracking your signal."}
+                                    {item.type === 'COMMENT' && (
+                                        <span>commented: <span className="text-primary-text font-mono">&quot;{item.caption}&quot;</span></span>
+                                    )}
+                                    {item.type === 'MESSAGE' && (
+                                        <span>sent a message: <span className="text-primary-text italic">&quot;{item.caption}&quot;</span></span>
+                                    )}
                                     {item.type === 'SYSTEM' && item.caption}
                                 </p>
                             </div>
