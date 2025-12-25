@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@/lib/UserContext";
-import { collection, query, orderBy, limit, onSnapshot, Timestamp, doc, updateDoc, increment, setDoc, serverTimestamp, writeBatch } from "firebase/firestore";
+import { collection, query, orderBy, limit, onSnapshot, Timestamp, doc, updateDoc, increment, setDoc, serverTimestamp, writeBatch, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Heart, MessageCircle, Share2, MoreHorizontal, Bookmark, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/lib/ToastContext";
 import { extractMessageFromImage } from "@/lib/steg";
+import { CommentModal } from "@/components/feed/CommentModal";
 
 interface Post {
     id: string;
@@ -50,7 +51,9 @@ export function SignalGrid() {
     const [posts, setPosts] = useState<(Post | MockAd)[]>([]); 
     const [loading, setLoading] = useState(true);
     const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+    const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
     const [followingSet, setFollowingSet] = useState<Set<string>>(new Set());
+    const [activeCommentPost, setActiveCommentPost] = useState<Post | null>(null);
     const [dataSaver, setDataSaver] = useState(() => {
         if (typeof window !== 'undefined') {
             return localStorage.getItem('oblivion_dataSaver') === 'true';
@@ -72,6 +75,12 @@ export function SignalGrid() {
         const unsubscribeLikes = onSnapshot(collection(db, "users", firebaseUser.uid, "likes"), (snap) => {
             const ids = new Set(snap.docs.map(doc => doc.id));
             setLikedPosts(ids);
+        });
+
+        // Listen to User's Bookmarks
+        const unsubscribeSaved = onSnapshot(collection(db, "users", firebaseUser.uid, "bookmarks"), (snap) => {
+            const ids = new Set(snap.docs.map(doc => doc.id));
+            setSavedPosts(ids);
         });
 
         // Listen to User's Following
@@ -98,6 +107,7 @@ export function SignalGrid() {
 
         return () => {
             unsubscribeLikes();
+            unsubscribeSaved();
             unsubscribeFollowing();
             unsubscribePosts();
         };
@@ -125,12 +135,30 @@ export function SignalGrid() {
                         read: false
                     });
                 }
-                toast("Signal Acknowledged", "success");
+                toast("Signal Liked", "success");
             } else {
                 batch.update(postRef, { likes: increment(-1) });
                 batch.delete(likeRef);
             }
             await batch.commit();
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleSave = async (post: Post) => {
+        if (!firebaseUser) return;
+        const isSaved = savedPosts.has(post.id);
+        const saveRef = doc(db, "users", firebaseUser.uid, "bookmarks", post.id);
+
+        try {
+            if (!isSaved) {
+                await setDoc(saveRef, { postId: post.id, timestamp: serverTimestamp() });
+                toast("Signal Saved to Archive", "success");
+            } else {
+                await deleteDoc(saveRef);
+                toast("Removed from Archive", "info");
+            }
         } catch (e) {
             console.error(e);
         }
@@ -361,14 +389,22 @@ export function SignalGrid() {
                                             className={`w-6 h-6 transition-colors cursor-pointer ${likedPosts.has(post.id) ? 'text-brand-hot-pink fill-brand-hot-pink' : 'text-primary-text hover:text-accent-1'}`} 
                                         />
                                         <MessageCircle 
-                                            onClick={() => toast("Encrypted Channel Open", "info")}
+                                            onClick={() => {
+                                                if (isFree) {
+                                                    toast("UPGRADE REQUIRED: Frequency modulation (comments) restricted.", "error");
+                                                } else {
+                                                    // Since SignalGrid doesn't have local modal state, we'll use a local state or direct navigation
+                                                    // For consistency with Vortex, let's add a local state for the active post being commented on
+                                                    setActiveCommentPost(post);
+                                                }
+                                            }}
                                             className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" 
                                         />
                                         <Share2 
                                             onClick={async () => {
                                                 try {
                                                     await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });
-                                                    navigator.clipboard.writeText(`${window.location.origin}/vortex`);
+                                                    navigator.clipboard.writeText(`${window.location.origin}/profile?view=${post.userId}`);
                                                     toast("Link Copied to Clipboard", "info");
                                                 } catch (e) {}
                                             }}
@@ -376,13 +412,13 @@ export function SignalGrid() {
                                         />
                                     </div>
                                     <Bookmark 
-                                        onClick={() => toast("Signal Saved to Archive", "encrypted")}
-                                        className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" 
+                                        onClick={() => handleSave(post)}
+                                        className={`w-6 h-6 transition-colors cursor-pointer ${savedPosts.has(post.id) ? 'text-accent-1 fill-accent-1' : 'text-primary-text hover:text-accent-1'}`} 
                                     />
                                 </div>
 
                                 <div className="px-4 mt-2 space-y-1">
-                                    <p className="text-sm font-bold text-primary-text">{post.likes || 0} acknowledgments</p>
+                                    <p className="text-sm font-bold text-primary-text">{post.likes || 0} likes</p>
                                     {post.type !== 'text' && (
                                         <p className="text-sm text-secondary-text line-clamp-2">
                                             <span className="font-bold text-primary-text mr-2">@{post.userHandle}</span>
@@ -402,6 +438,15 @@ export function SignalGrid() {
                     }
                 })}
             </div>
+
+            {activeCommentPost && (
+                <CommentModal 
+                    postId={activeCommentPost.id}
+                    isOpen={!!activeCommentPost}
+                    onClose={() => setActiveCommentPost(null)}
+                    postOwnerId={activeCommentPost.userId}
+                />
+            )}
         </div>
     );
 }

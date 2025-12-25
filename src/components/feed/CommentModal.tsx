@@ -33,10 +33,11 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Tier check
-  const canComment = user?.tier !== 'free';
+  const canComment = user && user.tier !== 'free';
 
   useEffect(() => {
     if (!isOpen || !postId) return;
+    console.log(`[CommentModal] Listening to: posts/${postId}/comments`);
 
     const q = query(
       collection(db, "posts", postId, "comments"),
@@ -44,6 +45,7 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
+      console.log(`[CommentModal] Snapshot received: ${snapshot.size} comments`);
       const fetchedComments: Comment[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -64,7 +66,11 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
   }, [postId, isOpen]);
 
   const handleSubmit = async () => {
-    if (!input.trim() || !firebaseUser || !canComment) return;
+    console.log(`[COMMENT] handleSubmit called. input: "${input}", user: ${!!user}, canComment: ${canComment}`);
+    if (!input.trim() || !firebaseUser || !canComment) {
+        console.warn("[COMMENT] Early exit: validation failed.");
+        return;
+    }
     
     console.log(`[COMMENT] Attempting submission. postId: ${postId}, text: ${input.substring(0, 10)}...`);
     playClick(500, 0.1, 'square');
