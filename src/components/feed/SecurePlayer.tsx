@@ -11,13 +11,13 @@ export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, sec
         const [isLocked, setIsLocked] = useState(true); // Start locked for hold-to-view
         const [isPressing, setIsPressing] = useState(false);
         
-        // Security Features Active for Tier 3 (Gold) and above
-        const isBlacklist = securityLevel === 'blacklist' || ['gold', 'platinum', 'sovereign', 'lifetime'].includes(user?.tier || 'free');
+        // Security Features Active for Tier 3 (Professional) and above
+        const isBlacklist = securityLevel === 'blacklist' || ['professional', 'ultra_elite', 'sovereign'].includes(user?.tier || 'lobby');
         const isHoldToViewActive = isBlacklist; // Activate hold-to-view for blacklist content
         const viewerIdentifier = firebaseUser?.email || firebaseUser?.uid || 'UNAUTHORIZED_VIEWER';
     
-        // Platinum Feature: Biometric Lock Simulation
-        const isPlatinum = ['platinum', 'ultimate'].includes(user?.tier || 'free');
+        // Ultra Elite Feature: Biometric Lock Simulation
+        const isUltraElite = ['ultra_elite', 'sovereign'].includes(user?.tier || 'lobby');
     
         useEffect(() => {
             if (!isHoldToViewActive && isLocked) { // Only unlock if it's currently locked
@@ -44,7 +44,7 @@ export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, sec
         };
 
     useEffect(() => {
-        if (!isPlatinum || isHoldToViewActive) return;
+        if (!isUltraElite || isHoldToViewActive) return;
 
         const handleVisibilityChange = () => {
             if (document.hidden) {
@@ -55,17 +55,17 @@ export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, sec
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
         return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-    }, [isPlatinum, isHoldToViewActive, isLocked]);
+    }, [isUltraElite, isHoldToViewActive, isLocked]);
 
     const handleMouseLeave = () => {
-        if (isPlatinum && !isHoldToViewActive) {
+        if (isUltraElite && !isHoldToViewActive) {
             setIsLocked(true);
             videoRef.current?.pause();
         }
     };
 
     const handleMouseEnter = () => {
-        if (isPlatinum && isLocked && !isHoldToViewActive) {
+        if (isUltraElite && isLocked && !isHoldToViewActive) {
             // Auto-resume if user comes back
             setIsLocked(false);
             videoRef.current?.play();

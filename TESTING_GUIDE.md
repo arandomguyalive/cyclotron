@@ -7,80 +7,86 @@ The app allows you to instantly switch between user tiers to test different expe
 
 1.  Navigate to **Profile** > **Settings** (Gear Icon).
 2.  Scroll down to the **"Simulate Tier"** section.
-3.  Click on any tier button: `FREE`, `PREMIUM`, `GOLD`, `PLATINUM`, `ULTIMATE`.
-4.  The app will instantly update. Your selection persists across reloads (saved in `localStorage`).
+3.  Click on any tier button: `LOBBY`, `SHIELD`, `PROFESSIONAL`, `ULTRA_ELITE`, `SOVEREIGN`.
+4.  The app will instantly update.
 
 ---
 
-## 🛡️ Tier 1: THE LOBBY (Free)
-**Concept:** "The Exposed". Degraded experience, mock ads, restricted tools.
+## 🛡️ Tier 1: THE LOBBY
+**Concept:** "The Exposed". Restricted experience, visible footprint.
 
 ### What to Test:
 *   **Home Page:**
-    *   **Header:** Shows "STANDARD" Privacy Badge.
-    *   **Status Bar (Footer):** Shows logs like "Location: Visible", "Data: Unencrypted".
-    *   **Ghost Mode:** Unavailable/Hidden in Settings.
-    *   **Daily Drop:** Shows generic task ("Post a photo").
+    *   **Header:** Shows "LOBBY" Privacy Badge (Orange).
+    *   **Privacy Score:** Shows "RESTRICTED" (40%).
+    *   **Ghost Mode:** Locked in Settings.
 *   **Feed (Signal Grid):**
-    *   **Visuals:** Images have a subtle "low-fi" (sepia/faded) look.
-    *   **Ads:** A "KM18 Presents" mock ad appears as the 2nd item in the feed.
-    *   **Interaction:** Clicking images prompts an "Upgrade to interact" alert.
+    *   **Interaction:** Restricted features.
 *   **Tools:**
-    *   **Upload:** Open the `+` menu. You should see a **"KM18 Tax: 30%"** warning.
-    *   **Vibe Switch:** You can only select "PUBLIC" and "NEON". Dragging to others snaps back.
-    *   **Flux (Stories):** Shows a "Shadow Count" (number). Clicking it denies access ("Upgrade Required").
+    *   **Upload:** Can only post standard "Post" and "Signal". Reels/Stories locked.
 
 ---
 
-## 🛡️ Tier 2: THE SHIELD (Premium) - ₹999/mo
-**Concept:** "The Protected". Clean experience, basic security.
+## 🛡️ Tier 2: THE SHIELD
+**Concept:** "The Protected". Clean experience, active scanner.
 
 ### What to Test:
 *   **Home Page:**
-    *   **Header:** Shows "SECURED" Privacy Badge (Cyan).
-    *   **Status Bar:** Shows secure logs ("Encryption handshake complete").
-*   **Feed:**
-    *   **Visuals:** Full HD images (unless "Data Saver" is on).
-    *   **Ads:** No ads in the feed.
-    *   **Watermark:** Images in Vortex/Feed *do not* have watermarks (you are clean). *Note: You see your own handle as a watermark on OTHER people's content in a real scenario, currently simulated as seeing your handle on the mock posts.*
+    *   **Header:** Shows "SHIELD" Privacy Badge (Cyan).
+    *   **Privacy Score:** Shows "SECURED" (85%).
+    *   **Scanner:** "Scanner Active" widget visible and clickable.
 *   **Tools:**
-    *   **Upload:** No tax warning.
-    *   **Vibe Switch:** Fully unlocked.
-    *   **Flux:** Can view stories (shows avatars).
+    *   **Upload:** Fully unlocked (Reels, Stories, Signals).
 
 ---
 
-## 🛡️ Tier 3: THE PROFESSIONAL (Gold) - ₹9999/mo
-**Concept:** "The Elite". Advanced tools, anonymity.
+## 🛡️ Tier 3: THE PROFESSIONAL
+**Concept:** "The Operative". Advanced tools, anonymity, reputation tracking.
 
 ### What to Test:
 *   **Settings:**
     *   **Ghost Mode:** Toggle is now visible/unlocked.
     *   **Action:** Turn ON Ghost Mode. Go to Home. Your handle in the header should change to **"UNTRACEABLE"** with a Ghost icon.
+*   **Home Page:**
+    *   **Identity Rep:** Global stats widget visible showing reputation.
 *   **Upload:**
-    *   Open `+` menu. You should see a **"Geo-Fence"** selector (Global, NA, EU, Asia) below the caption.
+    *   **Geo-Fence:** Geo-Block country code input visible.
+    *   **Sovereign Controls:** Visibility tier selector visible.
 
 ---
 
-## 🛡️ Tier 4: THE ULTRA ELITE (Platinum) - ₹99999/mo
-**Concept:** "The Architect". Maximum security, god mode.
+## 🛡️ Tier 4: THE ULTRA ELITE
+**Concept:** "The Architect". Maximum security, god mode, The Vault.
 
 ### What to Test:
 *   **Settings:**
-    *   **Hardening:** "Bio-Lock", "Screenshot Alert", "Burner Key" toggles are visible.
+    *   **Hardening:** "Bio-Lock", "Screenshot Alert" toggles are visible.
+*   **Home Page:**
+    *   **The Vault:** Secure storage widget visible.
 *   **Biometric Lock (Simulation):**
-    *   Go to **Vortex**.
-    *   Play a video.
-    *   **Action:** Switch browser tabs OR move your mouse cursor *outside* the video frame.
-    *   **Result:** Video pauses instantly. A red "FOCUS LOST" lock screen appears.
+    *   **Action:** Switch browser tabs OR move your mouse cursor *outside* a secure video.
+    *   **Result:** Video pauses instantly. A red "Focus Lost" lock screen appears.
+
+---
+
+## 🛡️ Tier 5: THE SOVEREIGN
+**Concept:** "The God". Complete control.
+
+### What to Test:
+*   **Settings:**
+    *   **Sovereign Console:** Access to the Sovereign administrative interface.
+*   **Visuals:**
+    *   **Background:** Deep Black/Void gradient.
+    *   **Badges:** Animated Crown badge.
+
 
 ---
 
 ## 🔧 Mock Settings Verification
 These settings in the **Settings Modal** now have real visual effects:
 
-1.  **Ghost Mode (Gold+):**
+1.  **Ghost Mode (Professional+):**
     *   Changes Header identity to "UNTRACEABLE".
 2.  **Data Saver (All Tiers):**
     *   **Action:** Enable it in Settings > Interface.
-    *   **Result:** Go to Home. The "Signal Grid" images will have the "low-fi" (sepia/faded) look even if you are Premium/Gold. This simulates bandwidth saving.
+    *   **Result:** Go to Home. The "Signal Grid" images will have the "low-fi" (sepia/faded) look even if you are Shield/Professional. This simulates bandwidth saving.

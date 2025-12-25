@@ -24,7 +24,7 @@ const LOGS_PREMIUM = [
 
 export function SystemTerminal() {
     const { user, firebaseUser } = useUser();
-    const isFree = user?.tier === 'free';
+    const isFree = user?.tier === 'lobby';
     const logs = isFree ? LOGS_FREE : LOGS_PREMIUM;
     
     const [currentLog, setCurrentLog] = useState(logs[0]);

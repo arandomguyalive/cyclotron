@@ -40,7 +40,7 @@ export function ChatView({ chatId }: ChatViewProps) {
   const { toast } = useToast();
   const router = useRouter();
 
-  const isFree = currentUserProfile?.tier === 'free';
+  const isFree = currentUserProfile?.tier === 'lobby';
 
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);

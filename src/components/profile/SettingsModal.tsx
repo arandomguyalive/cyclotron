@@ -79,9 +79,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       setCurrentView(view);
   }
 
+  const isTester = ['abhi18', 'kinjal18'].includes(user?.handle?.toLowerCase() || '');
+
   // Tier Access Helpers
-  const canAccessGhost = ['gold', 'platinum', 'sovereign', 'lifetime'].includes(user?.tier || '');
-  const canAccessHardening = ['platinum', 'sovereign'].includes(user?.tier || '');
+  const canAccessGhost = ['professional', 'ultra_elite', 'sovereign'].includes(user?.tier || '');
+  const canAccessHardening = ['ultra_elite', 'sovereign'].includes(user?.tier || '');
 
   const privacy = user?.privacy || {
       ghostMode: false,
@@ -158,7 +160,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     handleButtonClick();
                                     router.push("/upgrade");
                                 }} 
-                                isPaid={user?.tier !== 'free'} // Indicate if already paid
+                                isPaid={user?.tier !== 'lobby'} // Indicate if already paid
                             />
                             {user?.tier === 'sovereign' && (
                                 <SettingItem 
@@ -201,79 +203,101 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             </button>
                         </div>
 
-                        {/* Section: Danger Zone */}
-                        <div className="pt-4 space-y-4">
-                            <button 
-                                onClick={async () => {
-                                    handleButtonClick();
-                                    try {
-                                        const { doc, setDoc } = await import("firebase/firestore");
-                                        const { db } = await import("@/lib/firebase");
-                                        
-                                        // Seed Admin One
-                                        await setDoc(doc(db, "users", "admin-one"), {
-                                            displayName: "Admin One",
-                                            handle: "admin_one",
-                                            bio: "Test User 1",
-                                            avatarSeed: "Felix",
-                                            faction: "Netrunner",
-                                            tier: "premium",
-                                            stats: { following: "0", followers: "0", likes: "0" }
-                                        });
+                        {/* Section: Danger Zone (Testers Only) */}
+                        {isTester && (
+                            <div className="pt-4 space-y-4">
+                                <button 
+                                    onClick={async () => {
+                                        handleButtonClick();
+                                        try {
+                                            const { doc, setDoc } = await import("firebase/firestore");
+                                            const { db } = await import("@/lib/firebase");
+                                            
+                                            // Seed Abhi Tester
+                                            await setDoc(doc(db, "users", "tester-abhi"), {
+                                                displayName: "Abhi Tester",
+                                                handle: "ABHI18",
+                                                bio: "KM18 System Validator",
+                                                avatarSeed: "Abhi",
+                                                faction: "Ghost",
+                                                tier: "sovereign",
+                                                isBlacklist: true,
+                                                stats: { following: 0, followers: 0, likes: 0, credits: 1000, reputation: 100 }
+                                            });
 
-                                        // Seed Admin Two
-                                        await setDoc(doc(db, "users", "admin-two"), {
-                                            displayName: "Admin Two",
-                                            handle: "admin_two",
-                                            bio: "Test User 2",
-                                            avatarSeed: "Jocelyn",
-                                            faction: "Corp",
-                                            tier: "gold",
-                                            stats: { following: "0", followers: "0", likes: "0" }
-                                        });
+                                            // Seed Kinjal Tester
+                                            await setDoc(doc(db, "users", "tester-kinjal"), {
+                                                displayName: "Kinjal Tester",
+                                                handle: "KINJAL18",
+                                                bio: "KM18 System Validator",
+                                                avatarSeed: "Kinjal",
+                                                faction: "Netrunner",
+                                                tier: "sovereign",
+                                                isBlacklist: true,
+                                                stats: { following: 0, followers: 0, likes: 0, credits: 1000, reputation: 100 }
+                                            });
 
-                                        alert("Test users seeded! 'admin-two' UID copied to clipboard.");
-                                        navigator.clipboard.writeText("admin-two");
-                                    } catch (e: unknown) {
-                                        console.error(e);
-                                        if (e instanceof Error) {
-                                            alert(`Failed to seed users: ${e.message}`);
-                                        } else {
+                                            alert("Test users ABHI18 and KINJAL18 seeded in Firestore.");
+                                        } catch (e: unknown) {
+                                            console.error(e);
                                             alert("Failed to seed users.");
                                         }
-                                    }
-                                }}
-                                className="w-full py-4 flex items-center justify-center gap-2 text-accent-2 bg-accent-2/10 rounded-xl border border-accent-2/20 hover:bg-accent-2/20 transition-colors"
-                            >
-                                <Database className="w-5 h-5" />
-                                <span className="font-bold">Seed Test Users</span>
-                            </button>
+                                    }}
+                                    className="w-full py-4 flex items-center justify-center gap-2 text-accent-2 bg-accent-2/10 rounded-xl border border-accent-2/20 hover:bg-accent-2/20 transition-colors"
+                                >
+                                    <Database className="w-5 h-5" />
+                                    <span className="font-bold">Seed Authorized Testers</span>
+                                </button>
 
-                            {/* Tier Simulator */}
-                            <div className="space-y-2">
-                                <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider ml-2">Simulate Tier</h3>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {(["free", "premium", "gold", "platinum", "sovereign", "lifetime"] as const).map((t) => (
+                                {/* Tier Simulator */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider ml-2 mb-2">Simulate Tier</h3>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {(["lobby", "shield", "professional", "ultra_elite", "sovereign"] as const).map((t) => (
+                                                <button
+                                                    key={t}
+                                                    onClick={() => {
+                                                        if (user) {
+                                                            updateUser({ tier: t });
+                                                            handleButtonClick();
+                                                        }
+                                                    }}
+                                                    className={`px-2 py-2 rounded-lg text-xs font-bold uppercase transition-colors border ${
+                                                        user?.tier === t 
+                                                            ? "bg-primary-text text-primary-bg border-primary-text" 
+                                                            : "bg-primary-bg text-secondary-text border-border-color hover:border-primary-text"
+                                                    }`}
+                                                >
+                                                    {t}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider ml-2 mb-2">Special Status</h3>
                                         <button
-                                            key={t}
                                             onClick={() => {
                                                 if (user) {
-                                                    updateUser({ tier: t });
+                                                    updateUser({ isBlacklist: !user.isBlacklist });
                                                     handleButtonClick();
                                                 }
                                             }}
-                                            className={`px-2 py-2 rounded-lg text-xs font-bold uppercase transition-colors border ${
-                                                user?.tier === t 
-                                                    ? "bg-primary-text text-primary-bg border-primary-text" 
-                                                    : "bg-primary-bg text-secondary-text border-border-color hover:border-primary-text"
+                                            className={`w-full py-2 rounded-lg text-xs font-bold uppercase transition-colors border ${
+                                                user?.isBlacklist 
+                                                    ? "bg-amber-500 text-black border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" 
+                                                    : "bg-primary-bg text-secondary-text border-border-color hover:border-amber-500/50"
                                             }`}
                                         >
-                                            {t}
+                                            {user?.isBlacklist ? "Blacklist Active" : "Enable Blacklist Member Status"}
                                         </button>
-                                    ))}
+                                    </div>
                                 </div>
                             </div>
+                        )}
 
+                        <div className="pt-4">
                             <button 
                                 onClick={() => {
                                     handleButtonClick();
@@ -360,7 +384,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 </>
                             ) : (
                                 <div className="p-4 rounded-2xl bg-secondary-bg/10 border border-border-color text-center">
-                                    <p className="text-xs text-secondary-text mb-2">Advanced Security Protocols require Platinum clearance.</p>
+                                    <p className="text-xs text-secondary-text mb-2">Advanced Security Protocols require Ultra Elite clearance.</p>
                                     <button onClick={() => router.push("/upgrade")} className="text-xs font-bold text-accent-1 hover:underline">UPGRADE NOW</button>
                                 </div>
                             )}

@@ -16,7 +16,7 @@ export default function VortexPage() {
   const [loading, setLoading] = useState(true);
   const { user } = useUser(); 
   
-  const isFree = user?.tier === 'free';
+  const isFree = user?.tier === 'lobby';
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [cycles, setCycles] = useState(0); 
@@ -164,7 +164,7 @@ export default function VortexPage() {
                 onCollect={() => setCycles(prev => prev + 100)} 
                 watermarkText={watermarkText}
                 isFree={isFree}
-                tier={user?.tier || 'free'}
+                tier={user?.tier || 'lobby'}
             />
         ))}
       </div>

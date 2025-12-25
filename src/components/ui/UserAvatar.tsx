@@ -10,11 +10,13 @@ interface UserAvatarProps {
     seed?: string;
     url?: string;
     tier?: string;
+    isBlacklist?: boolean;
 }
 
-export function UserAvatar({ className, size = "md", showRing = true, seed, url, tier: propTier }: UserAvatarProps) {
+export function UserAvatar({ className, size = "md", showRing = true, seed, url, tier: propTier, isBlacklist: propBlacklist }: UserAvatarProps) {
     const { user } = useUser();
-    const tier = (propTier || user?.tier || 'free') as keyof typeof ringColors;
+    const tier = (propTier || user?.tier || 'lobby') as keyof typeof ringColors;
+    const isBlacklist = propBlacklist ?? user?.isBlacklist;
 
     const sizeClasses = {
         sm: "w-8 h-8",
@@ -24,13 +26,15 @@ export function UserAvatar({ className, size = "md", showRing = true, seed, url,
     };
 
     const ringColors = {
-        free: "border-brand-orange",
-        premium: "border-brand-cyan",
-        gold: "border-brand-pale-pink",
-        platinum: "border-white",
+        lobby: "border-brand-orange",
+        shield: "border-brand-cyan",
+        professional: "border-brand-pale-pink",
+        ultra_elite: "border-white",
         sovereign: "border-brand-blue",
         lifetime: "border-amber-500",
     };
+
+    const activeRingColor = isBlacklist ? ringColors.lifetime : (ringColors[tier] || ringColors.lobby);
 
     const avatarSrc = url || (user?.avatarUrl && !seed ? user.avatarUrl : null) || `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed || user?.avatarSeed || 'Guest'}`;
 
@@ -38,7 +42,7 @@ export function UserAvatar({ className, size = "md", showRing = true, seed, url,
         <div className={cn(
             "relative rounded-full overflow-hidden shrink-0",
             sizeClasses[size],
-            showRing ? `border-2 ${ringColors[tier] || ringColors.free}` : "",
+            showRing ? `border-2 ${activeRingColor}` : "",
             className
         )}>
             <img 

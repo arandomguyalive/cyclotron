@@ -56,7 +56,7 @@ export function StoriesTray() {
   const stories = realStories;
   const hasStories = stories.length > 0;
   
-  const isFree = user?.tier === 'free';
+  const isFree = user?.tier === 'lobby';
 
   const handleAddClick = () => {
       if (isFree) {

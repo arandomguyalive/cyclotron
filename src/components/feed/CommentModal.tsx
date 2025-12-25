@@ -37,7 +37,7 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const canComment = user && user.tier !== 'free';
+  const canComment = user && user.tier !== 'lobby';
 
   useEffect(() => {
     if (!isOpen || !postId) return;
@@ -70,7 +70,7 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
         userHandle: user?.handle || "Unknown",
         userAvatar: user?.avatarSeed || "default",
         userAvatarUrl: user?.avatarUrl || null,
-        userTier: user?.tier || 'free',
+        userTier: user?.tier || 'lobby',
         userFaction: user?.faction || null,
         timestamp: serverTimestamp()
       });

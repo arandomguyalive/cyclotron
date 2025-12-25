@@ -90,7 +90,7 @@ function ProfileContent() {
                 handle: "encrypted",
                 bio: "No signal detected.",
                 avatarSeed: uidToFetch,
-                tier: "free",
+                tier: "lobby",
                 stats: { following: 0, followers: 0, likes: 0, credits: 0, reputation: 0 }
             });
         }
@@ -172,7 +172,7 @@ function ProfileContent() {
 
   const handleStatClick = (type: string) => {
       handleButtonClick();
-      if (currentUser?.tier === 'free') {
+      if (currentUser?.tier === 'lobby') {
           playClick(150, 0.2, 'sawtooth');
           toast(`UPGRADE REQUIRED: ${type} list is encrypted.`, "error");
       } else {
@@ -188,12 +188,12 @@ function ProfileContent() {
       );
   }
 
-  const targetTier = (targetUser?.tier || 'free').toLowerCase();
-  const currentTier = (currentUser?.tier || 'free').toLowerCase();
+  const targetTier = (targetUser?.tier || 'lobby').toLowerCase();
+  const currentTier = (currentUser?.tier || 'lobby').toLowerCase();
 
   const canViewDetail = isOwnProfile || 
                        currentTier === 'sovereign' || 
-                       (currentTier === 'lifetime' && (targetTier === 'lifetime' || targetTier === 'gold' || targetTier === 'premium' || targetTier === 'free')) ||
+                       (currentTier === 'professional' && (targetTier === 'professional' || targetTier === 'shield' || targetTier === 'lobby')) ||
                        currentTier === targetTier;
 
   return (
@@ -225,6 +225,7 @@ function ProfileContent() {
                     url={targetUser.avatarUrl} 
                     size="xl" 
                     tier={targetUser.tier} 
+                    isBlacklist={(targetUser as any).isBlacklist}
                     className="border-4 border-primary-bg" 
                   />
                 </div>
@@ -249,7 +250,12 @@ function ProfileContent() {
               <div className="mt-8 relative z-30">
                 <div className="flex items-center gap-3">
                     <h1 className="text-2xl font-bold">{targetUser.displayName}</h1>
-                    <IdentityBadges tier={targetUser.tier} faction={targetUser.faction} size="lg" />
+                    <IdentityBadges tier={targetUser.tier} faction={targetUser.faction} isBlacklist={(targetUser as any).isBlacklist} size="lg" />
+                    {(targetUser as any).isBlacklist && (
+                        <div className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded-md">
+                            <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Blacklist Member</span>
+                        </div>
+                    )}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                     <p className="text-accent-1 font-mono text-sm">@{targetUser.handle}</p>
@@ -267,7 +273,7 @@ function ProfileContent() {
                 <button onClick={() => handleStatClick('Likes')}><Stat label="Likes" value={targetUser.stats?.likes || 0} /></button>
                 <Stat label="Rep" value={targetUser.stats?.reputation || 0} />
                 
-                {targetUser.tier === 'lifetime' && isOwnProfile && (
+                {targetUser.tier === 'professional' && isOwnProfile && (
                     <button onClick={() => setShowCertificate(true)} className="flex flex-col items-center justify-center text-amber-500 animate-pulse">
                         <ShieldCheck className="w-6 h-6 mb-1" />
                         <span className="text-[10px] uppercase font-bold">Certificate</span>

@@ -1,58 +1,79 @@
 "use client";
 
-import { ShieldCheck, Star, Zap, Terminal, Briefcase, Truck, Ghost, Diamond } from "lucide-react";
+import { Shield, Zap, Diamond, Crown, Infinity as InfinityIcon, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface IdentityBadgesProps {
     tier?: string;
     faction?: string;
+    isBlacklist?: boolean;
     size?: "sm" | "md" | "lg";
     className?: string;
 }
 
-export function IdentityBadges({ tier = "free", faction, size = "md", className }: IdentityBadgesProps) {
+export function IdentityBadges({ tier = "lobby", faction, isBlacklist = false, size = "md", className }: IdentityBadgesProps) {
     const iconSize = {
         sm: "w-3 h-3",
         md: "w-4 h-4",
         lg: "w-5 h-5"
     }[size];
 
-    const factionIcons: Record<string, any> = {
-        Netrunner: Terminal,
-        Corp: Briefcase,
-        Drifter: Truck,
-        Ghost: Ghost
-    };
-
-    const FactionIcon = faction ? factionIcons[faction] : null;
+    // Tier 1 (Lobby) has no badge, but everyone gets a Verified check if registered
+    if (tier === "lobby" && !isBlacklist) {
+        return (
+            <div className={cn("flex items-center", className)}>
+                <CheckCircle2 className={cn(iconSize, "text-secondary-text opacity-40")} />
+            </div>
+        );
+    }
 
     return (
         <div className={cn("flex items-center gap-1.5", className)}>
-            {/* 1. Verified Operative (All Registered) */}
-            <div title="Verified Operative" className="text-brand-cyan drop-shadow-[0_0_5px_rgba(0,212,229,0.5)]">
-                <ShieldCheck className={iconSize} />
-            </div>
-
-            {/* 2. Network Founder (Lifetime) */}
-            {tier === "lifetime" && (
-                <div title="Network Founder" className="text-amber-500 animate-pulse drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]">
-                    <Star className={cn(iconSize, "fill-current")} />
-                </div>
+            {/* Tier 5: Sovereign (The Crown) */}
+            {tier === "sovereign" && (
+                <motion.div 
+                    animate={{ scale: [1, 1.1, 1], filter: ["drop-shadow(0 0 2px #006096)", "drop-shadow(0 0 8px #00D4E5)", "drop-shadow(0 0 2px #006096)"] }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                    className="text-brand-blue"
+                >
+                    <Crown className={cn(iconSize, "fill-current")} />
+                </motion.div>
             )}
 
-            {/* 3. High Clearance (Platinum/Sovereign) */}
-            {(tier === "platinum" || tier === "sovereign") && (
-                <div title="High Clearance" className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
+            {/* Tier 4: Ultra Elite (The Diamond) */}
+            {tier === "ultra_elite" && (
+                <div className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">
                     <Diamond className={cn(iconSize, "fill-current")} />
                 </div>
             )}
 
-            {/* 4. Circle Emblem (Allegiance) */}
-            {FactionIcon && (
-                <div title={`${faction} Circle`} className="text-secondary-text opacity-80 border border-white/10 p-0.5 rounded bg-white/5">
-                    <FactionIcon className={cn(size === "sm" ? "w-2.5 h-2.5" : "w-3 h-3")} />
+            {/* Special: Blacklist Member (The Infinity Key) */}
+            {isBlacklist && (
+                <motion.div 
+                    animate={{ rotateY: [0, 360] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]"
+                >
+                    <InfinityIcon className={cn(size === "lg" ? "w-6 h-6" : "w-4 h-4", "stroke-[3px]")} />
+                </motion.div>
+            )}
+
+            {/* Tier 3: Professional (The Zap) */}
+            {tier === "professional" && !isBlacklist && (
+                <div className="text-brand-hot-pink drop-shadow-[0_0_5px_#FF53B2]">
+                    <Zap className={cn(iconSize, "fill-current")} />
                 </div>
             )}
+
+            {/* Tier 2: Shield (The Shield) */}
+            {tier === "shield" && (
+                <div className="text-brand-cyan drop-shadow-[0_0_5px_#00D4E5]">
+                    <Shield className={cn(iconSize, "fill-current")} />
+                </div>
+            )}
+
+            <CheckCircle2 className={cn(iconSize, "text-brand-cyan opacity-80")} />
         </div>
     );
 }

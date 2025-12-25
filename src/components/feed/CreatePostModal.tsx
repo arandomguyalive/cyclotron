@@ -26,7 +26,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
   const [region, setRegion] = useState("global");
   
   // Sovereign Controls
-  const [selectedTier, setSelectedTier] = useState<"public" | "premium" | "gold" | "platinum">("public");
+  const [selectedTier, setSelectedTier] = useState<"public" | "shield" | "professional" | "ultra_elite">("public");
   const [blockedRegions, setBlockedRegions] = useState("");
 
   const [isUploading, setIsUploading] = useState(false);
@@ -34,7 +34,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleModeSelect = (selectedMode: "post" | "reel" | "story" | "signal") => {
-      if (user?.tier === 'free' && (selectedMode === 'reel' || selectedMode === 'story')) {
+      if (user?.tier === 'lobby' && (selectedMode === 'reel' || selectedMode === 'story')) {
           playClick(150, 0.2, 'sawtooth');
           alert("HIGH-BANDWIDTH PROTOCOL LOCKED. Upgrade to access Reels and Stories.");
           return;
@@ -73,9 +73,9 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
 
       // Determine allowed tiers
       let allowedTiers: string[] = [];
-      if (selectedTier === 'premium') allowedTiers = ['premium', 'gold', 'platinum', 'sovereign', 'lifetime'];
-      if (selectedTier === 'gold') allowedTiers = ['gold', 'platinum', 'sovereign', 'lifetime'];
-      if (selectedTier === 'platinum') allowedTiers = ['platinum', 'sovereign'];
+      if (selectedTier === 'shield') allowedTiers = ['shield', 'professional', 'ultra_elite', 'sovereign'];
+      if (selectedTier === 'professional') allowedTiers = ['professional', 'ultra_elite', 'sovereign'];
+      if (selectedTier === 'ultra_elite') allowedTiers = ['ultra_elite', 'sovereign'];
 
       // 2. Create Firestore Document
       const collectionName = mode === "story" ? "stories" : "posts";
@@ -90,6 +90,8 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
         userHandle: user?.handle || "ghost_user",
         userAvatar: user?.avatarSeed || "default",
         userAvatarUrl: user?.avatarUrl || null,
+        userTier: user?.tier || "lobby",
+        userIsBlacklist: user?.isBlacklist || false,
         region: region,
         allowedTiers: allowedTiers, 
         blockedRegions: blockedRegions.split(',').map(r => r.trim().toUpperCase()).filter(r => r.length > 0),
@@ -178,26 +180,26 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                                <p className="text-sm text-secondary-text">Broadcast text-only transmission.</p>
                            </div>
                        </button>
-                       <button onClick={() => handleModeSelect('reel')} className={`flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl transition-all group text-left ${user?.tier === 'free' ? 'opacity-50' : 'hover:bg-accent-2/10 hover:border-accent-2'}`}>
+                       <button onClick={() => handleModeSelect('reel')} className={`flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl transition-all group text-left ${user?.tier === 'lobby' ? 'opacity-50' : 'hover:bg-accent-2/10 hover:border-accent-2'}`}>
                            <div className="p-4 bg-secondary-bg rounded-full text-accent-2 group-hover:scale-110 transition-transform">
-                               {user?.tier === 'free' ? <Lock className="w-8 h-8" /> : <Film className="w-8 h-8" />}
+                               {user?.tier === 'lobby' ? <Lock className="w-8 h-8" /> : <Film className="w-8 h-8" />}
                            </div>
                            <div className="flex-1">
                                <div className="flex items-center justify-between">
                                    <h3 className="text-xl font-bold text-primary-text group-hover:text-accent-2">Reel</h3>
-                                   {user?.tier === 'free' && <span className="px-2 py-0.5 bg-accent-2/20 text-accent-2 text-[10px] rounded font-bold uppercase">Pro</span>}
+                                   {user?.tier === 'lobby' && <span className="px-2 py-0.5 bg-accent-2/20 text-accent-2 text-[10px] rounded font-bold uppercase">Pro</span>}
                                </div>
                                <p className="text-sm text-secondary-text">Share vertical videos to Vortex.</p>
                            </div>
                        </button>
-                       <button onClick={() => handleModeSelect('story')} className={`flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl transition-all group text-left ${user?.tier === 'free' ? 'opacity-50' : 'hover:bg-purple-500/10 hover:border-purple-500'}`}>
+                       <button onClick={() => handleModeSelect('story')} className={`flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl transition-all group text-left ${user?.tier === 'lobby' ? 'opacity-50' : 'hover:bg-purple-500/10 hover:border-purple-500'}`}>
                            <div className="p-4 bg-secondary-bg rounded-full text-purple-500 group-hover:scale-110 transition-transform">
-                               {user?.tier === 'free' ? <Lock className="w-8 h-8" /> : <Globe className="w-8 h-8" />}
+                               {user?.tier === 'lobby' ? <Lock className="w-8 h-8" /> : <Globe className="w-8 h-8" />}
                            </div>
                            <div className="flex-1">
                                <div className="flex items-center justify-between">
                                    <h3 className="text-xl font-bold text-primary-text group-hover:text-purple-500">Story</h3>
-                                   {user?.tier === 'free' && <span className="px-2 py-0.5 bg-purple-500/20 text-purple-500 text-[10px] rounded font-bold uppercase">Pro</span>}
+                                   {user?.tier === 'lobby' && <span className="px-2 py-0.5 bg-purple-500/20 text-purple-500 text-[10px] rounded font-bold uppercase">Pro</span>}
                                </div>
                                <p className="text-sm text-secondary-text">Ephemeral updates (24h).</p>
                            </div>
@@ -208,12 +210,12 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                        
                        {/* Sovereign Controls & Region (All Tiers for region) */}
                        <div className="p-4 rounded-xl bg-black/20 border border-white/10 space-y-4">
-                           {user?.tier !== 'free' && (
+                           {user?.tier !== 'lobby' && (
                                <>
                                <div className="flex items-center justify-between">
                                    <span className="text-xs font-bold text-secondary-text uppercase tracking-wider">Visibility</span>
                                    <div className="flex gap-2">
-                                       {(['public', 'premium', 'gold', 'platinum'] as const).map(t => (
+                                       {(['public', 'shield', 'professional', 'ultra_elite'] as const).map(t => (
                                            <button 
                                                 key={t}
                                                 onClick={() => setSelectedTier(t)}

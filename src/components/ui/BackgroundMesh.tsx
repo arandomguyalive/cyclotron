@@ -5,16 +5,15 @@ import { useUser } from "@/lib/UserContext";
 
 export function BackgroundMesh() {
   const { user } = useUser();
-  const tier = user?.tier || 'free';
+  const tier = user?.tier || 'lobby';
 
   // Define gradients based on tier
   const gradients = {
-    free: "from-rose-900/20 via-black to-black",
-    premium: "from-sky-900/20 via-black to-black",
-    gold: "from-amber-900/20 via-black to-black",
-    platinum: "from-gray-100/10 via-black to-black",
-    sovereign: "from-amber-500/10 via-black to-black", // Vantablack effect (subtle gold glow)
-    lifetime: "from-orange-600/30 via-black to-black",
+    lobby: "from-brand-orange/20 via-black to-black",
+    shield: "from-brand-cyan/20 via-black to-black",
+    professional: "from-brand-hot-pink/20 via-black to-black",
+    ultra_elite: "from-gray-100/10 via-black to-black",
+    sovereign: "from-brand-blue/30 via-black to-black",
   };
 
   return (

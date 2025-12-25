@@ -101,7 +101,7 @@ export function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps)
                                 {/* Themes Grid */}
                                 <div className={cn("transition-opacity", colorMode === 'light' ? "opacity-50 pointer-events-none filter blur-sm" : "")}>
                                     
-                                    {/* Free Section */}
+                                    {/* Standard Section */}
                                     <div className="mb-8">
                                         <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider mb-4 ml-1">Standard Skins</h3>
                                         <div className="grid grid-cols-2 gap-4">

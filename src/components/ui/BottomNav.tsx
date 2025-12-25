@@ -28,23 +28,22 @@ export function BottomNav() {
   const { colorMode } = useTheme();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const tier = user?.tier || 'free';
+  const tier = user?.tier || 'lobby';
   const isLight = colorMode === 'light';
 
   const tierColors = {
-      free: "text-brand-orange bg-brand-orange border-brand-orange shadow-brand-orange",
-      premium: isLight 
+      lobby: "text-brand-orange bg-brand-orange border-brand-orange shadow-brand-orange",
+      shield: isLight 
           ? "text-brand-blue bg-brand-cyan border-brand-cyan shadow-brand-cyan" 
           : "text-brand-cyan bg-brand-cyan border-brand-cyan shadow-brand-cyan",
-      gold: "text-brand-pale-pink bg-brand-pale-pink border-brand-pale-pink shadow-brand-pale-pink",
-      platinum: isLight 
+      professional: "text-brand-hot-pink bg-brand-hot-pink border-brand-hot-pink shadow-brand-hot-pink",
+      ultra_elite: isLight 
           ? "text-black bg-white border-white shadow-gray-400" 
           : "text-white bg-white border-white shadow-white",
       sovereign: "text-brand-blue bg-brand-blue border-brand-blue shadow-brand-blue",
-      lifetime: "text-amber-500 bg-amber-500 border-amber-500 shadow-amber-500",
   };
 
-  const activeColor = tierColors[tier as keyof typeof tierColors] || tierColors.free;
+  const activeColor = tierColors[tier as keyof typeof tierColors] || tierColors.lobby;
 
   const textColor = activeColor.split(' ')[0];
   const bgColor = activeColor.split(' ')[1];
@@ -98,7 +97,7 @@ export function BottomNav() {
             <Link href="/profile" onClick={() => handleClick()} className="relative flex flex-col items-center justify-center w-10 h-full group">
                 {pathname === "/profile" && <motion.div layoutId="nav-aura" className={`absolute inset-0 rounded-full blur-xl opacity-20 ${bgColor}`} transition={{ type: "spring", stiffness: 300, damping: 30 }} />}
                 <motion.div whileTap={{ scale: 0.8 }} className="relative z-10">
-                    <UserAvatar size="sm" showRing={pathname === "/profile"} className={cn("transition-all duration-300", pathname === "/profile" ? "scale-110" : "opacity-70 group-hover:opacity-100")} />
+                    <UserAvatar size="sm" isBlacklist={user?.isBlacklist} showRing={pathname === "/profile"} className={cn("transition-all duration-300", pathname === "/profile" ? "scale-110" : "opacity-70 group-hover:opacity-100")} />
                 </motion.div>
             </Link>
           </div>

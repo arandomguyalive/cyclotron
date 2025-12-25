@@ -27,6 +27,7 @@ export interface Post {
   userAvatarUrl?: string;
   userTier?: string;
   userFaction?: string;
+  userIsBlacklist?: boolean;
   likes: number;
   shares?: number;
   createdAt: Timestamp | Date;
@@ -49,7 +50,7 @@ interface VortexProps {
   tier?: string;
 }
 
-export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }: VortexProps) {
+export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' }: VortexProps) {
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(post.likes || 0);
   const [shares, setShares] = useState(post.shares || 0);
@@ -193,8 +194,8 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
   ];
   const bgGradient = gradients[index % gradients.length];
 
-  const isForensicTier = ['gold', 'platinum', 'sovereign'].includes(tier);
-  const isShieldTier = tier === 'premium';
+  const isForensicTier = ['professional', 'ultra_elite', 'sovereign'].includes(tier);
+  const isShieldTier = tier === 'shield';
 
   return (
     <div className={cn("relative h-full w-full overflow-hidden bg-cyber-black rounded-xl border border-white/10 shadow-lg translate-z-0 backface-hidden")}>
@@ -228,7 +229,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
       <div className="absolute inset-0 flex flex-col justify-end p-4 pb-24 bg-gradient-to-t from-black/90 via-black/20 to-transparent">
         <div className="absolute right-2 bottom-24 flex flex-col items-center gap-6">
           <Link href={`/profile?view=${p.userId}`} className="relative mb-4">
-             <UserAvatar seed={p.userAvatar} url={p.userAvatarUrl} size="lg" className="border-cyber-white" />
+             <UserAvatar seed={p.userAvatar} url={p.userAvatarUrl} size="lg" isBlacklist={p.userIsBlacklist} className="border-cyber-white" />
              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-brand-hot-pink rounded-full p-0.5"><Plus className="w-3 h-3 text-white" /></div>
           </Link>
 
@@ -259,10 +260,10 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
         <div className="max-w-[80%] space-y-2">
           <Link href={`/profile?view=${p.userId}`} className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-                <UserAvatar seed={p.userAvatar} url={p.userAvatarUrl} size="sm" showRing={false} />
+                <UserAvatar seed={p.userAvatar} url={p.userAvatarUrl} size="sm" isBlacklist={p.userIsBlacklist} showRing={false} />
                 <div className="flex items-center gap-2">
                     <h3 className="font-bold text-lg text-white drop-shadow-md">@{p.userHandle}</h3>
-                    <IdentityBadges tier={p.userTier} faction={p.userFaction} size="sm" />
+                    <IdentityBadges tier={p.userTier} faction={p.userFaction} isBlacklist={p.userIsBlacklist} size="sm" />
                 </div>
             </div>
           </Link>

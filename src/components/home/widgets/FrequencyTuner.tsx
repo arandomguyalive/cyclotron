@@ -18,9 +18,9 @@ export function FrequencyTuner() {
     const { playClick } = useSonic();
     const [activeTab, setActiveTab] = useState("public");
     
-    const isFree = user?.tier === 'free';
+    const isFree = user?.tier === 'lobby';
     
-    // Logic: Free users can only access 'Global' and 'Friends' (mock logic)
+    // Logic: Lobby users can only access 'Global' and 'Friends' (mock logic)
     // Actually, let's lock 'Exclusive' and 'Local'.
     const LOCKED_TABS = ["exclusive", "local"];
 

@@ -11,20 +11,23 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 
+export type UserTier = "lobby" | "shield" | "professional" | "ultra_elite" | "sovereign";
+
 export interface UserProfile {
   uid?: string;
-  fullName: string; // Real Name
-  displayName: string; // Identity Label
-  handle: string; // @Handle
+  fullName: string;
+  displayName: string;
+  handle: string;
   email: string;
   phoneNumber: string;
-  dob: string; // ISO Date
+  dob: string;
   bio: string;
   avatarSeed: string;
   avatarUrl?: string;
   coverImage?: string;
   faction: "Netrunner" | "Drifter" | "Corp" | "Ghost";
-  tier: "free" | "premium" | "gold" | "platinum" | "sovereign" | "lifetime";
+  tier: UserTier;
+  isBlacklist?: boolean; // First 500 lifetime creators
   accessType?: "LIFETIME_BLACKLIST";
   billingCycle?: "monthly" | "annual";
   inventory?: string[];
@@ -69,10 +72,11 @@ const defaultUser: UserProfile = {
   email: "admin@abhed.network",
   phoneNumber: "+0000000000",
   dob: "1990-01-01",
-  bio: "Architect of the Cyclotron.",
+  bio: "Architect of the ABHED Registry.",
   avatarSeed: "KM18",
   faction: "Ghost",
   tier: "sovereign",
+  isBlacklist: true,
   stats: { following: 0, followers: 0, likes: 0, credits: 0, reputation: 0 }
 };
 
@@ -111,16 +115,32 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 });
             }
 
+            // Map old tier names to new hierarchy if they exist
+            const legacyMap: Record<string, UserTier> = {
+                "lobby": "lobby",
+                "shield": "shield",
+                "professional": "professional",
+                "ultra_elite": "ultra_elite"
+            };
+
+            if (data.tier && legacyMap[data.tier]) {
+                data.tier = legacyMap[data.tier];
+                needsFix = true;
+            }
+
+            if (data.accessType === "LIFETIME_BLACKLIST") {
+                data.isBlacklist = true;
+                data.tier = "professional";
+                needsFix = true;
+            }
+
             if (needsFix) {
-                console.log("Synchronizing secure profile data...");
-                await setDoc(userRef, { stats: data.stats }, { merge: true });
+                await setDoc(userRef, data, { merge: true });
                 return; 
             }
 
-            if (data.accessType === "LIFETIME_BLACKLIST") data.tier = "lifetime";
-            setUser({ ...data, uid: currentUser.uid });
+            setUser({ ...data, uid: currentUser.uid, isBlacklist: data.isBlacklist || false });
           } else {
-            // No longer supporting default guest user in state if doc missing
             setUser(null);
           }
           setLoading(false);
@@ -178,7 +198,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               bio: `New ${details.faction} operative on the grid.`,
               avatarSeed: details.handle,
               faction: details.faction,
-              tier: "free",
+              tier: "lobby",
+              isBlacklist: false,
               stats: { following: 0, followers: 0, likes: 0, credits: 500, reputation: 10 }
           };
           await setDoc(doc(db, "users", cred.user.uid), newUser);

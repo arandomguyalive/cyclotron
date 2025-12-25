@@ -54,305 +54,155 @@ export default function HomePage() {
 
   if (loading || !firebaseUser || !user) return null;
 
-  const tier = user.tier || "free";
-
-    // Tier-Specific Config
-
-    const config = {
-
-        free: {
-
-            color: "text-brand-orange",
-
-            bgColor: "bg-brand-orange/5",
-
-            borderColor: "border-brand-orange/20",
-
-            signalText: "BASIC",
-
-            signalValue: 40,
-
-            label: "STANDARD",
-
-        },
-
-        premium: {
-
-            color: "text-brand-cyan",
-
-            bgColor: "bg-brand-cyan/10",
-
-            borderColor: "border-brand-cyan/20",
-
-            signalText: "STRONG",
-
-            signalValue: 85,
-
-            label: "SECURED",
-
-        },
-
-        gold: {
-
-            color: "text-brand-pale-pink",
-
-            bgColor: "bg-brand-pale-pink/10",
-
-            borderColor: "border-brand-pale-pink/20",
-
-            signalText: "OPTIMAL",
-
-            signalValue: 98,
-
-            label: "FORTIFIED",
-
-        },
-
-              platinum: {
-
-                  color: "text-white",
-
-                  bgColor: "bg-white/10",
-
-                  borderColor: "border-white/20",
-
-                  signalText: "MAXIMUM",
-
-                  signalValue: 100,
-
-                  label: "IMPERVIOUS",
-
-              },
-
-              sovereign: {
-
-                  color: "text-brand-blue", 
-
-                  bgColor: "bg-black",
-
-                  borderColor: "border-brand-blue/50",
-
-                  signalText: "OMNIPOTENT",
-
-                  signalValue: 100,
-
-                  label: "SOVEREIGN",
-
-              },
-
-              lifetime: {
-
-                  color: "text-amber-500",
-
-                  bgColor: "bg-black",
-
-                  borderColor: "border-amber-500/50",
-
-                  signalText: "FOUNDER",
-
-                  signalValue: 100,
-
-                  label: "BLACKLIST",
-
-              }
-
-          }[tier];
-
-        
-
-          return (
-
-            <div className="min-h-screen bg-primary-bg text-primary-text pb-20 relative overflow-hidden font-sans">
-
-              {/* Dynamic Background */}
-
-              <div className={`absolute inset-0 pointer-events-none opacity-20 blur-3xl transition-colors duration-1000 ${
-
-                  tier === 'free' ? 'bg-[radial-gradient(circle_at_top_right,#EB7955_0%,transparent_40%)]' :
-
-                  tier === 'premium' ? 'bg-[radial-gradient(circle_at_top_right,#00D4E5_0%,transparent_40%)]' :
-
-                  tier === 'gold' ? 'bg-[radial-gradient(circle_at_top_right,#FFCDEC_0%,transparent_40%)]' :
-
-                  tier === 'platinum' ? 'bg-[radial-gradient(circle_at_top_right,white_0%,transparent_40%)]' :
-
-                  tier === 'lifetime' ? 'bg-[radial-gradient(circle_at_top_right,#F59E0B_0%,transparent_40%)]' :
-
-                  'bg-[radial-gradient(circle_at_top_right,#000000_0%,transparent_40%)]' // Sovereign: Deep Black/Void
-
-              }`} />
-
-        
-
-        {/* Noise Overlay (Subtle) */}
-
-        <div className="absolute inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-screen opacity-[0.03]" />
-
-  
-
-        {/* Header */}
-
-        <header className="px-6 py-4 pt-safe-area-top flex items-center justify-between sticky top-0 z-50 bg-primary-bg/80 backdrop-blur-md border-b border-border-color/50">
-
-          <div>
-
-             <h1 className="text-xl font-bold tracking-tight text-primary-text">HOME</h1>
-
-             <div className="flex items-center gap-2">
-
-                 {ghostMode ? (
-
-                     <div className="flex items-center gap-1 text-accent-1 animate-pulse">
-
-                         <Ghost className="w-3 h-3" />
-
-                         <span className="text-xs font-medium uppercase tracking-widest">UNTRACEABLE</span>
-
-                     </div>
-
-                 ) : (
-
-                     <span className="text-xs text-secondary-text font-medium uppercase tracking-widest">
-
-                        {user?.handle}
-
-                     </span>
-
-                 )}
-
-                                {/* Compact Privacy Badge */}
-
-                                <div className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${config.bgColor} ${config.color} border ${config.borderColor}`}>
-
-                                    <Shield className="w-3 h-3" />
-
-                                    <span>{config.label}</span>
-
-                                                                </div>
-
-                                                            </div>
-
-                                                         </div>
-
-                                
-
-                                                         <Link 
-
-                                                            href="/chat" 
-
-                                                            className="p-2.5 rounded-full bg-secondary-bg/50 border border-border-color/50 text-secondary-text hover:text-primary-text hover:border-accent-1/50 transition-all active:scale-95"
-
-                                                         >
-
-                                                            <Search className="w-5 h-5" />
-
-                                                         </Link>
-
-                                                       </header>
-
-                 
-
-                       {/* Main Content Area */}
-
-                       <main className="p-6 space-y-8">
-
-                         
-
-                         {/* Stories Tray (Expanded) */}
-
-                         <StoriesTray />
-
-                 
-
-                         {/* Privacy Score Widget (Replaces Security Status) */}
-
-                         <motion.div 
-
-                             initial={{ opacity: 0, y: 20 }}
-
-                             animate={{ opacity: 1, y: 0 }}
-
-                             className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} relative overflow-hidden`}
-
-                         >
-
-                              <div className="absolute top-0 right-0 p-4 opacity-10">
-
-                                  <Shield className={`w-24 h-24 ${config.color}`} />
-
-                              </div>
-
-                              
-
-                              <div className="relative z-10">
-
-                                  <div className="flex items-center gap-2 mb-4">
-
-                                      <Activity className={`w-5 h-5 ${config.color}`} />
-
-                                      <h2 className={`text-xl font-bold ${config.color} tracking-tight`}>Privacy Score</h2>
-
-                                  </div>
-
-                                  
-
-                                  {/* Visual Bar Graph */}
-
-                                  <div className="flex items-end gap-1 h-12 mb-4">
-
-                                      {[...Array(10)].map((_, i) => (
-
-                                          <div 
-
-                                             key={i} 
-
-                                             className={`flex-1 rounded-sm transition-all duration-500 ${
-
-                                                 i < config.signalValue / 10 
-
-                                                     ? config.color.replace('text-', 'bg-') 
-
-                                                     : 'bg-secondary-bg/20'
-
-                                             }`}
-
-                                             style={{ height: `${(i + 1) * 10}%` }}
-
-                                          />
-
-                                      ))}
-
-                                  </div>
-
-                                  
-
-                                  <div className="flex items-center justify-between">
-
-                                      <span className={`text-2xl font-bold ${config.color}`}>{config.signalValue}%</span>
-
-                                      <span className={`text-xs font-medium uppercase tracking-widest ${config.color} opacity-80`}>
-
-                                          {config.signalText}
-
-                                      </span>
-
-                                  </div>
-
-                                  
-
-                                  {tier === 'free' && (
-
-                                      <p className="mt-4 text-xs text-secondary-text border-t border-border-color pt-2 flex items-center gap-2">
-
-                                          <span className="font-bold text-accent-1">TIP:</span> Your digital footprint is visible. Upgrade to mask it.
-
-                                      </p>
-
-                                  )}
-
-                              </div>
-
-                         </motion.div>
+  const tier = user.tier || "lobby";
+
+  // Tier-Specific Config
+  const config = {
+    lobby: {
+      color: "text-brand-orange",
+      bgColor: "bg-brand-orange/5",
+      borderColor: "border-brand-orange/20",
+      signalText: "RESTRICTED",
+      signalValue: 40,
+      label: "LOBBY",
+    },
+    shield: {
+      color: "text-brand-cyan",
+      bgColor: "bg-brand-cyan/10",
+      borderColor: "border-brand-cyan/20",
+      signalText: "SECURED",
+      signalValue: 85,
+      label: "SHIELD",
+    },
+    professional: {
+      color: "text-brand-hot-pink",
+      bgColor: "bg-brand-hot-pink/10",
+      borderColor: "border-brand-hot-pink/20",
+      signalText: "FORTIFIED",
+      signalValue: 98,
+      label: "PRO",
+    },
+    ultra_elite: {
+      color: "text-white",
+      bgColor: "bg-white/10",
+      borderColor: "border-white/20",
+      signalText: "IMPERVIOUS",
+      signalValue: 100,
+      label: "ELITE",
+    },
+    sovereign: {
+      color: "text-brand-blue",
+      bgColor: "bg-black",
+      borderColor: "border-brand-blue/50",
+      signalText: "OMNIPOTENT",
+      signalValue: 100,
+      label: "SOVEREIGN",
+    }
+  }[tier] || {
+    color: "text-brand-orange",
+    bgColor: "bg-brand-orange/5",
+    borderColor: "border-brand-orange/20",
+    signalText: "UNKNOWN",
+    signalValue: 0,
+    label: "GUEST",
+  };
+
+  return (
+    <div className="min-h-screen bg-primary-bg text-primary-text pb-20 relative overflow-hidden font-sans">
+      {/* Dynamic Background */}
+      <div className={`absolute inset-0 pointer-events-none opacity-20 blur-3xl transition-colors duration-1000 ${
+        tier === 'lobby' ? 'bg-[radial-gradient(circle_at_top_right,#EB7955_0%,transparent_40%)]' :
+          tier === 'shield' ? 'bg-[radial-gradient(circle_at_top_right,#00D4E5_0%,transparent_40%)]' :
+            tier === 'professional' ? 'bg-[radial-gradient(circle_at_top_right,#FFCDEC_0%,transparent_40%)]' :
+              tier === 'ultra_elite' ? 'bg-[radial-gradient(circle_at_top_right,white_0%,transparent_40%)]' :
+                'bg-[radial-gradient(circle_at_top_right,#000000_0%,transparent_40%)]' // Sovereign: Deep Black/Void
+        }`} />
+
+      {/* Noise Overlay (Subtle) */}
+      <div className="absolute inset-0 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-screen opacity-[0.03]" />
+
+      {/* Header */}
+      <header className="px-6 py-4 pt-safe-area-top flex items-center justify-between sticky top-0 z-50 bg-primary-bg/80 backdrop-blur-md border-b border-border-color/50">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-primary-text">HOME</h1>
+          <div className="flex items-center gap-2">
+            {ghostMode ? (
+              <div className="flex items-center gap-1 text-accent-1 animate-pulse">
+                <Ghost className="w-3 h-3" />
+                <span className="text-xs font-medium uppercase tracking-widest">UNTRACEABLE</span>
+              </div>
+            ) : (
+              <span className="text-xs text-secondary-text font-medium uppercase tracking-widest">
+                {user?.handle}
+              </span>
+            )}
+
+            {/* Compact Privacy Badge */}
+            <div className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${config.bgColor} ${config.color} border ${config.borderColor}`}>
+              <Shield className="w-3 h-3" />
+              <span>{config.label}</span>
+            </div>
+          </div>
+        </div>
+
+        <Link
+          href="/chat"
+          className="p-2.5 rounded-full bg-secondary-bg/50 border border-border-color/50 text-secondary-text hover:text-primary-text hover:border-accent-1/50 transition-all active:scale-95"
+        >
+          <Search className="w-5 h-5" />
+        </Link>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="p-6 space-y-8">
+
+        {/* Stories Tray (Expanded) */}
+        <StoriesTray />
+
+        {/* Privacy Score Widget (Replaces Security Status) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} relative overflow-hidden`}
+        >
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Shield className={`w-24 h-24 ${config.color}`} />
+          </div>
+
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-4">
+              <Activity className={`w-5 h-5 ${config.color}`} />
+              <h2 className={`text-xl font-bold ${config.color} tracking-tight`}>Privacy Score</h2>
+            </div>
+
+            {/* Visual Bar Graph */}
+            <div className="flex items-end gap-1 h-12 mb-4">
+              {[...Array(10)].map((_, i) => (
+                <div
+                  key={i}
+                  className={`flex-1 rounded-sm transition-all duration-500 ${i < config.signalValue / 10
+                      ? config.color.replace('text-', 'bg-')
+                      : 'bg-secondary-bg/20'
+                    }`}
+                  style={{ height: `${(i + 1) * 10}%` }}
+                />
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className={`text-2xl font-bold ${config.color}`}>{config.signalValue}%</span>
+              <span className={`text-xs font-medium uppercase tracking-widest ${config.color} opacity-80`}>
+                {config.signalText}
+              </span>
+            </div>
+
+            {tier === 'lobby' && (
+              <p className="mt-4 text-xs text-secondary-text border-t border-border-color pt-2 flex items-center gap-2">
+                <span className="font-bold text-accent-1">TIP:</span> Your digital footprint is visible. Upgrade to mask it.
+              </p>
+            )}
+          </div>
+        </motion.div>
 
                  
 
@@ -377,7 +227,7 @@ export default function HomePage() {
                   {/* Vortex Access Widget - REMOVED */}
 
             {/* 2. Tier Specific Widget */}
-            {tier === 'free' && (
+            {tier === 'lobby' && (
                 <div className="p-6 rounded-3xl bg-secondary-bg/30 border border-border-color flex flex-col justify-center items-center text-center col-span-2">
                     <Lock className="w-8 h-8 text-secondary-text mb-3" />
                     <h3 className="font-bold text-lg text-secondary-text">Locked Modules</h3>
@@ -385,7 +235,7 @@ export default function HomePage() {
                 </div>
             )}
 
-            {(tier === 'premium' || tier === 'gold' || tier === 'lifetime') && (
+            {(tier === 'shield' || tier === 'professional') && (
                 <div 
                     onClick={() => setIsScannerOpen(true)}
                     className={`col-span-2 p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left relative overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform`}
@@ -398,7 +248,7 @@ export default function HomePage() {
                 </div>
             )}
 
-            {(tier === 'platinum' || tier === 'sovereign') && (
+            {(tier === 'ultra_elite' || tier === 'sovereign') && (
                 <div className={`col-span-2 p-6 rounded-3xl ${config.bgColor} border ${config.borderColor} text-left`}>
                      <Server className={`w-8 h-8 mb-3 ${config.color}`} />
                      <h3 className="font-bold text-lg">The Vault</h3>
@@ -406,11 +256,12 @@ export default function HomePage() {
                 </div>
             )}
             
-            {/* 3. Global Stats (Gold+) */}
-            {['gold', 'platinum', 'sovereign', 'lifetime'].includes(tier) && (
+            {/* 3. Global Stats (Professional+) */}
+            {['professional', 'ultra_elite', 'sovereign'].includes(tier) && (
                  <div className="col-span-2 p-4 rounded-2xl bg-secondary-bg/30 border border-border-color flex items-center justify-between">
                      <div className="flex items-center gap-3">
-                         <Globe className="w-5 h-5 text-secondary-text" />                         <div>
+                         <Globe className="w-5 h-5 text-secondary-text" />
+                         <div>
                              <p className="text-xs text-secondary-text uppercase">Identity Rep</p>
                              <p className="font-mono font-bold">{user.stats.reputation}</p>
                          </div>
@@ -426,8 +277,8 @@ export default function HomePage() {
                  </div>
             )}
 
-             {/* 4. Upgrade Prompt (Free Only) */}
-             {tier === 'free' && (
+             {/* 4. Upgrade Prompt (Lobby Only) */}
+             {tier === 'lobby' && (
                  <motion.div
                      initial={{ opacity: 0, y: 20 }}
                      animate={{ opacity: 1, y: 0 }}

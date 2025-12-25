@@ -23,6 +23,7 @@ interface Post {
     userAvatarUrl?: string;
     userTier?: string;
     userFaction?: string;
+    userIsBlacklist?: boolean;
     createdAt: Timestamp | Date;
     type: "post" | "text";
     likes: number;
@@ -61,8 +62,8 @@ export function SignalGrid() {
     const [followingSet, setFollowingSet] = useState<Set<string>>(new Set());
     const [activeCommentPost, setActiveCommentPost] = useState<Post | null>(null);
 
-    const viewerTier = user?.tier || 'free';
-    const isFree = viewerTier === 'free';
+    const viewerTier = user?.tier || 'lobby';
+    const isFree = viewerTier === 'lobby';
 
     useEffect(() => {
         if (!firebaseUser) return;
@@ -306,11 +307,11 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
         <div className="w-full border-b border-white/5 pb-6 font-sans">
             <div className="px-4 flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                    <UserAvatar seed={post.userHandle} url={post.userAvatarUrl} size="sm" showRing={false} />
+                    <UserAvatar seed={post.userHandle} url={post.userAvatarUrl} size="sm" isBlacklist={post.userIsBlacklist} showRing={false} />
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2">
                             <span className={`text-sm font-bold ${isFree ? 'text-secondary-text' : 'text-primary-text'}`}>@{post.userHandle}</span>
-                            <IdentityBadges tier={post.userTier} faction={post.userFaction} size="sm" />
+                            <IdentityBadges tier={post.userTier} faction={post.userFaction} isBlacklist={post.userIsBlacklist} size="sm" />
                             {firebaseUser && post.userId !== firebaseUser.uid && (
                                 <button onClick={handleFollow} className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${followingSet.has(post.userId) ? 'border-accent-1 text-accent-1 bg-accent-1/10' : 'border-secondary-text text-secondary-text'}`}>{followingSet.has(post.userId) ? 'Linked' : 'Link+'}</button>
                             )}
