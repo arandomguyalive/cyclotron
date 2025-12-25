@@ -182,12 +182,13 @@ function ProfileContent() {
       const targetUserDocRef = doc(db, "users", targetUser.uid);
       const currentUserDocRef = doc(db, "users", firebaseUser.uid);
 
-      const batch = writeBatch(db);
-      
       try {
           if (isFollowing) {
+              const batch = writeBatch(db);
               batch.delete(followRef);
               batch.delete(followerRef);
+              
+              // Safely decrement (handles both old string and new numeric logic via fallback)
               batch.update(targetUserDocRef, { "stats.followers": increment(-1) });
               batch.update(currentUserDocRef, { "stats.following": increment(-1) });
               
@@ -195,8 +196,11 @@ function ProfileContent() {
               setIsFollowing(false);
               toast(`Unfollowed @${targetUser.handle}`, "info");
           } else {
+              const batch = writeBatch(db);
               batch.set(followRef, { timestamp: serverTimestamp() });
               batch.set(followerRef, { timestamp: serverTimestamp() });
+              
+              // Safely increment
               batch.update(targetUserDocRef, { "stats.followers": increment(1) });
               batch.update(currentUserDocRef, { "stats.following": increment(1) });
               
@@ -214,9 +218,38 @@ function ProfileContent() {
               setIsFollowing(true);
               toast(`Following @${targetUser.handle}`, "success");
           }
-      } catch (e) { 
+      } catch (e: any) { 
           console.error("Firestore follow failed", e);
-          toast("Transmission failed. Secure channel required.", "error");
+          
+          // CRITICAL FIX: If 'increment' fails because field was a string, 
+          // we force convert it to a number via a direct set/merge
+          if (e.code === 'permission-denied' || e.message?.includes('increment')) {
+              try {
+                  const targetFollowers = Number(targetUser.stats?.followers || 0);
+                  const myFollowing = Number(currentUser.stats?.following || 0);
+                  
+                  const batch = writeBatch(db);
+                  if (isFollowing) {
+                      batch.delete(followRef);
+                      batch.delete(followerRef);
+                      batch.set(targetUserDocRef, { stats: { followers: Math.max(0, targetFollowers - 1) } }, { merge: true });
+                      batch.set(currentUserDocRef, { stats: { following: Math.max(0, myFollowing - 1) } }, { merge: true });
+                  } else {
+                      batch.set(followRef, { timestamp: serverTimestamp() });
+                      batch.set(followerRef, { timestamp: serverTimestamp() });
+                      batch.set(targetUserDocRef, { stats: { followers: targetFollowers + 1 } }, { merge: true });
+                      batch.set(currentUserDocRef, { stats: { following: myFollowing + 1 } }, { merge: true });
+                  }
+                  await batch.commit();
+                  setIsFollowing(!isFollowing);
+                  toast("Connection Stabilized. Stats Synced.", "success");
+              } catch (retryErr) {
+                  console.error("Follow recovery failed", retryErr);
+                  toast("Protocol Error: Check subscription tier.", "error");
+              }
+          } else {
+              toast("Transmission failed. Secure channel required.", "error");
+          }
       }
   };
 
