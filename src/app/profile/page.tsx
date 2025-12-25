@@ -113,6 +113,13 @@ function ProfileContent() {
                     console.log(`[Profile] Applying simulated followers: ${simStats.followers}`);
                     profileData.stats = { ...profileData.stats, followers: simStats.followers };
                 }
+                if (simStats.following) {
+                    if (!profileData.stats) {
+                        profileData.stats = { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' };
+                    }
+                    console.log(`[Profile] Applying simulated following: ${simStats.following}`);
+                    profileData.stats = { ...profileData.stats, following: simStats.following };
+                }
             }
             
             setTargetUser(profileData);
