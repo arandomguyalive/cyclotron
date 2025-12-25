@@ -2,9 +2,13 @@
 
 import React, { createContext, useContext, useRef, useEffect, useState, useCallback } from 'react';
 
+import { Capacitor } from '@capacitor/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+
 interface SonicContextType {
   playClick: (frequency?: number, duration?: number, type?: OscillatorType) => void;
   playHum: (state: 'start' | 'stop' | 'adjust', frequency?: number, gain?: number) => void;
+  playHaptic: (style?: ImpactStyle | 'selection' | 'vibrate') => void;
 }
 
 const SonicContext = createContext<SonicContextType | undefined>(undefined);
@@ -104,8 +108,27 @@ export const SonicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [initializeAudio]);
 
+  const playHaptic = useCallback(async (style: ImpactStyle | 'selection' | 'vibrate' = ImpactStyle.Light) => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        if (style === 'selection') {
+          await Haptics.selectionStart();
+        } else if (style === 'vibrate') {
+          await Haptics.vibrate();
+        } else {
+          await Haptics.impact({ style });
+        }
+      } catch (e) {
+        console.warn('Haptics failed', e);
+      }
+    } else if (navigator.vibrate) {
+      // Fallback for web
+      navigator.vibrate(style === ImpactStyle.Heavy ? 50 : 20);
+    }
+  }, []);
+
   return (
-    <SonicContext.Provider value={{ playClick, playHum }}>
+    <SonicContext.Provider value={{ playClick, playHum, playHaptic }}>
       {children}
     </SonicContext.Provider>
   );

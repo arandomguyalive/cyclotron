@@ -15,7 +15,7 @@ interface ThemeSelectorModalProps {
 
 export function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps) {
     const { theme, setTheme, availableThemes, colorMode, toggleColorMode } = useTheme();
-    const { playClick } = useSonic();
+    const { playClick, playHaptic } = useSonic();
 
     const premiumThemes = ['akira', 'vaporwave', 'solar', 'km18_gold'];
 
@@ -27,7 +27,7 @@ export function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps)
         // }
         setTheme(selectedTheme as ThemeName);
         playClick(selectedTheme === theme ? 200 : 500, 0.05, 'triangle'); 
-        if (navigator.vibrate) navigator.vibrate(20);
+        playHaptic();
     };
 
     const handleToggleMode = () => {

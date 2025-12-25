@@ -34,7 +34,7 @@ interface ChatViewProps {
 
 export function ChatView({ chatId }: ChatViewProps) {
   const { firebaseUser, user: currentUserProfile, loading: userLoading } = useUser();
-  const { playClick } = useSonic();
+  const { playClick, playHaptic } = useSonic();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -427,11 +427,9 @@ export function ChatView({ chatId }: ChatViewProps) {
 }
 
 function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = false }: { message: ChatMessage, isMine: boolean, senderHandle: string, senderAvatar: string, isGroup?: boolean }) {
-  const [isRevealed, setIsRevealed] = useState(isMine); // Sent messages are always revealed
-  const [scratchProgress, setScratchProgress] = useState(0);
-  const [burnProgress, setBurnProgress] = useState(0);
+  const [isRevealed, setIsRevealed] = useState(false);
   const [isBurnt, setIsBurnt] = useState(message.isBurnt || false); // Sync with server state
-  const { playClick } = useSonic();
+  const { playClick, playHaptic } = useSonic();
 
   // Decrypt message when revealed (derived state)
   const displayDecryptedText = useMemo(() => {
@@ -478,7 +476,7 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = 
         if (newProgress >= 100) {
             setIsRevealed(true);
             playClick(800, 0.1, 'sine');
-            if (navigator.vibrate) navigator.vibrate(50);
+            playHaptic(ImpactStyle.Medium);
             return 100;
         }
         if (newProgress % 10 === 0) {

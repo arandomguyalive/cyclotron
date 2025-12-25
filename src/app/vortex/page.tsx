@@ -5,6 +5,7 @@ import { motion, useMotionValue, useTransform, useSpring, PanInfo, AnimatePresen
 import { VortexItem, Post, Ad } from "@/components/feed/VortexItem";
 import { ChevronUp, Box, Loader2, WifiOff } from "lucide-react";
 import { useSonic } from "@/lib/SonicContext";
+import { ImpactStyle } from "@capacitor/haptics";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
@@ -92,7 +93,7 @@ export default function VortexPage() {
   const zPosition = useMotionValue(0);
   const lastWheelTime = useRef(0);
   const activeIndexRef = useRef(0); // Use ref for non-visual updates if needed
-  const { playClick } = useSonic();
+  const { playClick, playHaptic } = useSonic();
   
   // Determine watermark text
   const watermarkText = (user && !isFree) ? user.handle.toUpperCase() : undefined;
@@ -154,9 +155,7 @@ export default function VortexPage() {
       setActiveIndex(newIndex);
       playClick(newIndex > activeIndex ? 220 : 180, 0.08, 'sine'); // Higher freq for forward, lower for backward
       // Haptic feedback
-      if (navigator.vibrate) {
-        navigator.vibrate(50); 
-      }
+      playHaptic(ImpactStyle.Medium);
     }
   }
 
@@ -332,14 +331,14 @@ function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkTex
 
 function Artifact({ onCollect }: { onCollect: () => void }) {
     const [collected, setCollected] = useState(false);
-    const { playClick } = useSonic();
+    const { playClick, playHaptic } = useSonic();
 
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent drag logic interference if possible
         if (!collected) {
             setCollected(true);
             playClick(880, 0.1, 'sawtooth'); // High pitched 'ching'
-            if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+            playHaptic(ImpactStyle.Heavy);
             onCollect();
         }
     };

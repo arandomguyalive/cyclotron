@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/UserContext";
+import { useSonic } from "@/lib/SonicContext";
+import { ImpactStyle } from "@capacitor/haptics";
 import { motion } from "framer-motion";
 import { StoriesTray } from "@/components/feed/StoriesTray";
 import { SignalGrid } from "@/components/home/SignalGrid";
@@ -14,10 +16,11 @@ import { Activity, Shield, Globe, Lock, Server, Radio, Ghost } from "lucide-reac
 
 export default function HomePage() {
   const { user, firebaseUser, loading } = useUser();
+  const { playHaptic } = useSonic();
   const router = useRouter();
   const [ghostMode, setGhostMode] = useState(() => {
       if (typeof window !== 'undefined') {
-          return localStorage.getItem('oblivion_ghostMode') === 'true';
+          return (user?.privacy?.ghostMode ?? (localStorage.getItem('oblivion_ghostMode') === 'true'));
       }
       return false;
   });
@@ -30,6 +33,10 @@ export default function HomePage() {
       router.push("/login");
     }
 
+    if (user?.privacy) {
+        setTimeout(() => setGhostMode(user.privacy!.ghostMode), 0);
+    }
+
     // Listener for changes from SettingsModal
     const handleStorageChange = () => {
         setGhostMode(localStorage.getItem('oblivion_ghostMode') === 'true');
@@ -38,10 +45,10 @@ export default function HomePage() {
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
 
-  }, [loading, firebaseUser, router]);
+  }, [loading, firebaseUser, router, user]);
 
   const handleMissionStart = () => {
-      if (navigator.vibrate) navigator.vibrate(100);
+      playHaptic(ImpactStyle.Heavy);
       setIsMissionModalOpen(true);
   };
 

@@ -21,7 +21,7 @@ const navItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  const { playClick } = useSonic();
+  const { playClick, playHaptic } = useSonic();
   const { user } = useUser();
   const { colorMode } = useTheme();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -50,13 +50,11 @@ export function BottomNav() {
   const handleClick = (isAction?: boolean) => {
     if (isAction) {
         playClick(600, 0.1, 'square');
+        playHaptic('selection');
         setIsCreateOpen(true);
     } else {
         playClick(440, 0.05, 'triangle');
-    }
-    
-    if (navigator.vibrate) {
-      navigator.vibrate(30);
+        playHaptic('selection');
     }
   };
 

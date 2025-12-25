@@ -51,7 +51,7 @@ export function StoriesTray() {
   const [realStories, setRealStories] = useState<Story[]>([]);
   const [isOpen, setIsOpen] = useState(false); // Viewer Open
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { playClick } = useSonic();
+  const { playClick, playHaptic } = useSonic();
 
   useEffect(() => {
     // Query active stories
@@ -84,7 +84,7 @@ export function StoriesTray() {
   const handleOpen = (index: number) => {
     if (isFree) {
         playClick(150, 0.2, 'sawtooth');
-        if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
+        playHaptic(ImpactStyle.Heavy);
         alert("OPTICAL SENSORS OFFLINE. UPGRADE REQUIRED.");
         return;
     }

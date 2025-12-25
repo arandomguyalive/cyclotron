@@ -38,7 +38,7 @@ interface UserProfileData {
 
 function ProfileContent() {
   const { user: currentUser, loading: userLoading, firebaseUser } = useUser();
-  const { playClick } = useSonic();
+  const { playClick, playHaptic } = useSonic();
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -219,7 +219,7 @@ function ProfileContent() {
 
   const handleButtonClick = () => {
     playClick(300, 0.05, 'square');
-    if (navigator.vibrate) navigator.vibrate(20);
+    playHaptic();
   };
 
   if (userLoading || fetching || !targetUser) {

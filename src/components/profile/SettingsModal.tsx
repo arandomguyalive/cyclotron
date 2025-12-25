@@ -18,7 +18,7 @@ interface SettingsModalProps {
 type SettingsView = 'main' | 'privacy' | 'appearance';
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const { playClick } = useSonic();
+  const { playClick, playHaptic } = useSonic();
   const { user, updateUser, logout } = useUser();
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
@@ -31,7 +31,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const newState = !currentState;
     
     playClick(newState ? 660 : 440, 0.05, 'sine');
-    if (navigator.vibrate) navigator.vibrate(25);
+    playHaptic();
 
     await updateUser({
         privacy: {
@@ -65,9 +65,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   const handleButtonClick = () => {
     playClick(350, 0.05, 'square');
-    if (navigator.vibrate) {
-      navigator.vibrate(25);
-    }
+    playHaptic();
   };
 
   const handleClose = () => {

@@ -42,7 +42,7 @@ const factions = [
 
 function ChatListContent() {
   const { firebaseUser, loading: userLoading } = useUser();
-  const { playClick } = useSonic();
+  const { playClick, playHaptic } = useSonic();
   const router = useRouter();
   const searchParams = useSearchParams();
   const chatId = searchParams.get('id');
@@ -145,16 +145,14 @@ function ChatListContent() {
       return <ChatView chatId={chatId} />;
   }
 
-  const chats = realChats.length > 0 ? realChats : mockChats;
-
   const handleChatClick = () => {
     playClick(350, 0.05, 'square');
-    if (navigator.vibrate) navigator.vibrate(20);
+    playHaptic();
   };
 
   const handleNewChat = () => {
     playClick(500, 0.08, 'sine');
-    if (navigator.vibrate) navigator.vibrate(30);
+    playHaptic();
     setIsSearchOpen(true);
   };
 
