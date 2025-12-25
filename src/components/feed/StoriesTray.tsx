@@ -68,6 +68,9 @@ export function StoriesTray() {
         ...doc.data()
       })) as Story[];
       setRealStories(newStories);
+    }, (error) => {
+      console.warn("Stories fetch failed:", error);
+      // Fallback to empty or mocks handled by default
     });
 
     return () => unsubscribe();

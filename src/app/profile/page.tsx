@@ -70,9 +70,7 @@ function ProfileContent() {
         if (!uidToFetch) return;
 
         setFetching(true);
-        let safetyTimer: NodeJS.Timeout;
-
-        safetyTimer = setTimeout(() => {
+        const safetyTimer = setTimeout(() => {
             setFetching(false);
             setTargetUser(prev => prev || {
                  uid: uidToFetch,

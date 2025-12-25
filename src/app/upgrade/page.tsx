@@ -91,7 +91,7 @@ export default function UpgradePage() {
                             animate={{ opacity: 1, y: 0 }}
                             className="text-center text-secondary-text max-w-md mx-auto text-sm"
                         >
-                            Unlock the full power of ABHED. Secure your digital existence with KM18's advanced protocols.
+                            Unlock the full power of ABHED. Secure your digital existence with KM18&apos;s advanced protocols.
                         </motion.p>
                         
                         {/* Blacklist Spots Remaining */}

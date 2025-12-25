@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/UserContext";
-import { collection, query, orderBy, limit, onSnapshot, updateDoc, doc, where } from "firebase/firestore";
+import { collection, query, orderBy, limit, onSnapshot, updateDoc, doc, where, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Loader2, Bell, ShieldAlert, Heart, MessageCircle, UserPlus, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,7 +15,7 @@ interface Notification {
   actorHandle: string;
   postId?: string;
   caption?: string;
-  timestamp: any;
+  timestamp: Timestamp;
   read: boolean;
 }
 
@@ -133,7 +133,7 @@ export default function NotificationsPage() {
                                 
                                 <p className="text-xs text-secondary-text mt-1 break-words">
                                     {item.type === 'SCREENSHOT_POST' && (
-                                        <span>captured your post: <span className="text-primary-text font-mono">"{item.caption}"</span></span>
+                                        <span>captured your post: <span className="text-primary-text font-mono">&quot;{item.caption}&quot;</span></span>
                                     )}
                                     {item.type === 'LIKE' && "liked your transmission."}
                                     {item.type === 'FOLLOW' && "is now tracking your signal."}

@@ -158,48 +158,52 @@ export function ChatView({ chatId }: ChatViewProps) {
     }
 
     if (!chatId || !firebaseUser) {
-        if (chatLoading) setChatLoading(false); // Guard against unnecessary calls
+        if (chatLoading) setTimeout(() => setChatLoading(false), 0); // Guard against unnecessary calls
         return;
     }
 
     if (chatId.startsWith("mock-")) {
-        setChatPartner({
-            uid: "mock-partner",
-            handle: "Cyber_Ghost",
-            avatarSeed: "Ghost"
-        });
-        setMessages([
-            {
-                id: "m1",
-                text: "The grid is unstable today.",
-                encrypted: "U2FsdGVkX1+...",
-                senderId: "mock-partner",
-                senderHandle: "Cyber_Ghost",
-                senderAvatar: "Ghost",
-                timestamp: new Date(Date.now() - 3600000)
-            },
-            {
-                id: "m2",
-                text: "Affirmative. I'm seeing packet loss in Sector 7.",
-                encrypted: "U2FsdGVkX1+...",
-                senderId: firebaseUser.uid,
-                senderHandle: currentUserProfile?.handle || "You",
-                senderAvatar: currentUserProfile?.avatarSeed || "User",
-                timestamp: new Date(Date.now() - 3500000)
-            }
-        ]);
-        if (chatLoading) setChatLoading(false);
-        return;
+        const timer = setTimeout(() => {
+            setChatPartner({
+                uid: "mock-partner",
+                handle: "Cyber_Ghost",
+                avatarSeed: "Ghost"
+            });
+            setMessages([
+                {
+                    id: "m1",
+                    text: "The grid is unstable today.",
+                    encrypted: "U2FsdGVkX1+...",
+                    senderId: "mock-partner",
+                    senderHandle: "Cyber_Ghost",
+                    senderAvatar: "Ghost",
+                    timestamp: new Date(Date.now() - 3600000)
+                },
+                {
+                    id: "m2",
+                    text: "Affirmative. I'm seeing packet loss in Sector 7.",
+                    encrypted: "U2FsdGVkX1+...",
+                    senderId: firebaseUser.uid,
+                    senderHandle: currentUserProfile?.handle || "You",
+                    senderAvatar: currentUserProfile?.avatarSeed || "User",
+                    timestamp: new Date(Date.now() - 3500000)
+                }
+            ]);
+            if (chatLoading) setChatLoading(false);
+        }, 0);
+        return () => clearTimeout(timer);
     }
 
     // Handle Faction Channels
     if (chatId.startsWith("faction-")) {
         const factionName = chatId.replace("faction-", "").toUpperCase();
-        setChatPartner({
-            uid: chatId,
-            handle: `${factionName} CHANNEL`,
-            avatarSeed: factionName
-        });
+        const timer = setTimeout(() => {
+            setChatPartner({
+                uid: chatId,
+                handle: `${factionName} CHANNEL`,
+                avatarSeed: factionName
+            });
+        }, 0);
         
         const messagesQuery = query(
             collection(db, "chats", chatId, "messages"),
@@ -218,7 +222,10 @@ export function ChatView({ chatId }: ChatViewProps) {
             if (chatLoading) setChatLoading(false);
         });
 
-        return () => unsubscribe();
+        return () => {
+            clearTimeout(timer);
+            unsubscribe();
+        };
     }
 
     // Fetch chat participants and details
@@ -426,11 +433,6 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = 
   const [isBurnt, setIsBurnt] = useState(message.isBurnt || false); // Sync with server state
   const { playClick } = useSonic();
 
-  // Update local state if server updates (e.g. other user burned it or we rejoined)
-  useEffect(() => {
-      if (message.isBurnt) setIsBurnt(true);
-  }, [message.isBurnt]);
-
   // Decrypt message when revealed (derived state)
   const displayDecryptedText = useMemo(() => {
     if (isRevealed && message.encrypted) {
@@ -447,7 +449,7 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = 
 
   // Burn Timer Simulation (Visual only, starts after reveal)
   useEffect(() => {
-      if (!isRevealed || isBurnt) return;
+      if (!isRevealed || isBurnt || message.isBurnt) return;
       
       // Faster burn for Burner Mode messages
       const burnDuration = message.isBurner ? 10000 : 30000; 
@@ -505,7 +507,7 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = 
       );
   }
 
-  if (isBurnt) {
+  if (isBurnt || message.isBurnt) {
       return (
         <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
             <div className="text-[10px] text-secondary-text/30 font-mono border border-secondary-text/10 px-2 py-1 rounded">

@@ -160,7 +160,7 @@ export default function VortexPage() {
     }
   }
 
-  const handleDragEnd = (event: any, info: PanInfo) => {
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
     const threshold = 50;
     const velocity = info.velocity.y;
     

@@ -36,6 +36,11 @@ export interface Ad {
   color: string;
 }
 
+interface SimLike {
+  id: string;
+  [key: string]: unknown;
+}
+
 interface VortexProps {
   post: Post | Ad;
   index: number;
@@ -57,11 +62,13 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
       if (post.type === 'ad' || !firebaseUser) return;
 
       // 1. Sync Local/Simulated Likes
-      const simLikes = JSON.parse(localStorage.getItem(`sim_likes_${firebaseUser.uid}`) || '[]');
-      if (simLikes.find((i: any) => i.id === post.id)) {
-          setLiked(true);
-          // Visually correct the count if it seems low
-          setLikes(prev => Math.max(prev, (post as Post).likes + 1)); 
+      const simLikes: SimLike[] = JSON.parse(localStorage.getItem(`sim_likes_${firebaseUser.uid}`) || '[]');
+      if (simLikes.find((i) => i.id === post.id)) {
+          setTimeout(() => {
+              setLiked(true);
+              // Visually correct the count if it seems low
+              setLikes(prev => Math.max(prev, (post as Post).likes + 1)); 
+          }, 0);
       }
 
       // 2. Fetch Comment Count
@@ -153,7 +160,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
         const existingLikes = JSON.parse(localStorage.getItem(likesKey) || '[]');
         
         if (newLiked) {
-            if (!existingLikes.find((i: any) => i.id === post.id)) {
+            if (!existingLikes.find((i: SimLike) => i.id === post.id)) {
                 existingLikes.unshift({
                     id: post.id,
                     mediaUrl: p.mediaUrl,
@@ -162,7 +169,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
                 });
             }
         } else {
-            const index = existingLikes.findIndex((i: any) => i.id === post.id);
+            const index = existingLikes.findIndex((i: SimLike) => i.id === post.id);
             if (index > -1) existingLikes.splice(index, 1);
         }
         localStorage.setItem(likesKey, JSON.stringify(existingLikes));
