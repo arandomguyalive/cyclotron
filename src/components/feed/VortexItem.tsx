@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Heart, MessageCircle, Share2, Disc, Music, Plus, Play, AlertTriangle, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SecurePlayer } from "./SecurePlayer";
-import { Timestamp, collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc, deleteDoc, getCountFromServer } from "firebase/firestore";
+import { Timestamp, collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc, deleteDoc, getCountFromServer, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useScreenshot } from "@/lib/useScreenshot";
 import { useUser } from "@/lib/UserContext";
@@ -137,42 +137,41 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
     setLiked(newLiked);
     setLikes(prev => newLiked ? prev + 1 : prev - 1);
 
-    try {
-        const postRef = doc(db, "posts", post.id);
-        const userLikeRef = doc(db, "users", firebaseUser.uid, "likes", post.id);
+    const batch = writeBatch(db);
+    const postRef = doc(db, "posts", post.id);
+    const userLikeRef = doc(db, "users", firebaseUser.uid, "likes", post.id);
 
+    try {
         if (newLiked) {
-            await updateDoc(postRef, { likes: increment(1) });
-            await setDoc(userLikeRef, {
+            batch.update(postRef, { likes: increment(1) });
+            batch.set(userLikeRef, {
                 postId: post.id,
                 mediaUrl: p.mediaUrl,
                 timestamp: serverTimestamp()
             });
-        } else {
-            await updateDoc(postRef, { likes: increment(-1) });
-            await deleteDoc(userLikeRef);
-        }
-    } catch (e) {
-        console.warn("Like failed (Permission Denied), using simulation", e);
-        
-        // Simulation Fallback
-        const likesKey = `sim_likes_${firebaseUser.uid}`;
-        const existingLikes = JSON.parse(localStorage.getItem(likesKey) || '[]');
-        
-        if (newLiked) {
-            if (!existingLikes.find((i: SimLike) => i.id === post.id)) {
-                existingLikes.unshift({
-                    id: post.id,
-                    mediaUrl: p.mediaUrl,
-                    mediaType: p.mediaType,
-                    timestamp: Date.now()
+
+            // Notify Owner
+            if (p.userId !== firebaseUser.uid) {
+                const notifRef = doc(collection(db, "users", p.userId, "notifications"));
+                batch.set(notifRef, {
+                    type: "LIKE",
+                    actorId: firebaseUser.uid,
+                    actorHandle: currentUserProfile?.handle || "Unknown",
+                    postId: post.id,
+                    timestamp: serverTimestamp(),
+                    read: false
                 });
             }
         } else {
-            const index = existingLikes.findIndex((i: SimLike) => i.id === post.id);
-            if (index > -1) existingLikes.splice(index, 1);
+            batch.update(postRef, { likes: increment(-1) });
+            batch.delete(userLikeRef);
         }
-        localStorage.setItem(likesKey, JSON.stringify(existingLikes));
+        await batch.commit();
+    } catch (e) {
+        console.error("Like failed", e);
+        // Revert optimistic UI
+        setLiked(!newLiked);
+        setLikes(prev => !newLiked ? prev + 1 : prev - 1);
     }
   };
 

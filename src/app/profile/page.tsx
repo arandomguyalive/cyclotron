@@ -9,7 +9,7 @@ import { SettingsModal } from "@/components/profile/SettingsModal";
 import { BlacklistCertificate } from "@/components/profile/BlacklistCertificate";
 import { useSonic } from "@/lib/SonicContext";
 import { useUser } from "@/lib/UserContext";
-import { collection, query, where, getDocs, orderBy, limit, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, orderBy, limit, increment, writeBatch, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/lib/ToastContext";
 
@@ -174,36 +174,49 @@ function ProfileContent() {
   }, [viewId, firebaseUser, userLoading, currentUser, isOwnProfile]);
 
   const handleFollow = async () => {
-      if (!firebaseUser || !targetUser) return;
+      if (!firebaseUser || !targetUser || !currentUser) return;
       playClick(600, 0.1, 'square');
       
-      const wasFollowing = isFollowing;
       const followRef = doc(db, "users", firebaseUser.uid, "following", targetUser.uid);
+      const followerRef = doc(db, "users", targetUser.uid, "followers", firebaseUser.uid);
+      const targetUserDocRef = doc(db, "users", targetUser.uid);
+      const currentUserDocRef = doc(db, "users", firebaseUser.uid);
+
+      const batch = writeBatch(db);
       
       try {
           if (isFollowing) {
-              await deleteDoc(followRef);
+              batch.delete(followRef);
+              batch.delete(followerRef);
+              batch.update(targetUserDocRef, { "stats.followers": increment(-1) });
+              batch.update(currentUserDocRef, { "stats.following": increment(-1) });
+              
+              await batch.commit();
               setIsFollowing(false);
               toast(`Unfollowed @${targetUser.handle}`, "info");
           } else {
-              await setDoc(followRef, { timestamp: new Date() });
+              batch.set(followRef, { timestamp: serverTimestamp() });
+              batch.set(followerRef, { timestamp: serverTimestamp() });
+              batch.update(targetUserDocRef, { "stats.followers": increment(1) });
+              batch.update(currentUserDocRef, { "stats.following": increment(1) });
+              
+              // Add Notification for Target User
+              const notifRef = doc(collection(db, "users", targetUser.uid, "notifications"));
+              batch.set(notifRef, {
+                  type: "FOLLOW",
+                  actorId: firebaseUser.uid,
+                  actorHandle: currentUser.handle || "Unknown",
+                  timestamp: serverTimestamp(),
+                  read: false
+              });
+
+              await batch.commit();
               setIsFollowing(true);
               toast(`Following @${targetUser.handle}`, "success");
           }
       } catch (e) { 
-          // Fallback for strict Firestore rules (Simulation Mode)
-          console.warn("Firestore write failed, falling back to local simulation.", e);
-          const key = `sim_following_${targetUser.uid}`;
-          
-          if (isFollowing) {
-              localStorage.removeItem(key);
-              setIsFollowing(false);
-              toast(`Unfollowed @${targetUser.handle} (Simulated)`, "info");
-          } else {
-              localStorage.setItem(key, "true");
-              setIsFollowing(true);
-              toast(`Following @${targetUser.handle} (Simulated)`, "success");
-          }
+          console.error("Firestore follow failed", e);
+          toast("Transmission failed. Secure channel required.", "error");
       }
   };
 

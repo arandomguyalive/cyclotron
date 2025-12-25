@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Trash2, Loader2, Lock, MessageCircle } from "lucide-react";
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc, Timestamp } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc, Timestamp, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
@@ -70,8 +70,11 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
     const text = input.trim();
     setInput(""); // Optimistic clear
 
+    const batch = writeBatch(db);
+    const commentRef = doc(collection(db, "posts", postId, "comments"));
+
     try {
-      await addDoc(collection(db, "posts", postId, "comments"), {
+      batch.set(commentRef, {
         text: text,
         userId: firebaseUser.uid,
         userHandle: user?.handle || "Unknown",
@@ -81,15 +84,19 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
       
       // Notify Post Owner (if not self)
       if (postOwnerId !== firebaseUser.uid) {
-          await addDoc(collection(db, "users", postOwnerId, "notifications"), {
+          const notifRef = doc(collection(db, "users", postOwnerId, "notifications"));
+          batch.set(notifRef, {
               type: "COMMENT",
               actorId: firebaseUser.uid,
               actorHandle: user?.handle || "Unknown",
+              postId: postId,
               caption: text.substring(0, 30),
               timestamp: serverTimestamp(),
               read: false
           });
       }
+
+      await batch.commit();
 
     } catch (e) {
       console.error("Comment failed", e);
