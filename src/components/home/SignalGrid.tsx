@@ -20,6 +20,7 @@ interface Post {
     createdAt: Timestamp | Date;
     type: "post" | "text";
     likes: number;
+    shares?: number;
     hasHiddenMessage?: boolean;
     allowedTiers?: string[];
     blockedRegions?: string[];
@@ -139,12 +140,26 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
     const { user, firebaseUser } = useUser();
     const { toast } = useToast();
     const [commentsCount, setCommentsCount] = useState(0);
+    const [sharesCount, setSharesCount] = useState(post.shares || 0);
+    const [likesCount, setLikesCount] = useState(post.likes || 0);
 
     useEffect(() => {
-        const unsubscribe = onSnapshot(collection(db, "posts", post.id, "comments"), (snap) => {
+        // Real-time post stats
+        const unsubscribePost = onSnapshot(doc(db, "posts", post.id), (snap) => {
+            if (snap.exists()) {
+                const d = snap.data();
+                setSharesCount(d.shares || 0);
+                setLikesCount(d.likes || 0);
+            }
+        });
+
+        const unsubscribeComments = onSnapshot(collection(db, "posts", post.id, "comments"), (snap) => {
             setCommentsCount(snap.size);
         });
-        return () => unsubscribe();
+        return () => {
+            unsubscribePost();
+            unsubscribeComments();
+        };
     }, [post.id]);
 
     const handleLike = async () => {
@@ -158,7 +173,10 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
         try {
             if (!isLiked) {
                 batch.update(postRef, { likes: increment(1) });
-                batch.update(ownerRef, { "stats.likes": increment(1) });
+                batch.update(ownerRef, { 
+                    "stats.likes": increment(1),
+                    "stats.reputation": increment(1)
+                });
                 batch.set(likeRef, { postId: post.id, timestamp: serverTimestamp() });
                 if (post.userId !== firebaseUser.uid) {
                     const notifRef = doc(collection(db, "users", post.userId, "notifications"));
@@ -174,11 +192,32 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                 toast("Signal Liked", "success");
             } else {
                 batch.update(postRef, { likes: increment(-1) });
-                batch.update(ownerRef, { "stats.likes": increment(-1) });
+                batch.update(ownerRef, { 
+                    "stats.likes": increment(-1),
+                    "stats.reputation": increment(-1)
+                });
                 batch.delete(likeRef);
             }
             await batch.commit();
-        } catch (e) { console.error(e); }
+        } catch (e: any) { 
+            console.warn("[LIKE] Increment fail, fallback to setDoc merge", e);
+            // Legacy Migration Fallback
+            try {
+                const batch = writeBatch(db);
+                if (!isLiked) {
+                    batch.update(postRef, { likes: (post.likes || 0) + 1 });
+                    batch.set(ownerRef, { stats: { likes: increment(1), reputation: increment(1) } }, { merge: true });
+                    batch.set(likeRef, { postId: post.id, timestamp: serverTimestamp() });
+                } else {
+                    batch.update(postRef, { likes: Math.max(0, (post.likes || 0) - 1) });
+                    batch.set(ownerRef, { stats: { likes: increment(-1), reputation: increment(-1) } }, { merge: true });
+                    batch.delete(likeRef);
+                }
+                await batch.commit();
+            } catch (err) {
+                console.error("Critical social sync error", err);
+            }
+        }
     };
 
     const handleSave = async () => {
@@ -221,7 +260,48 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                 await batch.commit();
                 toast(`Disconnected from @${post.userHandle}`, "info");
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            // Fallback for follow
+            try {
+                const batch = writeBatch(db);
+                if (!isFollowing) {
+                    batch.set(myFollowingRef, { timestamp: serverTimestamp() });
+                    batch.set(targetFollowerRef, { timestamp: serverTimestamp() });
+                    batch.set(meRef, { stats: { following: increment(1) } }, { merge: true });
+                    batch.set(themRef, { stats: { followers: increment(1) } }, { merge: true });
+                } else {
+                    batch.delete(myFollowingRef);
+                    batch.delete(targetFollowerRef);
+                    batch.set(meRef, { stats: { following: increment(-1) } }, { merge: true });
+                    batch.set(themRef, { stats: { followers: increment(-1) } }, { merge: true });
+                }
+                await batch.commit();
+            } catch (err) {}
+        }
+    };
+
+    const handleExtractHiddenMessage = async () => {
+        if (!post.hasHiddenMessage || post.mediaType !== 'image') {
+            toast("No hidden message detected.", "info");
+            return;
+        }
+
+        try {
+            toast("Analyzing image for hidden signals...", "info");
+            const response = await fetch(post.mediaUrl);
+            const blob = await response.blob();
+            const imageFile = new File([blob], "stego_image.png", { type: blob.type });
+
+            const extractedMessage = await extractMessageFromImage(imageFile);
+            if (extractedMessage) {
+                toast(`Hidden Message: ${extractedMessage}`, "success");
+            } else {
+                toast("No decipherable hidden message found.", "warning");
+            }
+        } catch (error) {
+            console.error("Error extracting hidden message:", error);
+            toast("Failed to extract hidden message.", "error");
+        }
     };
 
     const isTierAllowed = !post.allowedTiers || post.allowedTiers.length === 0 || post.allowedTiers.includes(viewerTier);
@@ -274,26 +354,41 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
 
             <div className="px-4 mt-3 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <Heart onClick={handleLike} className={`w-6 h-6 cursor-pointer ${likedPosts.has(post.id) ? 'text-brand-hot-pink fill-brand-hot-pink' : 'text-primary-text'}`} />
-                    <div className="flex items-center gap-1">
-                        <MessageCircle onClick={onComment} className="w-6 h-6 text-primary-text cursor-pointer" />
-                        {commentsCount > 0 && <span className="text-[10px] font-bold text-accent-1">{commentsCount}</span>}
+                    <div className="flex items-center gap-1.5">
+                        <Heart onClick={handleLike} className={`w-6 h-6 transition-colors cursor-pointer ${likedPosts.has(post.id) ? 'text-brand-hot-pink fill-brand-hot-pink' : 'text-primary-text'}`} />
+                        {likesCount > 0 && <span className="text-xs font-bold text-primary-text font-mono">{likesCount}</span>}
                     </div>
-                    <Share2 onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/profile?view=${post.userId}`);
-                        toast("Link Copied", "info");
-                    }} className="w-6 h-6 text-primary-text cursor-pointer" />
+                    <div className="flex items-center gap-1.5">
+                        <MessageCircle onClick={onComment} className="w-6 h-6 text-primary-text cursor-pointer" />
+                        {commentsCount > 0 && <span className="text-xs font-bold text-accent-1 font-mono">{commentsCount}</span>}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <Share2 onClick={async () => {
+                            try {
+                                await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });
+                                navigator.clipboard.writeText(`${window.location.origin}/profile?view=${post.userId}`);
+                                toast("Link Copied", "info");
+                            } catch (e) {}
+                        }} className="w-6 h-6 text-primary-text cursor-pointer" />
+                        {sharesCount > 0 && <span className="text-xs font-bold text-secondary-text font-mono">{sharesCount}</span>}
+                    </div>
                 </div>
                 <Bookmark onClick={handleSave} className={`w-6 h-6 cursor-pointer ${savedPosts.has(post.id) ? 'text-accent-1 fill-accent-1' : 'text-primary-text'}`} />
             </div>
 
             <div className="px-4 mt-2 space-y-1">
-                <p className="text-sm font-bold text-primary-text">{post.likes || 0} likes</p>
                 {post.type !== 'text' && (
                     <p className="text-sm text-secondary-text line-clamp-2">
                         <span className="font-bold text-primary-text mr-2">@{post.userHandle}</span>{post.caption}
                     </p>
                 )}
+                <p className="text-[10px] text-secondary-text/50 uppercase tracking-wide mt-1">
+                    {(() => {
+                        const ts = post.createdAt;
+                        const date = ts instanceof Date ? ts : ts?.toDate ? ts.toDate() : new Date();
+                        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'});
+                    })()} • Encrypted
+                </p>
             </div>
         </div>
     );

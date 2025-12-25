@@ -111,7 +111,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
   const p = post; 
 
   const toggleLike = async () => {
-    if (!firebaseUser) {
+    if (!firebaseUser || !currentUserProfile) {
         toast("Access Denied. Login required.", "error");
         return;
     }
@@ -124,9 +124,12 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
 
     try {
         if (!liked) {
-            // Increment Post count AND Owner's total reputation/likes
+            // Update Post and Owner Stats
             batch.update(postRef, { likes: increment(1) });
-            batch.update(ownerRef, { "stats.likes": increment(1) });
+            batch.update(ownerRef, { 
+                "stats.likes": increment(1),
+                "stats.reputation": increment(1) // +1 Rep for receiving a like
+            });
             
             batch.set(userLikeRef, {
                 postId: post.id,
@@ -148,13 +151,35 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
             }
         } else {
             batch.update(postRef, { likes: increment(-1) });
-            batch.update(ownerRef, { "stats.likes": increment(-1) });
+            batch.update(ownerRef, { 
+                "stats.likes": increment(-1),
+                "stats.reputation": increment(-1) 
+            });
             batch.delete(userLikeRef);
         }
         await batch.commit();
         console.log("[LIKE] Sync Complete.");
-    } catch (e) {
-        console.error("[LIKE] Sync Failed:", e);
+    } catch (e: any) {
+        console.warn("[LIKE] Increment failed, attempting legacy migration...", e);
+        // Fallback for string-to-number transition
+        try {
+            const batch = writeBatch(db);
+            // We use a simplified merge set for the owner stats to force numeric conversion
+            if (!liked) {
+                batch.update(postRef, { likes: (post.likes || 0) + 1 });
+                batch.set(ownerRef, { stats: { likes: increment(1), reputation: increment(1) } }, { merge: true });
+                batch.set(userLikeRef, { postId: post.id, mediaUrl: p.mediaUrl, mediaType: p.mediaType, timestamp: serverTimestamp() });
+            } else {
+                batch.update(postRef, { likes: Math.max(0, (post.likes || 0) - 1) });
+                batch.set(ownerRef, { stats: { likes: increment(-1), reputation: increment(-1) } }, { merge: true });
+                batch.delete(userLikeRef);
+            }
+            await batch.commit();
+            console.log("[LIKE] Legacy Sync Success.");
+        } catch (retryErr) {
+            console.error("[LIKE] Critical Failure:", retryErr);
+            toast("Signal Unstable. Try again.", "error");
+        }
     }
   };
 
