@@ -116,17 +116,22 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
         return;
     }
 
-    console.log(`[LIKE] Attempting toggle. postId: ${post.id}, liked: ${liked}`);
+    console.log(`[LIKE] Action. postId: ${post.id}, liked: ${liked}`);
     const batch = writeBatch(db);
     const postRef = doc(db, "posts", post.id);
     const userLikeRef = doc(db, "users", firebaseUser.uid, "likes", post.id);
+    const ownerRef = doc(db, "users", p.userId);
 
     try {
         if (!liked) {
+            // Increment Post count AND Owner's total reputation/likes
             batch.update(postRef, { likes: increment(1) });
+            batch.update(ownerRef, { "stats.likes": increment(1) });
+            
             batch.set(userLikeRef, {
                 postId: post.id,
                 mediaUrl: p.mediaUrl,
+                mediaType: p.mediaType,
                 timestamp: serverTimestamp()
             });
 
@@ -143,12 +148,13 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
             }
         } else {
             batch.update(postRef, { likes: increment(-1) });
+            batch.update(ownerRef, { "stats.likes": increment(-1) });
             batch.delete(userLikeRef);
         }
         await batch.commit();
-        console.log("[LIKE] Batch committed successfully.");
+        console.log("[LIKE] Sync Complete.");
     } catch (e) {
-        console.error("[LIKE] Batch failed:", e);
+        console.error("[LIKE] Sync Failed:", e);
     }
   };
 
@@ -177,11 +183,8 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
   };
 
   const handleComment = () => {
-      if (isFree) {
-          toast("UPGRADE REQUIRED: Frequency modulation (comments) restricted.", "error");
-      } else {
-          setIsCommentOpen(true);
-      }
+      // Allow opening for all, but canComment check inside modal will restrict input
+      setIsCommentOpen(true);
   };
 
   // ... (Gradients - omitted for brevity)
