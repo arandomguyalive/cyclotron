@@ -12,6 +12,7 @@ import { useScreenshot } from "@/lib/useScreenshot";
 import { useUser } from "@/lib/UserContext";
 import { useToast } from "@/lib/ToastContext";
 import { CommentModal } from "./CommentModal";
+import { UserAvatar } from "../ui/UserAvatar";
 
 export interface Post {
   id: string;
@@ -22,6 +23,7 @@ export interface Post {
   userId: string;
   userHandle: string;
   userAvatar: string;
+  userAvatarUrl?: string;
   likes: number;
   shares?: number;
   createdAt: Timestamp | Date;
@@ -288,9 +290,12 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
           
           {/* Profile Avatar with Follow + */}
           <Link href={`/profile?view=${p.userId}`} className="relative mb-4">
-             <div className="w-12 h-12 rounded-full border-2 border-cyber-white bg-gray-800 overflow-hidden">
-                 <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${p.userAvatar}`} alt="User" className="w-full h-full" />
-             </div>
+             <UserAvatar 
+                seed={p.userAvatar} 
+                url={p.userAvatarUrl} 
+                size="lg" 
+                className="border-cyber-white" 
+             />
              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-brand-hot-pink rounded-full p-0.5">
                  <Plus className="w-3 h-3 text-white" />
              </div>
@@ -339,13 +344,19 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
 
         {/* Bottom Text Info */}
         <div className="max-w-[80%] space-y-2">
-          <Link href={`/profile?view=${p.userId}`}>
+          <Link href={`/profile?view=${p.userId}`} className="flex items-center gap-2">
+            <UserAvatar 
+                seed={p.userAvatar} 
+                url={p.userAvatarUrl} 
+                size="sm" 
+                showRing={false} 
+            />
             <h3 className="font-bold text-lg text-white drop-shadow-md flex items-center gap-2">
                 @{p.userHandle}
-                <span className="text-xs bg-brand-cyan/20 text-brand-cyan px-1.5 py-0.5 rounded border border-brand-cyan/50">PRO</span>
+                <span className="text-xs bg-brand-cyan/20 text-brand-cyan px-1.5 py-0.5 rounded border border-brand-cyan/50 uppercase tracking-widest font-mono">Verified</span>
             </h3>
           </Link>
-          <p className="text-sm text-gray-200 drop-shadow-sm line-clamp-2 whitespace-pre-wrap">
+          <p className="text-sm text-gray-200 drop-shadow-sm line-clamp-2 whitespace-pre-wrap font-light">
             {p.caption}
           </p>
           

@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { useToast } from "@/lib/ToastContext";
 import { extractMessageFromImage } from "@/lib/steg";
 import { CommentModal } from "@/components/feed/CommentModal";
+import { UserAvatar } from "../ui/UserAvatar";
 
 interface Post {
     id: string;
@@ -17,6 +18,8 @@ interface Post {
     mediaUrl: string;
     mediaType: "image" | "video";
     userHandle: string;
+    userAvatar: string;
+    userAvatarUrl?: string;
     createdAt: Timestamp | Date;
     type: "post" | "text";
     likes: number;
@@ -137,14 +140,13 @@ export function SignalGrid() {
 }
 
 function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followingSet, onComment }: any) {
-    const { user, firebaseUser } = useUser();
+    const { user, firebaseUser, updateUser } = useUser();
     const { toast } = useToast();
     const [commentsCount, setCommentsCount] = useState(0);
     const [sharesCount, setSharesCount] = useState(post.shares || 0);
     const [likesCount, setLikesCount] = useState(post.likes || 0);
 
     useEffect(() => {
-        // Real-time post stats
         const unsubscribePost = onSnapshot(doc(db, "posts", post.id), (snap) => {
             if (snap.exists()) {
                 const d = snap.data();
@@ -173,10 +175,7 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
         try {
             if (!isLiked) {
                 batch.update(postRef, { likes: increment(1) });
-                batch.update(ownerRef, { 
-                    "stats.likes": increment(1),
-                    "stats.reputation": increment(1)
-                });
+                batch.update(ownerRef, { "stats.likes": increment(1), "stats.reputation": increment(1) });
                 batch.set(likeRef, { postId: post.id, timestamp: serverTimestamp() });
                 if (post.userId !== firebaseUser.uid) {
                     const notifRef = doc(collection(db, "users", post.userId, "notifications"));
@@ -192,31 +191,25 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                 toast("Signal Liked", "success");
             } else {
                 batch.update(postRef, { likes: increment(-1) });
-                batch.update(ownerRef, { 
-                    "stats.likes": increment(-1),
-                    "stats.reputation": increment(-1)
-                });
+                batch.update(ownerRef, { "stats.likes": increment(-1), "stats.reputation": increment(-1) });
                 batch.delete(likeRef);
             }
             await batch.commit();
         } catch (e: any) { 
-            console.warn("[LIKE] Increment fail, fallback to setDoc merge", e);
-            // Legacy Migration Fallback
+            console.warn("[LIKE] Increment fail, fallback to legacy sync", e);
             try {
                 const batch = writeBatch(db);
                 if (!isLiked) {
-                    batch.update(postRef, { likes: (post.likes || 0) + 1 });
+                    batch.update(postRef, { likes: (likesCount || 0) + 1 });
                     batch.set(ownerRef, { stats: { likes: increment(1), reputation: increment(1) } }, { merge: true });
                     batch.set(likeRef, { postId: post.id, timestamp: serverTimestamp() });
                 } else {
-                    batch.update(postRef, { likes: Math.max(0, (post.likes || 0) - 1) });
+                    batch.update(postRef, { likes: Math.max(0, (likesCount || 0) - 1) });
                     batch.set(ownerRef, { stats: { likes: increment(-1), reputation: increment(-1) } }, { merge: true });
                     batch.delete(likeRef);
                 }
                 await batch.commit();
-            } catch (err) {
-                console.error("Critical social sync error", err);
-            }
+            } catch (err) {}
         }
     };
 
@@ -261,7 +254,6 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                 toast(`Disconnected from @${post.userHandle}`, "info");
             }
         } catch (e) { 
-            // Fallback for follow
             try {
                 const batch = writeBatch(db);
                 if (!isFollowing) {
@@ -322,9 +314,12 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
         <div className="w-full border-b border-white/5 pb-6">
             <div className="px-4 flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-secondary-bg overflow-hidden relative">
-                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userHandle}`} className="w-full h-full" />
-                    </div>
+                    <UserAvatar 
+                        seed={post.userHandle} 
+                        url={post.userAvatarUrl} 
+                        size="sm" 
+                        showRing={false} 
+                    />
                     <div className="flex items-center gap-2">
                         <span className={`text-sm font-bold ${isFree ? 'text-secondary-text' : 'text-primary-text'}`}>@{post.userHandle}</span>
                         {firebaseUser && post.userId !== firebaseUser.uid && (
@@ -363,24 +358,21 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                         {commentsCount > 0 && <span className="text-xs font-bold text-accent-1 font-mono">{commentsCount}</span>}
                     </div>
                     <div className="flex items-center gap-1.5">
-                                        <Share2 
-                                            onClick={async () => {
-                                                if (isFree) {
-                                                    toast("UPGRADE REQUIRED: Secure sharing restricted.", "error");
-                                                    return;
-                                                }
-                                                try {
-                                                    await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });
-                                                    navigator.clipboard.writeText(`${window.location.origin}/profile?view=${post.userId}`);
-                                                    toast("Link Copied to Clipboard", "info");
-                                                } catch (e) {}
-                                            }}
-                                            className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" 
-                                        />
+                        <Share2 onClick={async () => {
+                            if (isFree) {
+                                toast("UPGRADE REQUIRED: Secure sharing restricted.", "error");
+                                return;
+                            }
+                            try {
+                                await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });
+                                navigator.clipboard.writeText(`${window.location.origin}/profile?view=${post.userId}`);
+                                toast("Link Copied", "info");
+                            } catch (e) {}
+                        }} className="w-6 h-6 text-primary-text cursor-pointer" />
                         {sharesCount > 0 && <span className="text-xs font-bold text-secondary-text font-mono">{sharesCount}</span>}
                     </div>
                 </div>
-                <Bookmark onClick={handleSave} className={`w-6 h-6 cursor-pointer ${savedPosts.has(post.id) ? 'text-accent-1 fill-accent-1' : 'text-primary-text'}`} />
+                <Bookmark onClick={handleSave} className={`w-6 h-6 transition-colors cursor-pointer ${savedPosts.has(post.id) ? 'text-accent-1 fill-accent-1' : 'text-primary-text hover:text-accent-1'}`} />
             </div>
 
             <div className="px-4 mt-2 space-y-1">

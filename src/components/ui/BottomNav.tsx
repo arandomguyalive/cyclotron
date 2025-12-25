@@ -10,6 +10,7 @@ import { useSonic } from "@/lib/SonicContext";
 import { useUser } from "@/lib/UserContext";
 import { useTheme } from "@/lib/ThemeContext";
 import { CreatePostModal } from "@/components/feed/CreatePostModal";
+import { UserAvatar } from "./UserAvatar";
 
 const navItemsLeft = [
   { name: "Home", href: "/home", icon: Home },
@@ -18,7 +19,6 @@ const navItemsLeft = [
 
 const navItemsRight = [
   { name: "Activity", href: "/notifications", icon: Bell },
-  { name: "Profile", href: "/profile", icon: User },
 ];
 
 export function BottomNav() {
@@ -31,7 +31,7 @@ export function BottomNav() {
   const tier = user?.tier || 'free';
   const isLight = colorMode === 'light';
 
-  const activeColor = {
+  const tierColors = {
       free: "text-brand-orange bg-brand-orange border-brand-orange shadow-brand-orange",
       premium: isLight 
           ? "text-brand-blue bg-brand-cyan border-brand-cyan shadow-brand-cyan" 
@@ -42,9 +42,10 @@ export function BottomNav() {
           : "text-white bg-white border-white shadow-white",
       sovereign: "text-brand-blue bg-brand-blue border-brand-blue shadow-brand-blue",
       lifetime: "text-amber-500 bg-amber-500 border-amber-500 shadow-amber-500",
-  }[tier];
+  };
 
-  // Helper to get just the text color class
+  const activeColor = tierColors[tier as keyof typeof tierColors] || tierColors.free;
+
   const textColor = activeColor.split(' ')[0];
   const bgColor = activeColor.split(' ')[1];
 
@@ -62,8 +63,6 @@ export function BottomNav() {
   return (
     <>
       <nav className="fixed bottom-0 left-0 right-0 z-50 h-16 pb-safe-area-inset-bottom pointer-events-none">
-        
-        {/* Floating Action Button (Centered & Holographic) */}
         <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
             <motion.button
                 onClick={() => handleClick(true)}
@@ -77,75 +76,34 @@ export function BottomNav() {
             </motion.button>
         </div>
 
-        {/* Glassmorphism Container - Slimmer & More Blurred */}
         <div className="absolute inset-0 bg-primary-bg/80 backdrop-blur-2xl border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.4)] pointer-events-auto rounded-t-[2.5rem]" />
         
         <div className="relative flex h-full items-center justify-between px-8 pointer-events-auto max-w-lg mx-auto w-full">
-          
-          {/* Left Side */}
           <div className="flex gap-8">
             {navItemsLeft.map((item) => (
-                <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => handleClick()}
-                    className="relative flex flex-col items-center justify-center w-10 h-full group"
-                >
-                    {pathname === item.href && (
-                        <motion.div
-                            layoutId="nav-aura"
-                            className={`absolute inset-0 rounded-full blur-xl opacity-20 ${bgColor}`}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        />
-                    )}
-
-                    <motion.div whileTap={{ scale: 0.8 }} className="relative z-10">
-                        <item.icon
-                            className={cn(
-                                "w-5 h-5 transition-all duration-300",
-                                pathname === item.href ? `${textColor} scale-110 drop-shadow-[0_0_8px_currentColor]` : "text-secondary-text group-hover:text-primary-text"
-                            )}
-                        />
-                    </motion.div>
+                <Link key={item.name} href={item.href} onClick={() => handleClick()} className="relative flex flex-col items-center justify-center w-10 h-full group">
+                    {pathname === item.href && <motion.div layoutId="nav-aura" className={`absolute inset-0 rounded-full blur-xl opacity-20 ${bgColor}`} transition={{ type: "spring", stiffness: 300, damping: 30 }} />}
+                    <motion.div whileTap={{ scale: 0.8 }} className="relative z-10"><item.icon className={cn("w-5 h-5 transition-all duration-300", pathname === item.href ? `${textColor} scale-110 drop-shadow-[0_0_8px_currentColor]` : "text-secondary-text group-hover:text-primary-text")} /></motion.div>
                 </Link>
             ))}
           </div>
-
-          {/* Center Spacer for FAB */}
           <div className="w-14" />
-
-          {/* Right Side */}
           <div className="flex gap-8">
             {navItemsRight.map((item) => (
-                <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => handleClick()}
-                    className="relative flex flex-col items-center justify-center w-10 h-full group"
-                >
-                    {pathname === item.href && (
-                        <motion.div
-                            layoutId="nav-aura"
-                            className={`absolute inset-0 rounded-full blur-xl opacity-20 ${bgColor}`}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        />
-                    )}
-
-                    <motion.div whileTap={{ scale: 0.8 }} className="relative z-10">
-                        <item.icon
-                            className={cn(
-                                "w-5 h-5 transition-all duration-300",
-                                pathname === item.href ? `${textColor} scale-110 drop-shadow-[0_0_8px_currentColor]` : "text-secondary-text group-hover:text-primary-text"
-                            )}
-                        />
-                    </motion.div>
+                <Link key={item.name} href={item.href} onClick={() => handleClick()} className="relative flex flex-col items-center justify-center w-10 h-full group">
+                    {pathname === item.href && <motion.div layoutId="nav-aura" className={`absolute inset-0 rounded-full blur-xl opacity-20 ${bgColor}`} transition={{ type: "spring", stiffness: 300, damping: 30 }} />}
+                    <motion.div whileTap={{ scale: 0.8 }} className="relative z-10"><item.icon className={cn("w-5 h-5 transition-all duration-300", pathname === item.href ? `${textColor} scale-110 drop-shadow-[0_0_8px_currentColor]` : "text-secondary-text group-hover:text-primary-text")} /></motion.div>
                 </Link>
             ))}
+            <Link href="/profile" onClick={() => handleClick()} className="relative flex flex-col items-center justify-center w-10 h-full group">
+                {pathname === "/profile" && <motion.div layoutId="nav-aura" className={`absolute inset-0 rounded-full blur-xl opacity-20 ${bgColor}`} transition={{ type: "spring", stiffness: 300, damping: 30 }} />}
+                <motion.div whileTap={{ scale: 0.8 }} className="relative z-10">
+                    <UserAvatar size="sm" showRing={pathname === "/profile"} className={cn("transition-all duration-300", pathname === "/profile" ? "scale-110" : "opacity-70 group-hover:opacity-100")} />
+                </motion.div>
+            </Link>
           </div>
-
         </div>
       </nav>
-
       <CreatePostModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
     </>
   );

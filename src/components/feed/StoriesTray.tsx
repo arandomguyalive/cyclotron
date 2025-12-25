@@ -8,6 +8,7 @@ import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
 import { useSonic, ImpactStyle } from "@/lib/SonicContext";
 import { CreatePostModal } from "@/components/feed/CreatePostModal";
+import { UserAvatar } from "../ui/UserAvatar";
 
 interface Story {
   id: string;
@@ -16,6 +17,7 @@ interface Story {
   userId: string;
   userHandle: string;
   userAvatar: string;
+  userAvatarUrl?: string;
   createdAt: Timestamp | Date;
   expiresAt: Timestamp | Date;
   caption?: string;
@@ -116,20 +118,17 @@ export function StoriesTray() {
                     whileTap={{ scale: 0.9 }}
                     className="flex flex-col items-center gap-1 shrink-0 relative"
                   >
-                    <div className={`w-14 h-14 rounded-full p-[2px] ${isFree ? 'bg-red-500/50' : 'bg-gradient-to-tr from-accent-1 to-purple-500'}`}>
-                        <div className="w-full h-full rounded-full bg-black p-[2px] relative overflow-hidden">
-                            <img 
-                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${story.userAvatar}`} 
-                                className={`w-full h-full rounded-full object-cover ${isFree ? 'grayscale opacity-50' : ''}`}
-                                alt={story.userHandle}
-                            />
-                            {isFree && (
-                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                    <Lock className="w-4 h-4 text-red-500" />
-                                </div>
-                            )}
+                    <UserAvatar 
+                        seed={story.userAvatar} 
+                        url={story.userAvatarUrl} 
+                        size="md" 
+                        className={isFree ? 'grayscale opacity-50' : ''} 
+                    />
+                    {isFree && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
+                            <Lock className="w-4 h-4 text-red-500" />
                         </div>
-                    </div>
+                    )}
                     <span className="text-[10px] text-secondary-text max-w-[60px] truncate">
                         {story.userHandle}
                     </span>
@@ -167,9 +166,12 @@ export function StoriesTray() {
                 {/* Header */}
                 <div className="absolute top-4 left-0 right-0 z-20 p-4 pt-8 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                         <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden">
-                             <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${stories[currentIndex].userAvatar}`} />
-                         </div>
+                         <UserAvatar 
+                            seed={stories[currentIndex].userAvatar} 
+                            url={stories[currentIndex].userAvatarUrl} 
+                            size="sm" 
+                            showRing={false} 
+                         />
                          <span className="font-bold text-white shadow-black drop-shadow-md">{stories[currentIndex].userHandle}</span>
                          <span className="text-white/50 text-xs">
                              {(() => {

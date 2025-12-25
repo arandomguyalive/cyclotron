@@ -12,6 +12,7 @@ import { useUser } from "@/lib/UserContext";
 import { collection, query, where, getDocs, doc, onSnapshot, deleteDoc, orderBy, limit, increment, writeBatch, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/lib/ToastContext";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 interface MinimalPost {
     id: string;
@@ -25,6 +26,7 @@ interface UserProfileData {
     handle: string;
     bio: string;
     avatarSeed: string;
+    avatarUrl?: string;
     coverImage?: string;
     tier: string;
     stats?: {
@@ -215,8 +217,14 @@ function ProfileContent() {
               )}
 
               <div className="flex justify-between items-end relative z-30">
-                <div className="w-28 h-28 rounded-full border-4 border-primary-bg bg-primary-bg overflow-hidden shadow-lg -mb-4">
-                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${targetUser.avatarSeed}`} alt="Profile" className="w-full h-full" />
+                <div className="shadow-lg -mb-4">
+                  <UserAvatar 
+                    seed={targetUser.avatarSeed} 
+                    url={targetUser.avatarUrl} 
+                    size="xl" 
+                    tier={targetUser.tier} 
+                    className="border-4 border-primary-bg" 
+                  />
                 </div>
                 <div className="flex gap-2 mb-2">
                   {isOwnProfile ? (
@@ -242,7 +250,7 @@ function ProfileContent() {
                     {targetUser.tier === 'lifetime' && <Star className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" />}
                 </div>
                 <p className="text-accent-1 font-mono text-sm">@{targetUser.handle}</p>
-                <p className="mt-2 text-sm text-secondary-text leading-relaxed whitespace-pre-wrap">{targetUser.bio}</p>
+                <p className="mt-2 text-sm text-secondary-text leading-relaxed whitespace-pre-wrap font-light">{targetUser.bio}</p>
               </div>
 
               <div className="flex gap-6 mt-6 py-4 border-y border-border-color relative z-30 overflow-x-auto">

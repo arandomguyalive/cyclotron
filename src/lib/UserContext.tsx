@@ -18,6 +18,7 @@ export interface UserProfile {
   handle: string;
   bio: string;
   avatarSeed: string;
+  avatarUrl?: string;
   coverImage?: string;
   faction: "Netrunner" | "Drifter" | "Corp" | "Ghost";
   tier: "free" | "premium" | "gold" | "platinum" | "sovereign" | "lifetime";
@@ -44,10 +45,10 @@ interface UserContextType {
   user: UserProfile | null;
   firebaseUser: User | null;
   loading: boolean;
-  updateUser: (updates: any) => Promise<void>; // Any to support dot-notation strings
+  updateUser: (updates: any) => Promise<void>;
   loginAnonymously: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, handle: string) => Promise<void>;
+  signup: (email: string, password: string, handle: string, faction?: UserProfile['faction']) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -77,20 +78,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (currentUser) {
         const userRef = doc(db, "users", currentUser.uid);
         
-        // Use onSnapshot for real-time local profile updates
         unsubscribeSnapshot = onSnapshot(userRef, async (docSnap) => {
           if (docSnap.exists()) {
             let data = docSnap.data() as UserProfile;
-            
-            // --- DATA FIXER (Resilience Layer) ---
             let needsFix = false;
             
-            // 1. Initialize stats if missing or corrupted
             if (!data.stats || typeof data.stats !== 'object') {
                 data.stats = { following: 0, followers: 0, likes: 0, credits: 500, reputation: 10 };
                 needsFix = true;
             } else {
-                // 2. Convert existing string stats to numbers
                 const keys: (keyof UserProfile['stats'])[] = ['following', 'followers', 'likes', 'credits', 'reputation'];
                 keys.forEach(key => {
                     const val = data.stats[key];
@@ -102,8 +98,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             }
 
             if (needsFix) {
-                console.log("Legacy Data Detected. Synchronizing Numeric Signal...");
-                // Force an atomic update to fix the database record
                 await setDoc(userRef, { stats: data.stats }, { merge: true });
                 return; 
             }
@@ -111,7 +105,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             if (data.accessType === "LIFETIME_BLACKLIST") data.tier = "lifetime";
             setUser({ ...data, uid: currentUser.uid });
           } else {
-            // New user or guest
             setUser({ ...defaultUser, uid: currentUser.uid });
           }
           setLoading(false);
@@ -130,14 +123,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const updateUser = async (updates: any) => {
     if (!firebaseUser) return;
-    console.log(`[updateUser] Attempting update for ${firebaseUser.uid}`, updates);
     try {
         await updateDoc(doc(db, "users", firebaseUser.uid), updates);
-        console.log(`[updateUser] Success.`);
     } catch (e) {
-        console.warn("[updateUser] updateDoc failed, trying setDoc merge", e);
         await setDoc(doc(db, "users", firebaseUser.uid), updates, { merge: true });
-        console.log(`[updateUser] Success via setDoc.`);
     }
   };
 
@@ -146,7 +135,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     try {
       await firebaseSignInAnonymously(auth);
     } catch (error) {
-      console.error("Anonymous login failed", error);
       setLoading(false);
     }
   };
@@ -156,30 +144,27 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
-      console.error("Login failed", error);
       setLoading(false);
       throw error;
     }
   };
 
-  const signup = async (email: string, password: string, handle: string) => {
+  const signup = async (email: string, password: string, handle: string, faction: UserProfile['faction'] = "Drifter") => {
       setLoading(true);
       try {
           const cred = await createUserWithEmailAndPassword(auth, email, password);
-          // Create User Profile
           const newUser: UserProfile = {
               displayName: handle,
               handle: handle,
-              bio: "New to the grid.",
-              avatarSeed: "Agent",
-              faction: "Drifter",
+              bio: `New ${faction} operative on the grid.`,
+              avatarSeed: handle,
+              faction: faction,
               tier: "free",
               stats: { following: 0, followers: 0, likes: 0, credits: 500, reputation: 10 }
           };
           await setDoc(doc(db, "users", cred.user.uid), newUser);
-          setUser(newUser);
+          setUser({ ...newUser, uid: cred.user.uid });
       } catch (error) {
-          console.error("Signup failed", error);
           setLoading(false);
           throw error;
       }
@@ -188,7 +173,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       await firebaseSignOut(auth);
-      localStorage.removeItem("oblivion_user"); // Clear local overrides on logout
     } catch (error) {
       console.error("Logout failed", error);
     }

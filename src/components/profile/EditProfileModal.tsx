@@ -24,8 +24,12 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   const [bio, setBio] = useState(user?.bio || "");
   const [avatarSeed, setAvatarSeed] = useState(user?.avatarSeed || "default");
   
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl || null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState(user?.coverImage || null);
+  
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -36,15 +40,26 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
       setHandle(user.handle);
       setBio(user.bio);
       setAvatarSeed(user.avatarSeed);
+      setAvatarPreview(user.avatarUrl || null);
       setCoverPreview(user.coverImage || null);
     }
   }, [user]);
+
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        setAvatarFile(file);
+        setAvatarPreview(URL.createObjectURL(file));
+        playClick(500, 0.05, 'square');
+    }
+  }
 
   const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
         const file = e.target.files[0];
         setCoverFile(file);
         setCoverPreview(URL.createObjectURL(file));
+        playClick(500, 0.05, 'square');
     }
   }
 
@@ -55,41 +70,37 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     playClick(440, 0.1, 'sine');
 
     try {
+        let avatarUrl = user?.avatarUrl;
         let coverImageUrl = user?.coverImage;
 
-        // Upload Cover Image if changed
+        // 1. Upload Avatar if changed
+        if (avatarFile) {
+            const avatarRef = ref(storage, `avatars/${firebaseUser.uid}_${Date.now()}`);
+            const snapshot = await uploadBytes(avatarRef, avatarFile);
+            avatarUrl = await getDownloadURL(snapshot.ref);
+        }
+
+        // 2. Upload Cover if changed
         if (coverFile) {
             const storageRef = ref(storage, `covers/${firebaseUser.uid}_${Date.now()}`);
             const snapshot = await uploadBytes(storageRef, coverFile);
             coverImageUrl = await getDownloadURL(snapshot.ref);
         }
 
-        // Save to Firestore
-        const userRef = doc(db, "users", firebaseUser.uid);
-        const userData = {
+        // 3. Sync to Context/Firestore
+        await updateUser({
             displayName: name,
             handle,
             bio,
             avatarSeed,
+            avatarUrl,
             coverImage: coverImageUrl
-        };
-        
-        await setDoc(userRef, userData, { merge: true });
-
-        // Update local context
-        updateUser(userData);
+        });
         
         onClose();
-    } catch (error: unknown) {
-        console.error("Error updating profile:", error);
-        // Show specific error if possible
-        if (error && typeof error === 'object' && 'code' in error && error.code === 'storage/unauthorized') {
-            alert("Permission denied: Check Storage Rules.");
-        } else if (error instanceof Error) {
-            alert(`Failed to update profile: ${error.message || "Neural link unstable."}`);
-        } else {
-            alert("Failed to update profile: Neural link unstable.");
-        }
+    } catch (error: any) {
+        console.error("Neural sync error:", error);
+        alert(`Neural Link Unstable: ${error.message || "Unknown error"}`);
     } finally {
         setIsSaving(false);
     }
@@ -97,6 +108,8 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
 
   const randomizeAvatar = () => {
     playClick(600, 0.05, 'triangle');
+    setAvatarFile(null); // Clear manual upload
+    setAvatarPreview(null);
     setAvatarSeed(Math.random().toString(36).substring(7));
   };
 
@@ -122,64 +135,64 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               
               {/* Header */}
               <div className="px-6 py-4 border-b border-border-color flex items-center justify-between bg-primary-bg">
-                <h2 className="text-lg font-bold text-primary-text">Edit Neural Profile</h2>
+                <h2 className="text-lg font-bold text-primary-text">Edit Neural Identity</h2>
                 <button onClick={onClose} className="p-2 hover:bg-secondary-bg rounded-full transition-colors">
                   <X className="w-5 h-5 text-secondary-text" />
                 </button>
               </div>
 
               {/* Content */}
-              <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+              <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto scrollbar-hide">
                 
                 {/* Cover Image Upload */}
                 <div 
                     onClick={() => coverInputRef.current?.click()}
-                    className="relative w-full h-32 rounded-xl bg-secondary-bg border-2 border-dashed border-border-color hover:border-accent-1 overflow-hidden cursor-pointer group"
+                    className="relative w-full h-32 rounded-xl bg-secondary-bg border-2 border-dashed border-border-color hover:border-accent-1 overflow-hidden cursor-pointer group transition-all"
                 >
                     {coverPreview ? (
                         <img src={coverPreview} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity" alt="Cover Preview" />
                     ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-secondary-text">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-secondary-text group-hover:text-accent-1">
                             <ImageIcon className="w-8 h-8 mb-2" />
-                            <span className="text-xs font-mono uppercase">Upload Cover</span>
+                            <span className="text-[10px] font-mono uppercase tracking-widest">Upload Cover</span>
                         </div>
                     )}
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                         <Camera className="w-6 h-6 text-white" />
                     </div>
-                    <input 
-                        type="file" 
-                        ref={coverInputRef} 
-                        onChange={handleCoverSelect} 
-                        accept="image/*" 
-                        className="hidden" 
-                    />
+                    <input type="file" ref={coverInputRef} onChange={handleCoverSelect} accept="image/*" className="hidden" />
                 </div>
 
                 {/* Avatar Section */}
                 <div className="flex flex-col items-center gap-4 -mt-12 relative z-10">
-                  <div className="w-24 h-24 rounded-full border-4 border-accent-1 bg-primary-bg overflow-hidden relative group">
+                  <div 
+                    onClick={() => avatarInputRef.current?.click()}
+                    className="w-24 h-24 rounded-full border-4 border-accent-1 bg-primary-bg overflow-hidden relative group cursor-pointer"
+                  >
                     <img 
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`} 
+                      src={avatarPreview || `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`} 
                       alt="Avatar" 
-                      className="w-full h-full"
+                      className="w-full h-full object-cover"
                     />
-                    <button 
-                      onClick={randomizeAvatar}
-                      className="absolute inset-0 bg-primary-bg/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <RefreshCw className="w-8 h-8 text-primary-text" />
-                    </button>
+                    <div className="absolute inset-0 bg-primary-bg/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Camera className="w-6 h-6 text-primary-text" />
+                    </div>
+                    <input type="file" ref={avatarInputRef} onChange={handleAvatarSelect} accept="image/*" className="hidden" />
                   </div>
-                  <button onClick={randomizeAvatar} className="text-xs text-accent-1 hover:underline">
-                    Randomize Identity
-                  </button>
+                  <div className="flex gap-4">
+                      <button onClick={randomizeAvatar} className="text-[10px] font-bold uppercase tracking-widest text-secondary-text hover:text-accent-1 transition-colors">
+                        Randomize Signal
+                      </button>
+                      <button onClick={() => avatarInputRef.current?.click()} className="text-[10px] font-bold uppercase tracking-widest text-accent-1">
+                        Upload Image
+                      </button>
+                  </div>
                 </div>
 
                 {/* Fields */}
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-wider text-secondary-text">Display Name</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-text ml-1">Identity Label</label>
                     <input 
                       type="text" 
                       value={name}
@@ -189,25 +202,25 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-wider text-secondary-text">Handle (@)</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-text ml-1">Frequency Address (@)</label>
                     <div className="relative">
                         <span className="absolute left-4 top-3 text-secondary-text">@</span>
                         <input 
                         type="text" 
                         value={handle}
                         onChange={(e) => setHandle(e.target.value)}
-                        className="w-full bg-secondary-bg border border-border-color rounded-xl pl-8 pr-4 py-3 text-primary-text placeholder:text-secondary-text focus:border-accent-1 focus:outline-none transition-colors"
+                        className="w-full bg-secondary-bg border border-border-color rounded-xl pl-8 pr-4 py-3 text-primary-text placeholder:text-secondary-text focus:border-accent-1 focus:outline-none transition-colors font-mono"
                         />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-wider text-secondary-text">Bio / Manifesto</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-text ml-1">Neural Bio / Manifesto</label>
                     <textarea 
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       rows={3}
-                      className="w-full bg-secondary-bg border border-border-color rounded-xl px-4 py-3 text-primary-text placeholder:text-secondary-text focus:border-accent-1 focus:outline-none transition-colors resize-none"
+                      className="w-full bg-secondary-bg border border-border-color rounded-xl px-4 py-3 text-primary-text placeholder:text-secondary-text focus:border-accent-1 focus:outline-none transition-colors resize-none font-light"
                     />
                   </div>
                 </div>
@@ -224,12 +237,12 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                   {isSaving ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Saving...
+                        SYNCING...
                       </>
                   ) : (
                       <>
                         <Save className="w-4 h-4" />
-                        Save Changes
+                        SYNC NEURAL LINK
                       </>
                   )}
                 </button>

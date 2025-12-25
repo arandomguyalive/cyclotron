@@ -7,6 +7,7 @@ import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, delete
 import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
+import { UserAvatar } from "../ui/UserAvatar";
 
 interface Comment {
   id: string;
@@ -14,6 +15,7 @@ interface Comment {
   userId: string;
   userHandle: string;
   userAvatar: string;
+  userAvatarUrl?: string;
   timestamp: Timestamp | Date;
 }
 
@@ -45,7 +47,6 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      console.log(`[CommentModal] Snapshot received: ${snapshot.size} comments`);
       const fetchedComments: Comment[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -66,16 +67,11 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
   }, [postId, isOpen]);
 
   const handleSubmit = async () => {
-    console.log(`[COMMENT] handleSubmit called. input: "${input}", user: ${!!user}, canComment: ${canComment}`);
-    if (!input.trim() || !firebaseUser || !canComment) {
-        console.warn("[COMMENT] Early exit: validation failed.");
-        return;
-    }
+    if (!input.trim() || !firebaseUser || !canComment) return;
     
-    console.log(`[COMMENT] Attempting submission. postId: ${postId}, text: ${input.substring(0, 10)}...`);
     playClick(500, 0.1, 'square');
     const text = input.trim();
-    setInput(""); // Optimistic clear
+    setInput(""); 
 
     const batch = writeBatch(db);
     const commentRef = doc(collection(db, "posts", postId, "comments"));
@@ -86,12 +82,11 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
         userId: firebaseUser.uid,
         userHandle: user?.handle || "Unknown",
         userAvatar: user?.avatarSeed || "default",
+        userAvatarUrl: user?.avatarUrl || null,
         timestamp: serverTimestamp()
       });
       
-      // Notify Post Owner (if not self)
       if (postOwnerId && postOwnerId !== firebaseUser.uid) {
-          console.log(`[COMMENT] Delivering notification to owner: ${postOwnerId}`);
           const notifRef = doc(collection(db, "users", postOwnerId, "notifications"));
           batch.set(notifRef, {
               type: "COMMENT",
@@ -105,11 +100,8 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
       }
 
       await batch.commit();
-      console.log("[COMMENT] Transaction finalized.");
-
     } catch (e) {
       console.error("[COMMENT] Batch failed:", e);
-      alert("Transmission failed. Secure channel required.");
     }
   };
 
@@ -153,7 +145,7 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
                 {loading ? (
                     <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-accent-1" /></div>
                 ) : comments.length === 0 ? (
@@ -164,9 +156,12 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
                 ) : (
                     comments.map((comment) => (
                         <div key={comment.id} className="flex gap-3">
-                            <div className="w-8 h-8 rounded-full bg-secondary-bg overflow-hidden shrink-0 border border-border-color">
-                                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.userAvatar}`} className="w-full h-full" />
-                            </div>
+                            <UserAvatar 
+                                size="sm" 
+                                seed={comment.userAvatar} 
+                                url={comment.userAvatarUrl} 
+                                showRing={false} 
+                            />
                             <div className="flex-1">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-sm font-bold text-primary-text">{comment.userHandle}</span>
@@ -174,7 +169,6 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
                                         {(() => {
                                             const ts = comment.timestamp;
                                             if (!ts) return "Just now";
-                                            // Check if it has toDate (Timestamp) or is Date
                                             const date = ts instanceof Date ? ts : (ts.toDate ? ts.toDate() : new Date());
                                             return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                                         })()}
@@ -193,7 +187,7 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
                 <div ref={bottomRef} className="h-4" />
             </div>
 
-            {/* Input - Increased padding and z-index */}
+            {/* Input */}
             <div className="p-4 bg-primary-bg border-t border-border-color pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                 <div className="relative">
                     <input 

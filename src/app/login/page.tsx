@@ -3,23 +3,35 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Shield, AlertTriangle, Fingerprint } from "lucide-react";
-import { useUser } from "@/lib/UserContext";
+import { User, Shield, AlertTriangle, Fingerprint, Eye, EyeOff, Terminal, Briefcase, Truck, Ghost, Check, Loader2 } from "lucide-react";
+import { useUser, UserProfile } from "@/lib/UserContext";
+import { useSonic, ImpactStyle } from "@/lib/SonicContext";
+
+const factions = [
+    { id: "Netrunner", name: "Netrunner", icon: Terminal, color: "text-cyan-400", bg: "bg-cyan-400/10", desc: "Hackers & data brokers." },
+    { id: "Corp", name: "Corp", icon: Briefcase, color: "text-blue-400", bg: "bg-blue-400/10", desc: "The elite establishment." },
+    { id: "Drifter", name: "Drifter", icon: Truck, color: "text-amber-400", bg: "bg-amber-400/10", desc: "Nomads of the waste." },
+    { id: "Ghost", name: "Ghost", icon: Ghost, color: "text-zinc-400", bg: "bg-zinc-400/10", desc: "Unknown entities." },
+];
 
 export default function LoginPage() {
   const { loginAnonymously, login, signup, firebaseUser, loading } = useUser();
+  const { playClick, playHaptic } = useSonic();
   const router = useRouter();
+  
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [mode, setMode] = useState<'guest' | 'login' | 'register'>('guest');
+  const [showPassword, setShowPassword] = useState(false);
+  const [mode, setMode] = useState<'guest' | 'login' | 'register'>('login');
   
-  // Registration State
+  // Form State
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [handle, setHandle] = useState("");
+  const [selectedFaction, setSelectedFaction] = useState<UserProfile['faction']>("Drifter");
+  const [rememberMe, setRememberMe] = useState(true);
 
   useEffect(() => {
-    // Redirect if already logged in
     if (firebaseUser && !loading) {
       router.push("/home");
     }
@@ -28,155 +40,243 @@ export default function LoginPage() {
   const handleAction = async () => {
     setIsAuthenticating(true);
     setError(null);
+    playClick(600, 0.1, 'sine');
+    playHaptic(ImpactStyle.Medium);
+
     try {
       if (mode === 'guest') {
+          await new Promise(resolve => setTimeout(resolve, 1000));
           await loginAnonymously();
       } else if (mode === 'login') {
-          if (!email || !password) throw new Error("Email and password required.");
+          if (!email || !password) throw new Error("IDENT_REQD: Missing Credentials.");
+          await new Promise(resolve => setTimeout(resolve, 1500));
           await login(email, password);
       } else {
-          if (!email || !password || !handle) throw new Error("All fields required.");
-          await signup(email, password, handle);
+          if (!email || !password || !handle) throw new Error("RECRUIT_ERROR: All fields required.");
+          if (password.length < 6) throw new Error("SECURITY_ERR: Access Key too short (min 6).");
+          if (handle.length < 3) throw new Error("IDENT_ERR: Codename too short.");
+          
+          // Neural Scan Sequence
+          await new Promise(resolve => setTimeout(resolve, 2000));
+
+          // Unique Handle Check
+          const { collection, query, where, getDocs } = await import("firebase/firestore");
+          const { db } = await import("@/lib/firebase");
+          const q = query(collection(db, "users"), where("handle", "==", handle.toUpperCase()));
+          const snap = await getDocs(q);
+          if (!snap.empty) throw new Error("IDENT_ERR: Codename already registered.");
+
+          await signup(email, password, handle, selectedFaction);
       }
-      // Router redirection handled by useEffect
-    } catch (err: unknown) { // Use unknown for better type safety
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Authentication failed.");
-      }
+    } catch (err: any) {
+      console.error(err);
+      let msg = "UPLINK_FAIL: Authentication timed out.";
+      if (err.code === 'auth/invalid-credential') msg = "IDENT_ERR: Invalid Access Key.";
+      if (err.code === 'auth/email-already-in-use') msg = "REGISTRY_ERR: Email already linked.";
+      if (err.message) msg = err.message;
+      
+      setError(msg);
       setIsAuthenticating(false);
+      playClick(150, 0.3, 'sawtooth');
+      playHaptic(ImpactStyle.Heavy);
     }
   };
 
+  const handleModeToggle = (newMode: typeof mode) => {
+      setMode(newMode);
+      setError(null);
+      playClick(440, 0.05, 'triangle');
+  };
+
   return (
-    <div className="min-h-screen w-full bg-primary-bg flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Noise/Grid */}
-      <div className="absolute inset-0 pointer-events-none opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-      <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+    <div className="min-h-screen w-full bg-primary-bg flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+      {/* Immersive Background */}
+      <div className="absolute inset-0 pointer-events-none opacity-20">
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px]" />
+      </div>
 
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md bg-secondary-bg/20 backdrop-blur-xl border border-border-color rounded-3xl p-8 relative z-10 shadow-[0_0_40px_-10px_rgba(var(--color-accent-1-rgb),0.3)]"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md relative z-10"
       >
-        {/* Header */}
-        <div className="flex flex-col items-center mb-8 text-center">
-          <div className="w-16 h-16 bg-accent-1/20 rounded-full flex items-center justify-center mb-4 border border-accent-1/50 shadow-[0_0_15px_var(--color-accent-1)]">
-            <Fingerprint className="w-8 h-8 text-accent-1" />
-          </div>
-          <div className="mb-2">
-              <span className="block text-[10px] font-mono tracking-[0.3em] text-secondary-text uppercase mb-1">A KM18 Production</span>
-              <h1 className="text-4xl font-bold text-primary-text tracking-tighter">ABHED</h1>
-              <span className="block text-[10px] font-light tracking-[0.5em] text-accent-1 uppercase mt-1">Your Digital Fortress</span>
-          </div>
-        </div>
-
-        {/* Mode Toggle */}
-        <div className="flex p-1 bg-secondary-bg/50 rounded-xl mb-6 border border-border-color">
-            <button 
-                onClick={() => setMode('guest')} 
-                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors ${mode === 'guest' ? 'bg-accent-1 text-primary-bg' : 'text-secondary-text hover:text-primary-text'}`}
-            >
-                Ghost
-            </button>
-            <button 
-                onClick={() => setMode('login')} 
-                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors ${mode === 'login' ? 'bg-accent-1 text-primary-bg' : 'text-secondary-text hover:text-primary-text'}`}
-            >
-                Sign In
-            </button>
-            <button 
-                onClick={() => setMode('register')} 
-                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors ${mode === 'register' ? 'bg-accent-1 text-primary-bg' : 'text-secondary-text hover:text-primary-text'}`}
-            >
-                Register
-            </button>
-        </div>
-
-        {/* Form Inputs */}
-        <AnimatePresence mode="wait">
-            {(mode === 'register' || mode === 'login') && (
-                <motion.div 
-                    key={mode}
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-4 mb-6 overflow-hidden"
-                >
-                    {mode === 'register' && (
-                        <input 
-                            type="text" 
-                            placeholder="CODENAME (HANDLE)" 
-                            value={handle}
-                            onChange={(e) => setHandle(e.target.value)}
-                            className="w-full bg-secondary-bg border border-border-color rounded-xl px-4 py-3 text-primary-text placeholder:text-secondary-text/50 focus:border-accent-1 outline-none text-sm font-mono uppercase"
-                        />
-                    )}
-                    <input 
-                        type="email" 
-                        placeholder="SECURE EMAIL" 
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-secondary-bg border border-border-color rounded-xl px-4 py-3 text-primary-text placeholder:text-secondary-text/50 focus:border-accent-1 outline-none text-sm font-mono"
-                    />
-                    <input 
-                        type="password" 
-                        placeholder="ACCESS KEY" 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-secondary-bg border border-border-color rounded-xl px-4 py-3 text-primary-text placeholder:text-secondary-text/50 focus:border-accent-1 outline-none text-sm font-mono"
-                    />
-                </motion.div>
-            )}
-        </AnimatePresence>
-
-        {/* Actions */}
-        <div className="space-y-4">
-          <button
-            onClick={handleAction}
-            disabled={isAuthenticating}
-            className="w-full group relative flex items-center justify-center gap-3 bg-accent-1 hover:bg-accent-1/90 text-primary-bg font-bold py-4 px-6 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+        {/* Branding */}
+        <div className="flex flex-col items-center mb-10 text-center">
+          <motion.div 
+            animate={isAuthenticating ? { scale: [1, 1.2, 1], rotate: 360 } : {}}
+            transition={{ duration: 2, repeat: isAuthenticating ? Infinity : 0 }}
+            className="w-20 h-20 bg-accent-1/10 rounded-2xl flex items-center justify-center mb-6 border border-accent-1/30 shadow-[0_0_30px_rgba(0,212,229,0.2)]"
           >
-            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-            
-            {isAuthenticating ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-primary-bg border-t-transparent rounded-full animate-spin" />
-                PROCESSING...
-              </span>
-            ) : (
-              <>
-                <User className="w-5 h-5" />
-                <span>
-                    {mode === 'guest' ? 'ENTER AS GHOST' : mode === 'login' ? 'ACCESS VAULT' : 'INITIALIZE PROTOCOL'}
-                </span>
-              </>
-            )}
-          </button>
-
-          <div className="relative py-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border-color/50"></span>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-primary-bg/50 backdrop-blur px-2 text-secondary-text/70">Secure Connection</span>
-            </div>
+            {isAuthenticating ? <Loader2 className="w-10 h-10 text-accent-1 animate-spin" /> : <Fingerprint className="w-10 h-10 text-accent-1" />}
+          </motion.div>
+          
+          <div className="space-y-1">
+              <span className="block text-[10px] font-mono tracking-[0.5em] text-secondary-text uppercase opacity-50">Identity Verification Required</span>
+              <h1 className="text-5xl font-black text-primary-text tracking-tighter italic">ABHED</h1>
+              <div className="flex items-center justify-center gap-2">
+                  <div className="h-px w-8 bg-accent-1/30" />
+                  <span className="text-[10px] font-bold tracking-[0.3em] text-accent-1 uppercase">KM18 Protocol v2.0</span>
+                  <div className="h-px w-8 bg-accent-1/30" />
+              </div>
           </div>
         </div>
 
-        {/* Footer/Status */}
-        <div className="mt-4 text-center">
-            {error && (
-                <div className="flex items-center justify-center gap-2 text-brand-orange text-xs font-mono mb-4 animate-pulse">
-                    <AlertTriangle className="w-3 h-3" />
-                    {error}
-                </div>
-            )}
-            <p className="text-[10px] text-secondary-text/50 font-mono uppercase tracking-widest">
-                System Version 0.9.2 // Beta
-            </p>
+        {/* Form Container */}
+        <div className="bg-secondary-bg/40 backdrop-blur-2xl border border-border-color rounded-[2.5rem] p-8 shadow-2xl shadow-black/50">
+            
+            {/* Tab Switcher */}
+            <div className="flex p-1 bg-black/40 rounded-2xl mb-8 border border-white/5">
+                {(['login', 'register', 'guest'] as const).map((m) => (
+                    <button 
+                        key={m}
+                        onClick={() => handleModeToggle(m)} 
+                        className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${mode === m ? 'bg-accent-1 text-black shadow-lg shadow-accent-1/20' : 'text-secondary-text hover:text-primary-text'}`}
+                    >
+                        {m}
+                    </button>
+                ))}
+            </div>
+
+            <div className="space-y-5">
+                <AnimatePresence mode="wait">
+                    {mode === 'register' && (
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-5">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-text ml-4">Codename</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g. NEON_SHADOW" 
+                                    value={handle}
+                                    onChange={(e) => setHandle(e.target.value.toUpperCase())}
+                                    className="w-full bg-black/40 border border-border-color rounded-2xl px-5 py-4 text-primary-text placeholder:text-secondary-text/30 focus:border-accent-1 focus:ring-1 focus:ring-accent-1/50 outline-none transition-all font-mono text-sm"
+                                />
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-text ml-4">Select Faction</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {factions.map((f) => (
+                                        <button
+                                            key={f.id}
+                                            onClick={() => { setSelectedFaction(f.id as any); playClick(500, 0.05, 'square'); }}
+                                            className={`p-3 rounded-2xl border flex flex-col items-center gap-2 transition-all ${selectedFaction === f.id ? `bg-accent-1/10 border-accent-1 ${f.color}` : 'bg-black/20 border-white/5 text-secondary-text hover:border-white/20'}`}
+                                        >
+                                            <f.icon className="w-5 h-5" />
+                                            <span className="text-[10px] font-bold uppercase">{f.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {mode !== 'guest' && (
+                    <>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-text ml-4">Registry Email</label>
+                        <input 
+                            type="email" 
+                            placeholder="OPERATIVE@NETWORK.COM" 
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full bg-black/40 border border-border-color rounded-2xl px-5 py-4 text-primary-text placeholder:text-secondary-text/30 focus:border-accent-1 focus:ring-1 focus:ring-accent-1/50 outline-none transition-all font-mono text-sm"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-text ml-4">Access Key</label>
+                        <div className="relative">
+                            <input 
+                                type={showPassword ? "text" : "password"} 
+                                placeholder="••••••••" 
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full bg-black/40 border border-border-color rounded-2xl px-5 py-4 text-primary-text placeholder:text-secondary-text/30 focus:border-accent-1 focus:ring-1 focus:ring-accent-1/50 outline-none transition-all font-mono text-sm"
+                            />
+                            <button 
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-5 top-1/2 -translate-y-1/2 text-secondary-text hover:text-accent-1 transition-colors"
+                            >
+                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between px-2">
+                        <button 
+                            onClick={() => setRememberMe(!rememberMe)}
+                            className="flex items-center gap-2 group"
+                        >
+                            <div className={`w-4 h-4 rounded border transition-colors flex items-center justify-center ${rememberMe ? 'bg-accent-1 border-accent-1' : 'border-border-color group-hover:border-accent-1'}`}>
+                                {rememberMe && <Check className="w-3 h-3 text-black font-bold" />}
+                            </div>
+                            <span className="text-[10px] font-bold text-secondary-text uppercase tracking-widest">Stay Linked</span>
+                        </button>
+                        {mode === 'login' && (
+                            <button className="text-[10px] font-bold text-accent-1 uppercase tracking-widest hover:underline">Key Recovery</button>
+                        )}
+                    </div>
+                    </>
+                )}
+
+                {mode === 'guest' && (
+                    <div className="py-10 text-center space-y-4">
+                        <div className="p-4 bg-accent-1/5 border border-accent-1/20 rounded-2xl inline-block">
+                            <Ghost className="w-10 h-10 text-accent-1 opacity-50" />
+                        </div>
+                        <p className="text-xs text-secondary-text leading-relaxed max-w-[200px] mx-auto">
+                            Ghost access allows restricted read-only browsing without neural persistence.
+                        </p>
+                    </div>
+                )}
+
+                <button
+                    onClick={handleAction}
+                    disabled={isAuthenticating}
+                    className="w-full relative group flex items-center justify-center gap-3 bg-accent-1 hover:bg-accent-1/90 text-black font-black py-5 rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 overflow-hidden mt-4 shadow-xl shadow-accent-1/10"
+                >
+                    {isAuthenticating ? (
+                        <div className="flex items-center gap-3">
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <span className="tracking-widest uppercase text-xs">Synchronizing...</span>
+                        </div>
+                    ) : (
+                        <>
+                            <Shield className="w-5 h-5" />
+                            <span className="tracking-widest uppercase text-xs">
+                                {mode === 'guest' ? 'Initialize Ghost Link' : mode === 'login' ? 'Establish Secure Uplink' : 'Begin Recruitment'}
+                            </span>
+                        </>
+                    )}
+                </button>
+            </div>
+        </div>
+
+        {/* Footer Status */}
+        <div className="mt-8 text-center space-y-4">
+            <AnimatePresence>
+                {error && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center justify-center gap-2 text-red-400 text-[10px] font-mono bg-red-400/10 py-2 px-4 rounded-full border border-red-400/20 inline-flex mx-auto animate-pulse"
+                    >
+                        <AlertTriangle className="w-3 h-3" />
+                        {error}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            
+            <div className="flex items-center justify-center gap-4 text-[10px] text-secondary-text/40 font-mono uppercase tracking-[0.2em]">
+                <span>Status: Optimal</span>
+                <div className="w-1 h-1 rounded-full bg-green-500/50" />
+                <span>Nodes: 482</span>
+                <div className="w-1 h-1 rounded-full bg-green-500/50" />
+                <span>v1.0.4-KM18</span>
+            </div>
         </div>
       </motion.div>
     </div>

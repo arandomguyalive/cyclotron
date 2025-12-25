@@ -89,6 +89,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
         userId: firebaseUser.uid,
         userHandle: user?.handle || "ghost_user",
         userAvatar: user?.avatarSeed || "default",
+        userAvatarUrl: user?.avatarUrl || null,
         region: region,
         allowedTiers: allowedTiers, 
         blockedRegions: blockedRegions.split(',').map(r => r.trim().toUpperCase()).filter(r => r.length > 0),
