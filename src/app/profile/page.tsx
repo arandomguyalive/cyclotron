@@ -154,7 +154,10 @@ function ProfileContent() {
               setIsFollowing(true);
               toast(`Following @${targetUser.handle}`, "success");
           }
-      } catch (e) { toast("Follow protocol failed", "error"); }
+      } catch (e) { 
+          console.error("Follow error:", e);
+          toast(`Follow protocol failed: ${(e as Error).message}`, "error"); 
+      }
   };
 
   const handleStatClick = (type: string) => {
