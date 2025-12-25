@@ -224,6 +224,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                 faction: "Ghost",
                                                 tier: "sovereign",
                                                 isBlacklist: true,
+                                                isOwner: true,
                                                 stats: { following: 0, followers: 0, likes: 0, credits: 1000, reputation: 100 }
                                             });
 
@@ -238,6 +239,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                 faction: "Netrunner",
                                                 tier: "sovereign",
                                                 isBlacklist: true,
+                                                isOwner: true,
                                                 stats: { following: 0, followers: 0, likes: 0, credits: 1000, reputation: 100 }
                                             });
 

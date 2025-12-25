@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, Zap, Diamond, Crown, Infinity as InfinityIcon, CheckCircle2 } from "lucide-react";
+import { Shield, Zap, Diamond, Crown, Infinity as InfinityIcon, CheckCircle2, Cpu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -8,11 +8,12 @@ interface IdentityBadgesProps {
     tier?: string;
     faction?: string;
     isBlacklist?: boolean;
+    isOwner?: boolean;
     size?: "sm" | "md" | "lg";
     className?: string;
 }
 
-export function IdentityBadges({ tier = "lobby", faction, isBlacklist = false, size = "md", className }: IdentityBadgesProps) {
+export function IdentityBadges({ tier = "lobby", faction, isBlacklist = false, isOwner = false, size = "md", className }: IdentityBadgesProps) {
     const iconSize = {
         sm: "w-3 h-3",
         md: "w-4 h-4",
@@ -30,6 +31,18 @@ export function IdentityBadges({ tier = "lobby", faction, isBlacklist = false, s
 
     return (
         <div className={cn("flex items-center gap-1.5", className)}>
+            {/* System Architect (Owner Only) */}
+            {isOwner && (
+                <motion.div 
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="text-brand-cyan drop-shadow-[0_0_8px_#00D4E5]"
+                    title="System Architect"
+                >
+                    <Cpu className={cn(iconSize)} />
+                </motion.div>
+            )}
+
             {/* Tier 5: Sovereign (The Crown) */}
             {tier === "sovereign" && (
                 <motion.div 

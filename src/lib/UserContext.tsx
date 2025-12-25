@@ -28,6 +28,7 @@ export interface UserProfile {
   faction: "Netrunner" | "Drifter" | "Corp" | "Ghost";
   tier: UserTier;
   isBlacklist?: boolean; // First 500 lifetime creators
+  isOwner?: boolean;
   accessType?: "LIFETIME_BLACKLIST";
   billingCycle?: "monthly" | "annual";
   inventory?: string[];
@@ -139,7 +140,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 return; 
             }
 
-            setUser({ ...data, uid: currentUser.uid, isBlacklist: data.isBlacklist || false });
+            const isOwner = ['ABHI18', 'KINJAL18'].includes(data.handle?.toUpperCase());
+            if (isOwner) {
+                data.tier = "sovereign";
+                data.isBlacklist = true;
+                data.isOwner = true;
+            }
+
+            setUser({ ...data, uid: currentUser.uid, isBlacklist: data.isBlacklist || false, isOwner });
           } else {
             setUser(null);
           }

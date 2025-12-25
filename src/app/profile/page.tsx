@@ -250,7 +250,18 @@ function ProfileContent() {
               <div className="mt-8 relative z-30">
                 <div className="flex items-center gap-3">
                     <h1 className="text-2xl font-bold">{targetUser.displayName}</h1>
-                    <IdentityBadges tier={targetUser.tier} faction={targetUser.faction} isBlacklist={(targetUser as any).isBlacklist} size="lg" />
+                    <IdentityBadges 
+                        tier={targetUser.tier} 
+                        faction={targetUser.faction} 
+                        isBlacklist={(targetUser as any).isBlacklist} 
+                        isOwner={(targetUser as any).isOwner || ['ABHI18', 'KINJAL18'].includes(targetUser.handle?.toUpperCase())}
+                        size="lg" 
+                    />
+                    {((targetUser as any).isOwner || ['ABHI18', 'KINJAL18'].includes(targetUser.handle?.toUpperCase())) && (
+                        <div className="px-2 py-0.5 bg-brand-cyan/10 border border-brand-cyan/30 rounded-md">
+                            <span className="text-[10px] font-bold text-brand-cyan uppercase tracking-widest">System Architect</span>
+                        </div>
+                    )}
                     {(targetUser as any).isBlacklist && (
                         <div className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded-md">
                             <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Blacklist Member</span>

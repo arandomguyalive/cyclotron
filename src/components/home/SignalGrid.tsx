@@ -24,6 +24,7 @@ interface Post {
     userTier?: string;
     userFaction?: string;
     userIsBlacklist?: boolean;
+    userIsOwner?: boolean;
     createdAt: Timestamp | Date;
     type: "post" | "text";
     likes: number;
@@ -311,7 +312,7 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2">
                             <span className={`text-sm font-bold ${isFree ? 'text-secondary-text' : 'text-primary-text'}`}>@{post.userHandle}</span>
-                            <IdentityBadges tier={post.userTier} faction={post.userFaction} isBlacklist={post.userIsBlacklist} size="sm" />
+                            <IdentityBadges tier={post.userTier} faction={post.userFaction} isBlacklist={post.userIsBlacklist} isOwner={post.userIsOwner} size="sm" />
                             {firebaseUser && post.userId !== firebaseUser.uid && (
                                 <button onClick={handleFollow} className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${followingSet.has(post.userId) ? 'border-accent-1 text-accent-1 bg-accent-1/10' : 'border-secondary-text text-secondary-text'}`}>{followingSet.has(post.userId) ? 'Linked' : 'Link+'}</button>
                             )}

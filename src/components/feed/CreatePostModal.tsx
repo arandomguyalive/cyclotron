@@ -92,6 +92,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
         userAvatarUrl: user?.avatarUrl || null,
         userTier: user?.tier || "lobby",
         userIsBlacklist: user?.isBlacklist || false,
+        userIsOwner: user?.isOwner || false,
         region: region,
         allowedTiers: allowedTiers, 
         blockedRegions: blockedRegions.split(',').map(r => r.trim().toUpperCase()).filter(r => r.length > 0),

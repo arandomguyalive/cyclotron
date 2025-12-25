@@ -28,6 +28,7 @@ export interface Post {
   userTier?: string;
   userFaction?: string;
   userIsBlacklist?: boolean;
+  userIsOwner?: boolean;
   likes: number;
   shares?: number;
   createdAt: Timestamp | Date;
@@ -263,7 +264,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' 
                 <UserAvatar seed={p.userAvatar} url={p.userAvatarUrl} size="sm" isBlacklist={p.userIsBlacklist} showRing={false} />
                 <div className="flex items-center gap-2">
                     <h3 className="font-bold text-lg text-white drop-shadow-md">@{p.userHandle}</h3>
-                    <IdentityBadges tier={p.userTier} faction={p.userFaction} isBlacklist={p.userIsBlacklist} size="sm" />
+                    <IdentityBadges tier={p.userTier} faction={p.userFaction} isBlacklist={p.userIsBlacklist} isOwner={p.userIsOwner} size="sm" />
                 </div>
             </div>
           </Link>
