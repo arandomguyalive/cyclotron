@@ -12,7 +12,8 @@ import { DailyDirective } from "@/components/home/widgets/DailyDirective";
 import { SystemTerminal } from "@/components/home/widgets/SystemTerminal";
 import { ScannerModal } from "@/components/home/widgets/ScannerModal";
 import { CreatePostModal } from "@/components/feed/CreatePostModal";
-import { Activity, Shield, Globe, Lock, Server, Radio, Ghost } from "lucide-react";
+import { Activity, Shield, Globe, Lock, Server, Radio, Ghost, Search } from "lucide-react";
+import Link from "next/link";
 
 export default function HomePage() {
   const { user, firebaseUser, loading } = useUser();
@@ -228,13 +229,27 @@ export default function HomePage() {
 
                                     <span>{config.label}</span>
 
-                                </div>
+                                                                </div>
 
-                            </div>
+                                                            </div>
 
-                         </div>
+                                                         </div>
 
-                       </header>
+                                
+
+                                                         <Link 
+
+                                                            href="/chat" 
+
+                                                            className="p-2.5 rounded-full bg-secondary-bg/50 border border-border-color/50 text-secondary-text hover:text-primary-text hover:border-accent-1/50 transition-all active:scale-95"
+
+                                                         >
+
+                                                            <Search className="w-5 h-5" />
+
+                                                         </Link>
+
+                                                       </header>
 
                  
 
