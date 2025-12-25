@@ -155,29 +155,47 @@ function ProfileContent() {
   const handleFollow = async () => {
       if (!firebaseUser || !targetUser) return;
       playClick(600, 0.1, 'square');
+      
+      const wasFollowing = isFollowing;
       const followRef = doc(db, "users", firebaseUser.uid, "following", targetUser.uid);
+      
+      // Optimistic UI Update
+      setIsFollowing(!wasFollowing);
+      
+      setTargetUser(prev => {
+          if (!prev) return null;
+          const current = parseInt(prev.stats?.followers || '0');
+          const next = !wasFollowing ? current + 1 : Math.max(0, current - 1);
+          return {
+              ...prev,
+              stats: {
+                  ...prev.stats,
+                  followers: next.toString(),
+                  following: prev.stats?.following || '0',
+                  likes: prev.stats?.likes || '0',
+                  credits: prev.stats?.credits || '0',
+                  reputation: prev.stats?.reputation || '0'
+              }
+          };
+      });
+
       try {
-          if (isFollowing) {
+          if (wasFollowing) {
               await deleteDoc(followRef);
-              setIsFollowing(false);
               toast(`Unfollowed @${targetUser.handle}`, "info");
           } else {
               await setDoc(followRef, { timestamp: new Date() });
-              setIsFollowing(true);
               toast(`Following @${targetUser.handle}`, "success");
           }
       } catch (e) { 
-          // Fallback for strict Firestore rules (Simulation Mode)
-          console.warn("Firestore write failed, falling back to local simulation.", e);
+          console.warn("Firestore write failed, using local simulation.", e);
           const key = `sim_following_${targetUser.uid}`;
           
-          if (isFollowing) {
+          if (wasFollowing) {
               localStorage.removeItem(key);
-              setIsFollowing(false);
               toast(`Unfollowed @${targetUser.handle} (Simulated)`, "info");
           } else {
               localStorage.setItem(key, "true");
-              setIsFollowing(true);
               toast(`Following @${targetUser.handle} (Simulated)`, "success");
           }
       }
