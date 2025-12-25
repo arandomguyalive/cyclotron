@@ -52,7 +52,27 @@ export default function HomePage() {
       setIsMissionModalOpen(true);
   };
 
-  if (loading || !firebaseUser || !user) return null;
+  if (loading || !firebaseUser) return null;
+
+  if (!user) {
+      return (
+          <div className="min-h-screen bg-primary-bg flex flex-col items-center justify-center p-6 text-center">
+              <Shield className="w-16 h-16 text-red-500 mb-4 animate-pulse" />
+              <h2 className="text-xl font-bold text-primary-text uppercase tracking-tighter">Identity Not Found</h2>
+              <p className="text-xs text-secondary-text mt-2 font-mono">Your profile could not be synchronized with the ABHED Registry.</p>
+              <button 
+                onClick={() => {
+                    const { auth } = require("@/lib/firebase");
+                    auth.signOut();
+                    router.push("/login");
+                }}
+                className="mt-8 px-6 py-2 border border-accent-1 text-accent-1 rounded-xl text-[10px] font-bold uppercase"
+              >
+                  Reset Connection
+              </button>
+          </div>
+      );
+  }
 
   const tier = user.tier || "lobby";
 

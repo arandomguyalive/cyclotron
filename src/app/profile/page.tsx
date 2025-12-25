@@ -95,7 +95,30 @@ function ProfileContent() {
             });
         }
         setFetching(false);
+    }, (error) => {
+        console.error("Profile snapshot failed:", error);
+        setTargetUser({
+            uid: uidToFetch,
+            displayName: "Sync Failed",
+            handle: "error",
+            bio: "Signal interference prevented profile synchronization.",
+            avatarSeed: "error",
+            tier: "lobby"
+        });
+        setFetching(false);
+        toast("Signal Lost: Failed to sync profile.", "error");
     });
+
+    // Safety timeout: if fetching is still true after 10s, force it false
+    const timeout = setTimeout(() => {
+        setFetching(prev => {
+            if (prev) {
+                console.warn("Profile fetch timed out.");
+                return false;
+            }
+            return prev;
+        });
+    }, 10000);
 
     const fetchContent = async () => {
         try {
@@ -125,6 +148,7 @@ function ProfileContent() {
     return () => {
         unsubscribeProfile();
         if (unsubscribeFollow) unsubscribeFollow();
+        clearTimeout(timeout);
     };
   }, [viewId, firebaseUser, userLoading, isOwnProfile]);
 

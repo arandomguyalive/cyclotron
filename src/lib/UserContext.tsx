@@ -98,83 +98,92 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         const userRef = doc(db, "users", currentUser.uid);
         
         unsubscribeSnapshot = onSnapshot(userRef, async (docSnap) => {
-          if (docSnap.exists()) {
-            let data = docSnap.data() as UserProfile;
-            let needsFix = false;
-            
-            if (!data.stats || typeof data.stats !== 'object') {
-                data.stats = { following: 0, followers: 0, likes: 0, credits: 500, reputation: 10 };
-                needsFix = true;
+          try {
+            if (docSnap.exists()) {
+              let data = docSnap.data() as UserProfile;
+              let needsFix = false;
+              
+              if (!data.stats || typeof data.stats !== 'object') {
+                  data.stats = { following: 0, followers: 0, likes: 0, credits: 500, reputation: 10 };
+                  needsFix = true;
+              } else {
+                  const keys: (keyof UserProfile['stats'])[] = ['following', 'followers', 'likes', 'credits', 'reputation'];
+                  keys.forEach(key => {
+                      const val = data.stats[key];
+                      if (typeof val === 'string') {
+                          (data.stats as any)[key] = Number((val as string).replace(/[^\d.-]/g, '')) || 0;
+                          needsFix = true;
+                      }
+                  });
+              }
+
+              // Map old tier names to new hierarchy if they exist
+              const legacyMap: Record<string, UserTier> = {
+                  "lobby": "lobby",
+                  "shield": "shield",
+                  "professional": "professional",
+                  "ultra_elite": "ultra_elite"
+              };
+
+              if (data.tier && legacyMap[data.tier]) {
+                  data.tier = legacyMap[data.tier];
+                  needsFix = true;
+              }
+
+              if (data.accessType === "LIFETIME_BLACKLIST") {
+                  data.isBlacklist = true;
+                  data.tier = "professional";
+                  needsFix = true;
+              }
+
+              if (needsFix) {
+                  await setDoc(userRef, data, { merge: true });
+                  return; 
+              }
+
+              const isOwner = ['ABHI18', 'KINJAL18'].includes(data.handle?.toUpperCase());
+              if (isOwner) {
+                  data.isOwner = true;
+                  // If tier isn't set yet (newly created), default to sovereign
+                  if (!data.tier) data.tier = "sovereign";
+                  data.isBlacklist = true;
+              }
+
+              setUser({ ...data, uid: currentUser.uid, isBlacklist: data.isBlacklist || false, isOwner });
             } else {
-                const keys: (keyof UserProfile['stats'])[] = ['following', 'followers', 'likes', 'credits', 'reputation'];
-                keys.forEach(key => {
-                    const val = data.stats[key];
-                    if (typeof val === 'string') {
-                        (data.stats as any)[key] = Number((val as string).replace(/[^\d.-]/g, '')) || 0;
-                        needsFix = true;
-                    }
-                });
+              // Document doesn't exist - Check if it's an owner logging in for the first time
+              const ownerEmails = ['abhi18@abhed.network', 'kinjal18@abhed.network'];
+              if (currentUser.email && ownerEmails.includes(currentUser.email)) {
+                  const handle = currentUser.email.split('@')[0].toUpperCase();
+                  const newOwner: UserProfile = {
+                      fullName: `${handle} Architect`,
+                      displayName: `${handle} Owner`,
+                      handle: handle,
+                      email: currentUser.email,
+                      phoneNumber: "+0000000000",
+                      dob: "1990-01-01",
+                      bio: "System Architect of ABHED.",
+                      avatarSeed: handle,
+                      faction: "Ghost",
+                      tier: "sovereign",
+                      isBlacklist: true,
+                      isOwner: true,
+                      stats: { following: 0, followers: 0, likes: 0, credits: 1000, reputation: 100 }
+                  };
+                  await setDoc(userRef, newOwner);
+              } else {
+                  setUser(null);
+              }
             }
-
-            // Map old tier names to new hierarchy if they exist
-            const legacyMap: Record<string, UserTier> = {
-                "lobby": "lobby",
-                "shield": "shield",
-                "professional": "professional",
-                "ultra_elite": "ultra_elite"
-            };
-
-            if (data.tier && legacyMap[data.tier]) {
-                data.tier = legacyMap[data.tier];
-                needsFix = true;
-            }
-
-            if (data.accessType === "LIFETIME_BLACKLIST") {
-                data.isBlacklist = true;
-                data.tier = "professional";
-                needsFix = true;
-            }
-
-            if (needsFix) {
-                await setDoc(userRef, data, { merge: true });
-                return; 
-            }
-
-            const isOwner = ['ABHI18', 'KINJAL18'].includes(data.handle?.toUpperCase());
-            if (isOwner) {
-                data.isOwner = true;
-                // If tier isn't set yet (newly created), default to sovereign
-                if (!data.tier) data.tier = "sovereign";
-                data.isBlacklist = true;
-            }
-
-            setUser({ ...data, uid: currentUser.uid, isBlacklist: data.isBlacklist || false, isOwner });
-          } else {
-            // Document doesn't exist - Check if it's an owner logging in for the first time
-            const ownerEmails = ['abhi18@abhed.network', 'kinjal18@abhed.network'];
-            if (currentUser.email && ownerEmails.includes(currentUser.email)) {
-                const handle = currentUser.email.split('@')[0].toUpperCase();
-                const newOwner: UserProfile = {
-                    fullName: `${handle} Architect`,
-                    displayName: `${handle} Owner`,
-                    handle: handle,
-                    email: currentUser.email,
-                    phoneNumber: "+0000000000",
-                    dob: "1990-01-01",
-                    bio: "System Architect of ABHED.",
-                    avatarSeed: handle,
-                    faction: "Ghost",
-                    tier: "sovereign",
-                    isBlacklist: true,
-                    isOwner: true,
-                    stats: { following: 0, followers: 0, likes: 0, credits: 1000, reputation: 100 }
-                };
-                await setDoc(userRef, newOwner);
-                // The snapshot listener will trigger again and set the user state
-            } else {
-                setUser(null);
-            }
+          } catch (err) {
+            console.error("Firestore snapshot error:", err);
+            setUser(null);
+          } finally {
+            setLoading(false);
           }
+        }, (error) => {
+          console.error("onSnapshot failed:", error);
+          setUser(null);
           setLoading(false);
         });
       } else {
