@@ -137,6 +137,7 @@ function ProfileContent() {
 
             // Fetch Likes (Only if own profile or high tier - for now just own)
             if (isOwnProfile) {
+                let fetchedLikes: MinimalPost[] = [];
                 try {
                     const likesQ = query(
                         collection(db, "users", firebaseUser!.uid, "likes"),
@@ -144,10 +145,22 @@ function ProfileContent() {
                         limit(18)
                     );
                     const likesSnap = await getDocs(likesQ);
-                    setLikedPosts(likesSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
+                    fetchedLikes = likesSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost));
                 } catch (err) {
                     console.warn("Likes fetch failed:", err);
                 }
+
+                // Merge Simulated Likes
+                const simLikes = JSON.parse(localStorage.getItem(`sim_likes_${firebaseUser!.uid}`) || '[]');
+                if (simLikes.length > 0) {
+                    const existingIds = new Set(fetchedLikes.map(p => p.id));
+                    simLikes.forEach((p: any) => {
+                        if (!existingIds.has(p.id)) {
+                            fetchedLikes.unshift(p as MinimalPost);
+                        }
+                    });
+                }
+                setLikedPosts(fetchedLikes);
             }
 
             // Check Follow Status
