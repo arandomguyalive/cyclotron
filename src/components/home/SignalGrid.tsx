@@ -10,6 +10,7 @@ import { useToast } from "@/lib/ToastContext";
 import { extractMessageFromImage } from "@/lib/steg";
 import { CommentModal } from "@/components/feed/CommentModal";
 import { UserAvatar } from "../ui/UserAvatar";
+import { IdentityBadges } from "../ui/IdentityBadges";
 
 interface Post {
     id: string;
@@ -20,6 +21,8 @@ interface Post {
     userHandle: string;
     userAvatar: string;
     userAvatarUrl?: string;
+    userTier?: string;
+    userFaction?: string;
     createdAt: Timestamp | Date;
     type: "post" | "text";
     likes: number;
@@ -196,7 +199,6 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
             }
             await batch.commit();
         } catch (e: any) { 
-            console.warn("[LIKE] Increment fail, fallback to legacy sync", e);
             try {
                 const batch = writeBatch(db);
                 if (!isLiked) {
@@ -277,23 +279,13 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
             toast("No hidden message detected.", "info");
             return;
         }
-
         try {
-            toast("Analyzing image for hidden signals...", "info");
             const response = await fetch(post.mediaUrl);
             const blob = await response.blob();
             const imageFile = new File([blob], "stego_image.png", { type: blob.type });
-
             const extractedMessage = await extractMessageFromImage(imageFile);
-            if (extractedMessage) {
-                toast(`Hidden Message: ${extractedMessage}`, "success");
-            } else {
-                toast("No decipherable hidden message found.", "warning");
-            }
-        } catch (error) {
-            console.error("Error extracting hidden message:", error);
-            toast("Failed to extract hidden message.", "error");
-        }
+            toast(extractedMessage ? `Message: ${extractedMessage}` : "Decryption failed", extractedMessage ? "success" : "warning");
+        } catch (error) {}
     };
 
     const isTierAllowed = !post.allowedTiers || post.allowedTiers.length === 0 || post.allowedTiers.includes(viewerTier);
@@ -311,22 +303,18 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
     }
 
     return (
-        <div className="w-full border-b border-white/5 pb-6">
+        <div className="w-full border-b border-white/5 pb-6 font-sans">
             <div className="px-4 flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                    <UserAvatar 
-                        seed={post.userHandle} 
-                        url={post.userAvatarUrl} 
-                        size="sm" 
-                        showRing={false} 
-                    />
-                    <div className="flex items-center gap-2">
-                        <span className={`text-sm font-bold ${isFree ? 'text-secondary-text' : 'text-primary-text'}`}>@{post.userHandle}</span>
-                        {firebaseUser && post.userId !== firebaseUser.uid && (
-                            <button onClick={handleFollow} className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${followingSet.has(post.userId) ? 'border-accent-1 text-accent-1 bg-accent-1/10' : 'border-secondary-text text-secondary-text'}`}>
-                                {followingSet.has(post.userId) ? 'Linked' : 'Link+'}
-                            </button>
-                        )}
+                    <UserAvatar seed={post.userHandle} url={post.userAvatarUrl} size="sm" showRing={false} />
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                            <span className={`text-sm font-bold ${isFree ? 'text-secondary-text' : 'text-primary-text'}`}>@{post.userHandle}</span>
+                            <IdentityBadges tier={post.userTier} faction={post.userFaction} size="sm" />
+                            {firebaseUser && post.userId !== firebaseUser.uid && (
+                                <button onClick={handleFollow} className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${followingSet.has(post.userId) ? 'border-accent-1 text-accent-1 bg-accent-1/10' : 'border-secondary-text text-secondary-text'}`}>{followingSet.has(post.userId) ? 'Linked' : 'Link+'}</button>
+                            )}
+                        </div>
                     </div>
                 </div>
                 <MoreHorizontal className="w-5 h-5 text-secondary-text" />
@@ -359,10 +347,7 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                     </div>
                     <div className="flex items-center gap-1.5">
                         <Share2 onClick={async () => {
-                            if (isFree) {
-                                toast("UPGRADE REQUIRED: Secure sharing restricted.", "error");
-                                return;
-                            }
+                            if (isFree) { toast("UPGRADE REQUIRED: Secure sharing restricted.", "error"); return; }
                             try {
                                 await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });
                                 navigator.clipboard.writeText(`${window.location.origin}/profile?view=${post.userId}`);
@@ -372,7 +357,7 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                         {sharesCount > 0 && <span className="text-xs font-bold text-secondary-text font-mono">{sharesCount}</span>}
                     </div>
                 </div>
-                <Bookmark onClick={handleSave} className={`w-6 h-6 transition-colors cursor-pointer ${savedPosts.has(post.id) ? 'text-accent-1 fill-accent-1' : 'text-primary-text hover:text-accent-1'}`} />
+                <Bookmark onClick={handleSave} className={`w-6 h-6 transition-colors cursor-pointer ${savedPosts.has(post.id) ? 'text-accent-1 fill-accent-1' : 'text-primary-text'}`} />
             </div>
 
             <div className="px-4 mt-2 space-y-1">

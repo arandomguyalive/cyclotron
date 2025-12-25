@@ -8,6 +8,7 @@ import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
 import { UserAvatar } from "../ui/UserAvatar";
+import { IdentityBadges } from "../ui/IdentityBadges";
 
 interface Comment {
   id: string;
@@ -16,6 +17,8 @@ interface Comment {
   userHandle: string;
   userAvatar: string;
   userAvatarUrl?: string;
+  userTier?: string;
+  userFaction?: string;
   timestamp: Timestamp | Date;
 }
 
@@ -34,30 +37,15 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Tier check
   const canComment = user && user.tier !== 'free';
 
   useEffect(() => {
     if (!isOpen || !postId) return;
-    console.log(`[CommentModal] Listening to: posts/${postId}/comments`);
 
-    const q = query(
-      collection(db, "posts", postId, "comments"),
-      orderBy("timestamp", "asc")
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedComments: Comment[] = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Comment[];
-      setComments(fetchedComments);
+    const unsubscribe = onSnapshot(query(collection(db, "posts", postId, "comments"), orderBy("timestamp", "asc")), (snapshot) => {
+      setComments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Comment)));
       setLoading(false);
-      
-      // Auto-scroll to bottom on new comment
-      if (fetchedComments.length > 0) {
-          setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-      }
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
     }, (error) => {
         console.error("Comments listen error:", error);
         setLoading(false);
@@ -68,7 +56,6 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
 
   const handleSubmit = async () => {
     if (!input.trim() || !firebaseUser || !canComment) return;
-    
     playClick(500, 0.1, 'square');
     const text = input.trim();
     setInput(""); 
@@ -78,11 +65,13 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
 
     try {
       batch.set(commentRef, {
-        text: text,
+        text,
         userId: firebaseUser.uid,
         userHandle: user?.handle || "Unknown",
         userAvatar: user?.avatarSeed || "default",
         userAvatarUrl: user?.avatarUrl || null,
+        userTier: user?.tier || 'free',
+        userFaction: user?.faction || null,
         timestamp: serverTimestamp()
       });
       
@@ -98,117 +87,56 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
               read: false
           });
       }
-
       await batch.commit();
-    } catch (e) {
-      console.error("[COMMENT] Batch failed:", e);
-    }
+    } catch (e) {}
   };
 
   const handleDelete = async (commentId: string) => {
       if (!confirm("Delete transmission?")) return;
       try {
           await deleteDoc(doc(db, "posts", postId, "comments", commentId));
-      } catch (e) {
-          console.error("Delete failed", e);
-      }
+      } catch (e) {}
   }
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
-          />
-          
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[200] bg-secondary-bg border-t border-border-color rounded-t-3xl h-[75vh] flex flex-col overflow-hidden shadow-[0_-10px_50px_rgba(0,0,0,0.5)]"
-          >
-            {/* Header */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]" />
+          <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 300 }} className="fixed bottom-0 left-0 right-0 z-[200] bg-secondary-bg border-t border-border-color rounded-t-3xl h-[75vh] flex flex-col overflow-hidden shadow-[0_-10px_50px_rgba(0,0,0,0.5)]">
             <div className="px-6 py-4 border-b border-border-color flex items-center justify-between bg-primary-bg sticky top-0 z-10">
-                <span className="font-bold text-primary-text flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-accent-1" />
-                    Transmissions ({comments.length})
-                </span>
-                <button onClick={onClose} className="p-2 hover:bg-secondary-bg rounded-full transition-colors">
-                    <X className="w-5 h-5 text-secondary-text" />
-                </button>
+                <span className="font-bold text-primary-text flex items-center gap-2"><MessageCircle className="w-5 h-5 text-accent-1" />Transmissions ({comments.length})</span>
+                <button onClick={onClose} className="p-2 hover:bg-secondary-bg rounded-full transition-colors"><X className="w-5 h-5 text-secondary-text" /></button>
             </div>
-
-            {/* List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
                 {loading ? (
                     <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-accent-1" /></div>
                 ) : comments.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-secondary-text opacity-50">
-                        <MessageCircle className="w-12 h-12 mb-2" />
-                        <p>No signals captured.</p>
-                    </div>
+                    <div className="flex flex-col items-center justify-center h-full text-secondary-text opacity-50"><MessageCircle className="w-12 h-12 mb-2" /><p>No signals captured.</p></div>
                 ) : (
                     comments.map((comment) => (
                         <div key={comment.id} className="flex gap-3">
-                            <UserAvatar 
-                                size="sm" 
-                                seed={comment.userAvatar} 
-                                url={comment.userAvatarUrl} 
-                                showRing={false} 
-                            />
+                            <UserAvatar size="sm" seed={comment.userAvatar} url={comment.userAvatarUrl} showRing={false} />
                             <div className="flex-1">
-                                <div className="flex items-baseline gap-2">
+                                <div className="flex items-center gap-2">
                                     <span className="text-sm font-bold text-primary-text">{comment.userHandle}</span>
-                                    <span className="text-[10px] text-secondary-text">
-                                        {(() => {
-                                            const ts = comment.timestamp;
-                                            if (!ts) return "Just now";
-                                            const date = ts instanceof Date ? ts : (ts.toDate ? ts.toDate() : new Date());
-                                            return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                                        })()}
-                                    </span>
+                                    <IdentityBadges tier={comment.userTier} faction={comment.userFaction} size="sm" />
+                                    <span className="text-[10px] text-secondary-text">{(() => { const ts = comment.timestamp; if (!ts) return "Just now"; const d = ts instanceof Date ? ts : (ts.toDate ? ts.toDate() : new Date()); return d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); })()}</span>
                                 </div>
                                 <p className="text-sm text-secondary-text/90 mt-0.5 break-words font-light">{comment.text}</p>
                             </div>
                             {(comment.userId === firebaseUser?.uid || postOwnerId === firebaseUser?.uid) && (
-                                <button onClick={() => handleDelete(comment.id)} className="text-secondary-text/30 hover:text-red-500 transition-colors">
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                                <button onClick={() => handleDelete(comment.id)} className="text-secondary-text/30 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
                             )}
                         </div>
                     ))
                 )}
                 <div ref={bottomRef} className="h-4" />
             </div>
-
-            {/* Input */}
             <div className="p-4 bg-primary-bg border-t border-border-color pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                 <div className="relative">
-                    <input 
-                        type="text" 
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder={canComment ? "Broadcast message..." : "Upgrade to broadcast"}
-                        disabled={!canComment}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                        className="w-full bg-secondary-bg border border-border-color rounded-full pl-4 pr-12 py-3 text-primary-text focus:border-accent-1 outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                    />
-                    {canComment ? (
-                        <button 
-                            onClick={handleSubmit}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-accent-1 text-primary-bg rounded-full hover:scale-105 transition-transform"
-                        >
-                            <Send className="w-4 h-4" />
-                        </button>
-                    ) : (
-                        <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-text" />
-                    )}
+                    <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder={canComment ? "Broadcast message..." : "Upgrade to broadcast"} disabled={!canComment} onKeyDown={(e) => e.key === 'Enter' && handleSubmit()} className="w-full bg-secondary-bg border border-border-color rounded-full pl-4 pr-12 py-3 text-primary-text focus:border-accent-1 outline-none disabled:opacity-50 transition-all" />
+                    {canComment ? <button onClick={handleSubmit} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-accent-1 text-primary-bg rounded-full hover:scale-105 transition-transform"><Send className="w-4 h-4" /></button> : <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-text" />}
                 </div>
             </div>
           </motion.div>

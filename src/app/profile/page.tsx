@@ -13,6 +13,7 @@ import { collection, query, where, getDocs, doc, onSnapshot, deleteDoc, orderBy,
 import { db } from "@/lib/firebase";
 import { useToast } from "@/lib/ToastContext";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { IdentityBadges } from "@/components/ui/IdentityBadges";
 
 interface MinimalPost {
     id: string;
@@ -29,6 +30,7 @@ interface UserProfileData {
     avatarUrl?: string;
     coverImage?: string;
     tier: string;
+    faction?: string;
     stats?: {
         following: number;
         followers: number;
@@ -245,11 +247,17 @@ function ProfileContent() {
               </div>
 
               <div className="mt-8 relative z-30">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                     <h1 className="text-2xl font-bold">{targetUser.displayName}</h1>
-                    {targetUser.tier === 'lifetime' && <Star className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" />}
+                    <IdentityBadges tier={targetUser.tier} faction={targetUser.faction} size="lg" />
                 </div>
-                <p className="text-accent-1 font-mono text-sm">@{targetUser.handle}</p>
+                <div className="flex items-center gap-2 mt-1">
+                    <p className="text-accent-1 font-mono text-sm">@{targetUser.handle}</p>
+                    <div className="h-3 w-[1px] bg-border-color" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-secondary-text opacity-60">
+                        {targetUser.faction || "Unaligned"}
+                    </span>
+                </div>
                 <p className="mt-2 text-sm text-secondary-text leading-relaxed whitespace-pre-wrap font-light">{targetUser.bio}</p>
               </div>
 
