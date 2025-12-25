@@ -5,6 +5,8 @@ import React, { createContext, useContext, useRef, useEffect, useState, useCallb
 import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
+export { ImpactStyle };
+
 interface SonicContextType {
   playClick: (frequency?: number, duration?: number, type?: OscillatorType) => void;
   playHum: (state: 'start' | 'stop' | 'adjust', frequency?: number, gain?: number) => void;

@@ -6,7 +6,7 @@ import { Send, Lock, ChevronLeft, Loader2, AlertTriangle, Paperclip, Flame } fro
 import { useRouter } from "next/navigation";
 import AES from "crypto-js/aes";
 import encUtf8 from "crypto-js/enc-utf8";
-import { useSonic } from "@/lib/SonicContext";
+import { useSonic, ImpactStyle } from "@/lib/SonicContext";
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, setDoc, Timestamp, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
@@ -429,6 +429,8 @@ export function ChatView({ chatId }: ChatViewProps) {
 function MessageBubble({ message, isMine, senderHandle, senderAvatar, isGroup = false }: { message: ChatMessage, isMine: boolean, senderHandle: string, senderAvatar: string, isGroup?: boolean }) {
   const [isRevealed, setIsRevealed] = useState(false);
   const [isBurnt, setIsBurnt] = useState(message.isBurnt || false); // Sync with server state
+  const [scratchProgress, setScratchProgress] = useState(0);
+  const [burnProgress, setBurnProgress] = useState(0);
   const { playClick, playHaptic } = useSonic();
 
   // Decrypt message when revealed (derived state)
