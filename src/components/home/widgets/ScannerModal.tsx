@@ -36,29 +36,47 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
       playClick(800, 0.5, 'sine'); // Long scan sound
 
       const scan = async () => {
-        // Simulate scanning delay
+        // Simulate scanning delay for immersion
         setTimeout(async () => {
             try {
-                // Query posts matching the region (or global if not specific)
-                const q = query(
+                // Query posts matching the region OR global
+                // Note: Firestore doesn't support OR across fields easily without multiple queries
+                const qRegion = query(
                     collection(db, "posts"), 
-                    limit(10) 
-                    // In a real app, add: where("region", "==", userRegion)
+                    where("region", "==", userRegion.toLowerCase()),
+                    limit(15)
                 );
-                const snapshot = await getDocs(q);
-                const found: SignalPost[] = snapshot.docs.map(doc => ({ 
-                    id: doc.id, 
-                    ...doc.data(),
-                    // Generate random AR positions
-                    arX: Math.random() * 80 + 10,
-                    arY: Math.random() * 60 + 20, 
-                })) as SignalPost[];
+                const qGlobal = query(
+                    collection(db, "posts"), 
+                    where("region", "==", "global"),
+                    limit(15)
+                );
+
+                const [snapRegion, snapGlobal] = await Promise.all([getDocs(qRegion), getDocs(qGlobal)]);
+                
+                // Combine and deduplicate
+                const allDocs = [...snapRegion.docs, ...snapGlobal.docs];
+                const uniqueIds = new Set();
+                const found: SignalPost[] = [];
+
+                allDocs.forEach(doc => {
+                    if (!uniqueIds.has(doc.id)) {
+                        uniqueIds.add(doc.id);
+                        found.push({
+                            id: doc.id,
+                            ...doc.data(),
+                            arX: Math.random() * 80 + 10,
+                            arY: Math.random() * 60 + 20,
+                        } as SignalPost);
+                    }
+                });
+
                 setSignals(found);
             } catch (e) {
-                console.error(e);
+                console.error("Scanner failed to query signals", e);
             } finally {
                 setScanning(false);
-                playClick(440, 0.1, 'square'); // Scan complete
+                playClick(440, 0.1, 'square'); 
             }
         }, 2000);
       };

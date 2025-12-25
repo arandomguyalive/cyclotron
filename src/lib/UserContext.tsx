@@ -22,6 +22,13 @@ export interface UserProfile {
   tier: "free" | "premium" | "gold" | "platinum" | "sovereign" | "lifetime";
   accessType?: "LIFETIME_BLACKLIST";
   inventory?: string[];
+  privacy?: {
+    ghostMode: boolean;
+    bioLock: boolean;
+    screenshotAlert: boolean;
+    dataSaver: boolean;
+    selfDestructTimer: string;
+  };
   stats: {
     following: string;
     followers: string;
@@ -50,6 +57,13 @@ const defaultUser: UserProfile = {
   faction: "Netrunner",
   tier: "free",
   inventory: [],
+  privacy: {
+    ghostMode: false,
+    bioLock: false,
+    screenshotAlert: true,
+    dataSaver: false,
+    selfDestructTimer: "24h"
+  },
   stats: {
     following: "245",
     followers: "12.4K",

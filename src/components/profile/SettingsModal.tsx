@@ -25,32 +25,42 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [currentView, setCurrentView] = useState<SettingsView>('main');
   const router = useRouter();
 
-  // Privacy Settings States
-  const [ghostMode, setGhostMode] = useState(false);
-  const [bioLock, setBioLock] = useState(false);
-  const [screenshotAlert, setScreenshotAlert] = useState(false);
-  const [dataSaver, setDataSaver] = useState(false);
-  const [selfDestructTimer, setSelfDestructTimer] = useState("24h"); // Default
-
-  // Load privacy settings from localStorage
-  useEffect(() => {
-    setGhostMode(localStorage.getItem('oblivion_ghostMode') === 'true');
-    setBioLock(localStorage.getItem('oblivion_bioLock') === 'true');
-    setScreenshotAlert(localStorage.getItem('oblivion_screenshotAlert') === 'true');
-    setDataSaver(localStorage.getItem('oblivion_dataSaver') === 'true');
-    const savedTimer = localStorage.getItem('oblivion_selfDestructTimer');
-    if (savedTimer) setSelfDestructTimer(savedTimer);
-  }, [isOpen]); // Reload when opened to sync
-
-  // Handlers to update state and localStorage
-  const handleToggle = (key: string, currentState: boolean, setter: React.Dispatch<React.SetStateAction<boolean>>) => {
+  // Handlers to update state in Firestore
+  const handleToggle = async (field: keyof NonNullable<UserProfile['privacy']>, currentState: boolean) => {
+    if (!user) return;
     const newState = !currentState;
-    setter(newState);
-    localStorage.setItem(key, String(newState));
-    playClick(newState ? 660 : 440, 0.05, 'sine');
     
-    // Force a storage event for other components to pick up
-    window.dispatchEvent(new Event("storage"));
+    playClick(newState ? 660 : 440, 0.05, 'sine');
+    if (navigator.vibrate) navigator.vibrate(25);
+
+    await updateUser({
+        privacy: {
+            ...(user.privacy || {
+                ghostMode: false,
+                bioLock: false,
+                screenshotAlert: true,
+                dataSaver: false,
+                selfDestructTimer: "24h"
+            }),
+            [field]: newState
+        }
+    });
+  };
+
+  const handleTimerChange = async (value: string) => {
+      if (!user) return;
+      await updateUser({
+          privacy: {
+              ...(user.privacy || {
+                  ghostMode: false,
+                  bioLock: false,
+                  screenshotAlert: true,
+                  dataSaver: false,
+                  selfDestructTimer: "24h"
+              }),
+              selfDestructTimer: value
+          }
+      });
   };
 
   const handleButtonClick = () => {
@@ -74,6 +84,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   // Tier Access Helpers
   const canAccessGhost = ['gold', 'platinum', 'sovereign', 'lifetime'].includes(user?.tier || '');
   const canAccessHardening = ['platinum', 'sovereign', 'lifetime'].includes(user?.tier || '');
+
+  const privacy = user?.privacy || {
+      ghostMode: false,
+      bioLock: false,
+      screenshotAlert: true,
+      dataSaver: false,
+      selfDestructTimer: "24h"
+  };
 
   return (
     <>
@@ -282,8 +300,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     icon={EyeOff} 
                                     label="Ghost Mode" 
                                     toggle 
-                                    isEnabled={ghostMode} 
-                                    onClick={() => handleToggle('oblivion_ghostMode', ghostMode, setGhostMode)} 
+                                    isEnabled={privacy.ghostMode} 
+                                    onClick={() => handleToggle('ghostMode', privacy.ghostMode)} 
                                 />
                             ) : (
                                 <div className="p-4 rounded-2xl border border-dashed border-border-color flex items-center justify-between opacity-50">
@@ -298,8 +316,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             <SettingItem 
                                 icon={Clock} 
                                 label="Default Message TTL" 
-                                value={selfDestructTimer}
-                                onClick={() => handleButtonClick()} 
+                                value={privacy.selfDestructTimer}
+                                onClick={() => {
+                                    handleButtonClick();
+                                    const next = privacy.selfDestructTimer === "24h" ? "1h" : (privacy.selfDestructTimer === "1h" ? "5m" : "24h");
+                                    handleTimerChange(next);
+                                }} 
                             />
                         </Section>
                         
@@ -310,16 +332,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                         icon={Fingerprint} 
                                         label="Bio-Lock" 
                                         toggle 
-                                        isEnabled={bioLock} 
-                                        onClick={() => handleToggle('oblivion_bioLock', bioLock, setBioLock)} 
+                                        isEnabled={privacy.bioLock} 
+                                        onClick={() => handleToggle('bioLock', privacy.bioLock)} 
                                         isPaid 
                                     />
                                     <SettingItem 
                                         icon={CameraOff} 
                                         label="Screenshot Alert" 
                                         toggle 
-                                        isEnabled={screenshotAlert} 
-                                        onClick={() => handleToggle('oblivion_screenshotAlert', screenshotAlert, setScreenshotAlert)} 
+                                        isEnabled={privacy.screenshotAlert} 
+                                        onClick={() => handleToggle('screenshotAlert', privacy.screenshotAlert)} 
                                     />
                                     <SettingItem 
                                         icon={CameraOff} 
@@ -363,8 +385,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 icon={Database} 
                                 label="Data Saver" 
                                 toggle 
-                                isEnabled={dataSaver}
-                                onClick={() => handleToggle('oblivion_dataSaver', dataSaver, setDataSaver)} 
+                                isEnabled={privacy.dataSaver}
+                                onClick={() => handleToggle('dataSaver', privacy.dataSaver)} 
                             />
                         </Section>
                     </motion.div>

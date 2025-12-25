@@ -146,6 +146,11 @@
         *   **Economic Activation:** Connected the "Black Market" to real Firestore user credits, replacing the hardcoded mock balance.
         *   **Persistent Inventory:** Introduced an `inventory` field to the `UserProfile` to track purchased items and unlocks.
         *   **Interactive UI:** Updated the Market UI to show "Owned" status for purchased unlocks and implemented real credit deduction logic with immersive latency simulation.
+    *   **Tier Reality Alignment:**
+        *   **Privacy Persistence:** Migrated "Ghost Mode", "Bio-Lock", and "Screenshot Alerts" from local browser storage to the Firestore `users` document for true server-side privacy enforcement.
+        *   **Signal Geo-Tagging:** Implemented a real "Transmission Sector" selector in the `CreatePostModal`, allowing users to anchor signals to specific regions (NA, EU, ASIA, etc.).
+        *   **Scanner Activation:** Activated real Firestore regional filtering in the `ScannerModal`, making the local signal detection and "Dead Drop" scavenging mechanics fully functional and location-aware.
+
 
 
 

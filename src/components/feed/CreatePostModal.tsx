@@ -197,9 +197,10 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                ) : (
                    <div className="flex flex-col gap-6 h-full">
                        
-                       {/* Sovereign Controls (Non-Free Only) */}
-                       {user?.tier !== 'free' && (
-                           <div className="p-4 rounded-xl bg-black/20 border border-white/10 space-y-4">
+                       {/* Sovereign Controls & Region (All Tiers for region) */}
+                       <div className="p-4 rounded-xl bg-black/20 border border-white/10 space-y-4">
+                           {user?.tier !== 'free' && (
+                               <>
                                <div className="flex items-center justify-between">
                                    <span className="text-xs font-bold text-secondary-text uppercase tracking-wider">Visibility</span>
                                    <div className="flex gap-2">
@@ -224,8 +225,24 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                                         className="w-full bg-transparent border-b border-white/10 py-1 text-sm text-white placeholder:text-secondary-text/30 focus:border-accent-1 focus:outline-none font-mono"
                                    />
                                </div>
+                               </>
+                           )}
+                           
+                           <div className="flex items-center justify-between">
+                               <span className="text-xs font-bold text-secondary-text uppercase tracking-wider">Transmission Sector</span>
+                               <div className="flex gap-2">
+                                   {['global', 'na', 'eu', 'asia', 'hidden'].map(s => (
+                                       <button 
+                                            key={s}
+                                            onClick={() => setRegion(s)}
+                                            className={`px-3 py-1 rounded text-[10px] font-bold uppercase transition-colors ${region === s ? 'bg-brand-orange text-white' : 'bg-white/5 text-secondary-text hover:bg-white/10'}`}
+                                       >
+                                           {s}
+                                       </button>
+                                   ))}
+                               </div>
                            </div>
-                       )}
+                       </div>
 
                        {/* Conditional UI based on Mode */}
                        {mode === 'signal' ? (
