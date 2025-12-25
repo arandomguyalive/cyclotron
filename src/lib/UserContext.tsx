@@ -21,6 +21,7 @@ export interface UserProfile {
   faction: "Netrunner" | "Drifter" | "Corp" | "Ghost";
   tier: "free" | "premium" | "gold" | "platinum" | "sovereign" | "lifetime";
   accessType?: "LIFETIME_BLACKLIST";
+  inventory?: string[];
   stats: {
     following: string;
     followers: string;
@@ -48,6 +49,7 @@ const defaultUser: UserProfile = {
   avatarSeed: "User123",
   faction: "Netrunner",
   tier: "free",
+  inventory: [],
   stats: {
     following: "245",
     followers: "12.4K",

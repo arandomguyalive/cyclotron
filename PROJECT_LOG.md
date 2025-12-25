@@ -142,6 +142,11 @@
     *   **Type Safety:** Fixed `any` type violations in `VortexItem.tsx` and `vortex/page.tsx` by introducing specific interfaces and `unknown` types.
     *   **Code Optimization:** Converted `safetyTimer` to `const` in `profile/page.tsx` to adhere to `prefer-const` rules.
     *   **Build Verification:** Confirmed 100% successful production build (`next build --webpack`) with optimized static export.
+    *   **Market Reality Alignment:**
+        *   **Economic Activation:** Connected the "Black Market" to real Firestore user credits, replacing the hardcoded mock balance.
+        *   **Persistent Inventory:** Introduced an `inventory` field to the `UserProfile` to track purchased items and unlocks.
+        *   **Interactive UI:** Updated the Market UI to show "Owned" status for purchased unlocks and implemented real credit deduction logic with immersive latency simulation.
+
 
 
 ---

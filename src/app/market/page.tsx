@@ -58,16 +58,16 @@ const items: MarketItem[] = [
 ];
 
 export default function MarketPage() {
-    const { user, loading } = useUser(); // We will need to add updateCredits to context later
+    const { user, updateUser, loading } = useUser();
     const router = useRouter();
     const { playClick } = useSonic();
     const { toast } = useToast();
     
-    // Mock Credits for MVP (In real app, fetch from user.stats.credits)
-    const [credits, setCredits] = useState(2450); 
     const [purchasing, setPurchasing] = useState<string | null>(null);
 
-    const handlePurchase = (item: MarketItem) => {
+    const credits = parseInt(user?.stats?.credits || "0");
+
+    const handlePurchase = async (item: MarketItem) => {
         playClick(600, 0.05, 'square');
         if (credits < item.price) {
             toast("Insufficient Funds. Complete directives to earn cycles.", "error");
@@ -76,13 +76,28 @@ export default function MarketPage() {
 
         setPurchasing(item.id);
         
-        // Simulate Transaction
-        setTimeout(() => {
-            setCredits(prev => prev - item.price);
-            setPurchasing(null);
-            toast(`Acquired: ${item.name}`, "success");
-            playClick(880, 0.2, 'sine');
-            // In real app: await updateUser({ stats: { ...user.stats, credits: credits - price } })
+        // Simulate Network Latency for immersion
+        setTimeout(async () => {
+            try {
+                const newCredits = credits - item.price;
+                const newInventory = [...(user?.inventory || []), item.id];
+
+                await updateUser({ 
+                    inventory: newInventory,
+                    stats: { 
+                        ...(user?.stats || { following: "0", followers: "0", likes: "0", credits: "0", reputation: "0" }), 
+                        credits: newCredits.toString() 
+                    } 
+                });
+
+                setPurchasing(null);
+                toast(`Acquired: ${item.name}`, "success");
+                playClick(880, 0.2, 'sine');
+            } catch (err) {
+                console.error("Market transaction failed", err);
+                setPurchasing(null);
+                toast("Transaction Failed: Connection Lost.", "error");
+            }
         }, 1500);
     };
 
@@ -146,15 +161,22 @@ export default function MarketPage() {
                                     <span className="font-mono font-bold text-white text-lg">{item.price} ₵</span>
                                     <button 
                                         onClick={() => handlePurchase(item)}
-                                        disabled={purchasing === item.id || credits < item.price}
+                                        disabled={purchasing === item.id || (item.type === 'unlock' && user?.inventory?.includes(item.id)) || (item.type === 'unlock' && credits < item.price)}
                                         className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
-                                            credits >= item.price 
+                                            (item.type === 'unlock' && user?.inventory?.includes(item.id))
+                                            ? "bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 cursor-default"
+                                            : credits >= item.price 
                                             ? "bg-white text-black hover:bg-brand-cyan hover:text-black" 
                                             : "bg-white/10 text-white/30 cursor-not-allowed"
                                         }`}
                                     >
                                         {purchasing === item.id ? (
                                             <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (item.type === 'unlock' && user?.inventory?.includes(item.id)) ? (
+                                            <div className="flex items-center gap-1">
+                                                <CheckCircle className="w-3 h-3" />
+                                                Owned
+                                            </div>
                                         ) : (
                                             "Acquire"
                                         )}
