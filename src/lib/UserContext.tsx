@@ -21,6 +21,7 @@ export interface UserProfile {
   faction: "Netrunner" | "Drifter" | "Corp" | "Ghost";
   tier: "free" | "premium" | "gold" | "platinum" | "sovereign" | "lifetime";
   accessType?: "LIFETIME_BLACKLIST";
+  billingCycle?: "monthly" | "annual";
   inventory?: string[];
   privacy?: {
     ghostMode: boolean;
@@ -56,6 +57,7 @@ const defaultUser: UserProfile = {
   avatarSeed: "User123",
   faction: "Netrunner",
   tier: "free",
+  billingCycle: "monthly",
   inventory: [],
   privacy: {
     ghostMode: false,

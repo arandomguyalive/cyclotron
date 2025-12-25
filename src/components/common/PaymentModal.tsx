@@ -9,9 +9,10 @@ interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   upgradeToTier: "premium" | "gold" | "platinum" | "sovereign" | "lifetime";
+  billingCycle?: "monthly" | "annual";
 }
 
-export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalProps) {
+export function PaymentModal({ isOpen, onClose, upgradeToTier, billingCycle = "monthly" }: PaymentModalProps) {
   const { updateUser } = useUser();
   const [paymentStep, setPaymentStep] = useState<"form" | "processing" | "success">("form");
 
@@ -28,7 +29,11 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalPro
       setPaymentStep("success");
       
       // Special Handling for Lifetime: Set accessType
-      const updates: Partial<UserProfile> = { tier: upgradeToTier };
+      const updates: Partial<UserProfile> = { 
+          tier: upgradeToTier,
+          billingCycle: upgradeToTier === 'lifetime' ? 'monthly' : billingCycle 
+      };
+      
       if (upgradeToTier === 'lifetime') {
           updates.accessType = 'LIFETIME_BLACKLIST';
       }
@@ -39,13 +44,32 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalPro
     }, 2000);
   };
 
+  const getPrice = () => {
+      const basePrices = {
+          premium: 999,
+          gold: 9999,
+          platinum: 99999,
+          sovereign: 1000000,
+          lifetime: 20000
+      };
+      
+      const base = basePrices[upgradeToTier];
+      if (upgradeToTier === 'lifetime' || upgradeToTier === 'sovereign') return `₹${base.toLocaleString()}`;
+
+      if (billingCycle === 'annual') {
+          const total = base * 12 * 0.9;
+          return `₹${Math.round(total).toLocaleString()}/yr`;
+      }
+      return `₹${base.toLocaleString()}/mo`;
+  };
+
   const tierDetails = {
-    premium: { name: "The Shield", price: "₹999/mo", color: "text-brand-cyan" },
-    gold: { name: "The Professional", price: "₹9,999/mo", color: "text-brand-pale-pink" },
-    platinum: { name: "The Ultra Elite", price: "₹99,999/mo", color: "text-white" },
-    sovereign: { name: "The Sovereign", price: "₹10,00,000", color: "text-brand-blue" },
-    lifetime: { name: "The Blacklist", price: "₹20,000", color: "text-amber-500" },
-  }[upgradeToTier] || { name: "Unknown", price: "0", color: "text-gray-500" }; // Fallback
+    premium: { name: "The Shield", color: "text-brand-cyan" },
+    gold: { name: "The Professional", color: "text-brand-pale-pink" },
+    platinum: { name: "The Ultra Elite", color: "text-white" },
+    sovereign: { name: "The Sovereign", color: "text-brand-blue" },
+    lifetime: { name: "The Blacklist", color: "text-amber-500" },
+  }[upgradeToTier] || { name: "Unknown", color: "text-gray-500" }; // Fallback
 
   return (
     <AnimatePresence>
@@ -81,7 +105,7 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier }: PaymentModalPro
                 {paymentStep === "form" && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full text-center">
                         <h3 className="text-2xl font-bold text-primary-text mb-2">Upgrade to {tierDetails.name}</h3>
-                        <p className={`text-4xl font-extrabold mb-6 ${tierDetails.color}`}>{tierDetails.price}</p>
+                        <p className={`text-4xl font-extrabold mb-6 ${tierDetails.color}`}>{getPrice()}</p>
                         
                         <div className="space-y-3">
                             <button className="w-full py-3 rounded-xl flex items-center justify-center gap-3 bg-accent-1 text-primary-bg font-bold hover:bg-accent-1/90 transition-colors">

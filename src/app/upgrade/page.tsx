@@ -12,12 +12,13 @@ export default function UpgradePage() {
     const { user } = useUser();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [selectedTier, setSelectedTier] = useState<"premium" | "gold" | "platinum" | "lifetime">("premium");
+    const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
     const [spotsLeft, setSpotsLeft] = useState(487); // Simulating some spots already taken
 
     type TierOption = {
         id: "premium" | "gold" | "platinum" | "lifetime";
         name: string;
-        price: string;
+        monthlyPrice: number;
         features: string[];
         buttonText: string;
         bgColor: string;
@@ -30,7 +31,7 @@ export default function UpgradePage() {
                 {
                     id: "lifetime",
                     name: "The Blacklist",
-                    price: "₹20,000",
+                    monthlyPrice: 20000,
                     features: ["Lifetime Access (One-time)", "Forensic Watermarking", "Geo-Fencing Control", "Ghost Mode", "Sovereign Wallet"],
                     buttonText: "Join Blacklist",
                     bgColor: "bg-amber-500/10",
@@ -41,7 +42,7 @@ export default function UpgradePage() {
                 {
                     id: "premium",
                     name: "The Shield",
-                    price: "₹999/mo",
+                    monthlyPrice: 999,
                     features: ["Ad-Free Access", "Standard Encryption", "Digital Watermark", "Full Signal Bandwidth"],
                     buttonText: "Activate Shield",
                     bgColor: "bg-brand-cyan/10",
@@ -52,7 +53,7 @@ export default function UpgradePage() {
                 {
                     id: "gold",
                     name: "The Professional",
-                    price: "₹9,999/mo",
+                    monthlyPrice: 9999,
                     features: ["All Shield Features", "Forensic Watermarking", "Geo-Fencing Control", "Priority Support"],
                     buttonText: "Go Professional",
                     bgColor: "bg-brand-pale-pink/10",
@@ -63,7 +64,7 @@ export default function UpgradePage() {
                 {
                     id: "platinum",
                     name: "The Ultra Elite",
-                    price: "₹99,999/mo",
+                    monthlyPrice: 99999,
                     features: ["All Professional Features", "Biometric Focus Lock", "Device Binding (Mock)", "Zero KM18 Commission"],
                     buttonText: "Join Ultra Elite",
                     bgColor: "bg-white/10",
@@ -72,6 +73,17 @@ export default function UpgradePage() {
                     buttonBgColor: "bg-white text-black"
                 },
             ];
+
+    const formatPrice = (tier: TierOption) => {
+        if (tier.id === 'lifetime') return `₹${tier.monthlyPrice.toLocaleString()}`;
+        
+        if (billingCycle === 'annual') {
+            const annualTotal = tier.monthlyPrice * 12;
+            const discountedTotal = annualTotal * 0.9;
+            return `₹${Math.round(discountedTotal).toLocaleString()}/yr`;
+        }
+        return `₹${tier.monthlyPrice.toLocaleString()}/mo`;
+    };
         
             return (
                 <div className="min-h-screen bg-primary-bg text-primary-text pb-20 relative overflow-hidden font-sans">
@@ -94,6 +106,24 @@ export default function UpgradePage() {
                             Unlock the full power of ABHED. Secure your digital existence with KM18&apos;s advanced protocols.
                         </motion.p>
                         
+                        {/* Billing Toggle */}
+                        <div className="flex justify-center items-center gap-4 mt-4">
+                            <span className={`text-xs font-bold uppercase tracking-wider ${billingCycle === 'monthly' ? 'text-white' : 'text-secondary-text'}`}>Monthly</span>
+                            <button 
+                                onClick={() => setBillingCycle(prev => prev === 'monthly' ? 'annual' : 'monthly')}
+                                className="w-14 h-7 bg-white/10 rounded-full p-1 relative transition-colors border border-white/20"
+                            >
+                                <motion.div 
+                                    animate={{ x: billingCycle === 'monthly' ? 0 : 28 }}
+                                    className="w-5 h-5 bg-brand-cyan rounded-full shadow-[0_0_10px_rgba(0,212,229,0.5)]"
+                                />
+                            </button>
+                            <div className="flex items-center gap-2">
+                                <span className={`text-xs font-bold uppercase tracking-wider ${billingCycle === 'annual' ? 'text-white' : 'text-secondary-text'}`}>Annual</span>
+                                <span className="bg-brand-orange/20 text-brand-orange text-[10px] px-2 py-0.5 rounded font-bold border border-brand-orange/30">-10% OFF</span>
+                            </div>
+                        </div>
+
                         {/* Blacklist Spots Remaining */}
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
@@ -127,7 +157,7 @@ export default function UpgradePage() {
                                         {tier.id === "lifetime" && <Lock className="w-8 h-8" />}
                                     </div>
                                     <h2 className={`text-2xl font-bold mb-2 ${tier.textColor}`}>{tier.name}</h2>
-                                    <p className="text-3xl font-extrabold mb-4">{tier.price}</p>
+                                    <p className="text-3xl font-extrabold mb-4">{formatPrice(tier)}</p>
                                     
                                     <ul className="text-sm text-secondary-text space-y-2 mb-6 text-left w-full">
                                         {tier.features.map((feature, i) => (
@@ -193,6 +223,7 @@ export default function UpgradePage() {
                 isOpen={isPaymentModalOpen} 
                 onClose={() => setIsPaymentModalOpen(false)} 
                 upgradeToTier={selectedTier} 
+                billingCycle={billingCycle}
             />
         </div>
     );
