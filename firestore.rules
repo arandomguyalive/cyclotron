@@ -2,76 +2,45 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
-    
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
 
-    // --- User Profiles ---
     match /users/{userId} {
       allow read: if true;
-      allow create: if isOwner(userId);
-      // Simplify update rule to ensure social actions aren't blocked
-      // We allow anyone to update 'stats' but protect 'credits' via application logic/audits if needed
-      // For now, let's just make it work.
+      allow create: if isSignedIn() && request.auth.uid == userId;
       allow update: if isSignedIn();
 
-      // Social Graph
-      match /following/{targetId} {
-        allow read: if true;
-        allow write: if isSignedIn();
-      }
-
-      match /followers/{sourceId} {
-        allow read: if true;
-        allow write: if isSignedIn();
-      }
-
-      match /likes/{postId} {
-        allow read: if true;
-        allow write: if isSignedIn();
-      }
-
-      match /notifications/{notifId} {
-        allow read: if isOwner(userId);
+      match /following/{id} { allow read, write: if isSignedIn(); }
+      match /followers/{id} { allow read, write: if isSignedIn(); }
+      match /likes/{id} { allow read, write: if isSignedIn(); }
+      match /bookmarks/{id} { allow read, write: if isSignedIn(); }
+      match /notifications/{id} { 
+        allow read: if isSignedIn() && request.auth.uid == userId;
         allow create: if isSignedIn();
-        allow update, delete: if isOwner(userId);
+        allow update, delete: if isSignedIn() && request.auth.uid == userId;
       }
     }
 
-    // --- Posts ---
     match /posts/{postId} {
       allow read: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn(); 
-      allow delete: if isOwner(resource.data.userId);
+      allow create, update: if isSignedIn();
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
 
-      match /comments/{commentId} {
+      match /comments/{id} {
         allow read: if true;
-        allow create: if isSignedIn();
-        allow delete: if isSignedIn();
+        allow create, delete: if isSignedIn();
       }
     }
 
-    // --- Stories ---
-    match /stories/{storyId} {
+    match /stories/{id} {
       allow read: if true;
-      allow create: if isSignedIn();
-      allow delete: if isOwner(resource.data.userId);
+      allow create, delete: if isSignedIn();
     }
 
-    // --- Chats ---
     match /chats/{chatId} {
-      allow create: if isSignedIn();
       allow read, write: if isSignedIn();
-
-      match /messages/{msgId} {
-        allow read, write: if isSignedIn();
-      }
+      match /messages/{id} { allow read, write: if isSignedIn(); }
     }
   }
 }
