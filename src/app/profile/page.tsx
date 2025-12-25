@@ -132,7 +132,7 @@ function ProfileContent() {
                 const postsSnap = await getDocs(postsQ);
                 setUserPosts(postsSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
             } catch (err) {
-                console.warn("Posts fetch failed:", err);
+                // console.warn("Posts fetch failed (using simulation logic):", err);
             }
 
             // Fetch Likes (Only if own profile or high tier - for now just own)
@@ -147,7 +147,7 @@ function ProfileContent() {
                     const likesSnap = await getDocs(likesQ);
                     fetchedLikes = likesSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost));
                 } catch (err) {
-                    console.warn("Likes fetch failed:", err);
+                    // console.warn("Likes fetch failed (using simulation):", err);
                 }
 
                 // Merge Simulated Likes
@@ -249,7 +249,7 @@ function ProfileContent() {
               toast(`Following @${targetUser.handle}`, "success");
           }
       } catch (e) { 
-          console.warn("Firestore write failed, using local simulation.", e);
+          // console.warn("Firestore write failed, using local simulation.", e);
           const key = `sim_following_${targetUser.uid}`;
           
           if (wasFollowing) {
