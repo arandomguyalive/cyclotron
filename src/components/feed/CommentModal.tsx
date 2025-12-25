@@ -37,7 +37,7 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const canComment = user && user.tier !== 'lobby';
+  const canComment = user && (user.tier !== 'lobby' || user.isOwner);
 
   useEffect(() => {
     if (!isOpen || !postId) return;

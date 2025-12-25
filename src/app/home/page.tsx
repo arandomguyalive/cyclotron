@@ -216,7 +216,7 @@ export default function HomePage() {
               </span>
             </div>
 
-            {tier === 'lobby' && (
+            {tier === 'lobby' && !user?.isOwner && (
               <p className="mt-4 text-xs text-secondary-text border-t border-border-color pt-2 flex items-center gap-2">
                 <span className="font-bold text-accent-1">TIP:</span> Your digital footprint is visible. Upgrade to mask it.
               </p>
@@ -247,7 +247,7 @@ export default function HomePage() {
                   {/* Vortex Access Widget - REMOVED */}
 
             {/* 2. Tier Specific Widget */}
-            {tier === 'lobby' && (
+            {tier === 'lobby' && !user?.isOwner && (
                 <div className="p-6 rounded-3xl bg-secondary-bg/30 border border-border-color flex flex-col justify-center items-center text-center col-span-2">
                     <Lock className="w-8 h-8 text-secondary-text mb-3" />
                     <h3 className="font-bold text-lg text-secondary-text">Locked Modules</h3>
@@ -298,7 +298,7 @@ export default function HomePage() {
             )}
 
              {/* 4. Upgrade Prompt (Lobby Only) */}
-             {tier === 'lobby' && (
+             {tier === 'lobby' && !user?.isOwner && (
                  <motion.div
                      initial={{ opacity: 0, y: 20 }}
                      animate={{ opacity: 1, y: 0 }}

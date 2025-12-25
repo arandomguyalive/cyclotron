@@ -18,6 +18,7 @@ export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, sec
     
         // Ultra Elite Feature: Biometric Lock Simulation
         const isUltraElite = ['ultra_elite', 'sovereign'].includes(user?.tier || 'lobby');
+        const activeBiometric = isUltraElite && !user?.isOwner;
     
         useEffect(() => {
             if (!isHoldToViewActive && isLocked) { // Only unlock if it's currently locked
@@ -44,7 +45,7 @@ export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, sec
         };
 
     useEffect(() => {
-        if (!isUltraElite || isHoldToViewActive) return;
+        if (!activeBiometric || isHoldToViewActive) return;
 
         const handleVisibilityChange = () => {
             if (document.hidden) {
@@ -55,17 +56,17 @@ export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, sec
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
         return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-    }, [isUltraElite, isHoldToViewActive, isLocked]);
+    }, [activeBiometric, isHoldToViewActive, isLocked]);
 
     const handleMouseLeave = () => {
-        if (isUltraElite && !isHoldToViewActive) {
+        if (activeBiometric && !isHoldToViewActive) {
             setIsLocked(true);
             videoRef.current?.pause();
         }
     };
 
     const handleMouseEnter = () => {
-        if (isUltraElite && isLocked && !isHoldToViewActive) {
+        if (activeBiometric && isLocked && !isHoldToViewActive) {
             // Auto-resume if user comes back
             setIsLocked(false);
             videoRef.current?.play();

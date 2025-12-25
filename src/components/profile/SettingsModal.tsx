@@ -82,8 +82,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const isOwner = user?.isOwner || ['ABHI18', 'KINJAL18'].includes(user?.handle?.toUpperCase() || "");
 
   // Tier Access Helpers
-  const canAccessGhost = ['professional', 'ultra_elite', 'sovereign'].includes(user?.tier || '');
-  const canAccessHardening = ['ultra_elite', 'sovereign'].includes(user?.tier || '');
+  const canAccessGhost = user?.isOwner || ['professional', 'ultra_elite', 'sovereign'].includes(user?.tier || '');
+  const canAccessHardening = user?.isOwner || ['ultra_elite', 'sovereign'].includes(user?.tier || '');
 
   const privacy = user?.privacy || {
       ghostMode: false,

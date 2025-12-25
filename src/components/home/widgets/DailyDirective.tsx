@@ -5,7 +5,7 @@ import { Crosshair, Award, ChevronRight, AlertCircle } from "lucide-react";
 
 export function DailyDirective({ onStart }: { onStart?: () => void }) {
     const { user } = useUser();
-    const isFree = user?.tier === 'lobby';
+    const isFree = user?.tier === 'lobby' && !user?.isOwner;
 
     return (
         <div 

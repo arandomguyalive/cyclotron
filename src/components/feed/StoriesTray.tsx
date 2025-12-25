@@ -59,9 +59,9 @@ export function StoriesTray() {
   const isFree = user?.tier === 'lobby';
 
   const handleAddClick = () => {
-      if (isFree) {
+      if (isFree && !user?.isOwner) {
           playClick(150, 0.2, 'sawtooth');
-          alert("HIGH-BANDWIDTH PROTOCOL LOCKED. Upgrade to share Flux Stories.");
+          alert("UPGRADE REQUIRED: Temporal Flux (Stories) restricted.");
           return;
       }
       playClick(600, 0.1, 'square');

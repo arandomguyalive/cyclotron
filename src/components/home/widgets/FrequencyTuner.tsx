@@ -24,13 +24,13 @@ export function FrequencyTuner() {
     // Actually, let's lock 'Exclusive' and 'Local'.
     const LOCKED_TABS = ["exclusive", "local"];
 
-    const handleTabClick = (id: string) => {
-        if (isFree && LOCKED_TABS.includes(id)) {
-            playClick(150, 0.1, 'sawtooth'); // Denied
+    const handleTabClick = (tabId: string) => {
+        if (LOCKED_TABS.includes(tabId) && isFree && !user?.isOwner) {
+            playClick(150, 0.2, 'sawtooth');
             return;
         }
         
-        setActiveTab(id);
+        setActiveTab(tabId);
         playClick(400, 0.05, 'sine'); // Success
     };
 
