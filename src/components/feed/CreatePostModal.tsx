@@ -133,7 +133,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 backdrop-blur-md z-[80]"
+            className="fixed inset-0 bg-black/90 backdrop-blur-md z-[190]"
             onClick={handleClose}
           />
           
@@ -142,7 +142,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[90] bg-secondary-bg border-t border-border-color rounded-t-3xl h-[85vh] flex flex-col shadow-[0_-10px_40px_rgba(0,240,255,0.1)]"
+            className="fixed bottom-0 left-0 right-0 z-[200] bg-secondary-bg border-t border-border-color rounded-t-3xl h-[85vh] flex flex-col shadow-[0_-10px_40px_rgba(0,240,255,0.1)]"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border-color">

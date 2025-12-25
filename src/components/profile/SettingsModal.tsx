@@ -102,7 +102,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleClose}
-            className="fixed inset-0 bg-primary-bg/60 backdrop-blur-sm z-[60]"
+            className="fixed inset-0 bg-primary-bg/60 backdrop-blur-sm z-[190]"
           />
           
           {/* Modal Panel */}
@@ -111,7 +111,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[70] bg-secondary-bg border-t border-border-color rounded-t-3xl h-[85vh] overflow-hidden flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-[200] bg-secondary-bg border-t border-border-color rounded-t-3xl h-[85vh] overflow-hidden flex flex-col"
           >
             {/* Drag Handle */}
             <div className="w-full flex justify-center pt-4 pb-2" onClick={handleClose}>

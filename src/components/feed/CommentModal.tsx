@@ -139,15 +139,15 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[110] bg-secondary-bg border-t border-border-color rounded-t-3xl h-[70vh] flex flex-col overflow-hidden"
+            className="fixed bottom-0 left-0 right-0 z-[200] bg-secondary-bg border-t border-border-color rounded-t-3xl h-[75vh] flex flex-col overflow-hidden shadow-[0_-10px_50px_rgba(0,0,0,0.5)]"
           >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-border-color flex items-center justify-between bg-primary-bg">
+            <div className="px-6 py-4 border-b border-border-color flex items-center justify-between bg-primary-bg sticky top-0 z-10">
                 <span className="font-bold text-primary-text flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5" />
+                    <MessageCircle className="w-5 h-5 text-accent-1" />
                     Transmissions ({comments.length})
                 </span>
-                <button onClick={onClose} className="p-2 hover:bg-secondary-bg rounded-full">
+                <button onClick={onClose} className="p-2 hover:bg-secondary-bg rounded-full transition-colors">
                     <X className="w-5 h-5 text-secondary-text" />
                 </button>
             </div>
@@ -180,21 +180,21 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
                                         })()}
                                     </span>
                                 </div>
-                                <p className="text-sm text-secondary-text/90 mt-0.5 break-words">{comment.text}</p>
+                                <p className="text-sm text-secondary-text/90 mt-0.5 break-words font-light">{comment.text}</p>
                             </div>
                             {(comment.userId === firebaseUser?.uid || postOwnerId === firebaseUser?.uid) && (
-                                <button onClick={() => handleDelete(comment.id)} className="text-secondary-text/50 hover:text-red-500">
+                                <button onClick={() => handleDelete(comment.id)} className="text-secondary-text/30 hover:text-red-500 transition-colors">
                                     <Trash2 className="w-4 h-4" />
                                 </button>
                             )}
                         </div>
                     ))
                 )}
-                <div ref={bottomRef} />
+                <div ref={bottomRef} className="h-4" />
             </div>
 
-            {/* Input */}
-            <div className="p-4 bg-primary-bg border-t border-border-color pb-safe-area-inset-bottom">
+            {/* Input - Increased padding and z-index */}
+            <div className="p-4 bg-primary-bg border-t border-border-color pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                 <div className="relative">
                     <input 
                         type="text" 
@@ -203,7 +203,7 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
                         placeholder={canComment ? "Broadcast message..." : "Upgrade to broadcast"}
                         disabled={!canComment}
                         onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                        className="w-full bg-secondary-bg border border-border-color rounded-full pl-4 pr-12 py-3 text-primary-text focus:border-accent-1 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-secondary-bg border border-border-color rounded-full pl-4 pr-12 py-3 text-primary-text focus:border-accent-1 outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     />
                     {canComment ? (
                         <button 

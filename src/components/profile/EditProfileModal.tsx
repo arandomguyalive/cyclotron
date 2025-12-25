@@ -109,14 +109,14 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[80]"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[190]"
           />
           
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="fixed inset-0 z-[90] flex items-center justify-center p-4 pointer-events-none"
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 pointer-events-none"
           >
             <div className="w-full max-w-md bg-secondary-bg border border-border-color rounded-3xl overflow-hidden pointer-events-auto shadow-2xl">
               

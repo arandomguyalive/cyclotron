@@ -32,7 +32,7 @@ export function BlacklistCertificate({ handle, dateJoined, id, onClose }: Blackl
     }, [id]); // Regenerate if ID changes
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 perspective-1000" onClick={onClose}>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 perspective-1000" onClick={onClose}>
             <motion.div 
                 style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
                 onMouseMove={handleMouse}

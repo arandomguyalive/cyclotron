@@ -104,14 +104,14 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[190]"
           />
           
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="fixed inset-0 z-[110] flex items-center justify-center p-4 pointer-events-none"
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 pointer-events-none"
           >
             <div className="w-full max-w-md bg-secondary-bg/90 border border-brand-cyan/30 rounded-3xl overflow-hidden pointer-events-auto shadow-[0_0_50px_rgba(0,212,229,0.1)] relative h-[600px] flex flex-col">
               
