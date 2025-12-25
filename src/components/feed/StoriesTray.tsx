@@ -7,6 +7,7 @@ import { collection, query, where, getDocs, orderBy, limit, onSnapshot, Timestam
 import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
 import { useSonic, ImpactStyle } from "@/lib/SonicContext";
+import { CreatePostModal } from "@/components/feed/CreatePostModal";
 
 interface Story {
   id: string;
@@ -24,6 +25,7 @@ export function StoriesTray() {
   const { user, firebaseUser } = useUser();
   const [realStories, setRealStories] = useState<Story[]>([]);
   const [isOpen, setIsOpen] = useState(false); // Viewer Open
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const { playClick, playHaptic } = useSonic();
 
@@ -53,6 +55,16 @@ export function StoriesTray() {
   const hasStories = stories.length > 0;
   
   const isFree = user?.tier === 'free';
+
+  const handleAddClick = () => {
+      if (isFree) {
+          playClick(150, 0.2, 'sawtooth');
+          alert("HIGH-BANDWIDTH PROTOCOL LOCKED. Upgrade to share Flux Stories.");
+          return;
+      }
+      playClick(600, 0.1, 'square');
+      setIsCreateOpen(true);
+  };
 
   const handleOpen = (index: number) => {
     if (isFree) {
@@ -89,7 +101,7 @@ export function StoriesTray() {
           <div className="flex gap-4 px-1">
               
               {/* Add Story Button */}
-              <div className="flex flex-col items-center gap-1 shrink-0">
+              <div className="flex flex-col items-center gap-1 shrink-0" onClick={handleAddClick}>
                   <div className="w-14 h-14 rounded-full border-2 border-dashed border-secondary-text/50 flex items-center justify-center cursor-pointer hover:border-accent-1 hover:text-accent-1 text-secondary-text transition-colors">
                       <Plus className="w-6 h-6" />
                   </div>
@@ -126,6 +138,8 @@ export function StoriesTray() {
           </div>
       </div>
 
+      <CreatePostModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
+
       {/* Fullscreen Viewer */}
       <AnimatePresence>
         {isOpen && hasStories && !isFree && (
@@ -133,7 +147,7 @@ export function StoriesTray() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="fixed inset-0 z-[100] bg-black flex flex-col"
+                className="fixed inset-0 z-[200] bg-black flex flex-col"
             >
                 {/* Progress Bar */}
                 <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2 pt-safe-area-top">

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Upload, Send, Image as ImageIcon, Film, Mic, Loader2, CheckCircle2, Globe, MapPin, Terminal } from "lucide-react";
+import { X, Upload, Send, Image as ImageIcon, Film, Mic, Loader2, CheckCircle2, Globe, MapPin, Terminal, Lock } from "lucide-react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { storage, db } from "@/lib/firebase";
@@ -31,10 +31,14 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
 
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [isDeadDrop, setIsDeadDrop] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleModeSelect = (selectedMode: "post" | "reel" | "story" | "signal") => {
+      if (user?.tier === 'free' && (selectedMode === 'reel' || selectedMode === 'story')) {
+          playClick(150, 0.2, 'sawtooth');
+          alert("HIGH-BANDWIDTH PROTOCOL LOCKED. Upgrade to access Reels and Stories.");
+          return;
+      }
       setMode(selectedMode);
       setStep("create");
       playClick(600, 0.1, 'square');
@@ -173,17 +177,27 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                                <p className="text-sm text-secondary-text">Broadcast text-only transmission.</p>
                            </div>
                        </button>
-                       <button onClick={() => handleModeSelect('reel')} className="flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl hover:bg-accent-2/10 hover:border-accent-2 transition-all group text-left">
-                           <div className="p-4 bg-secondary-bg rounded-full text-accent-2 group-hover:scale-110 transition-transform"><Film className="w-8 h-8" /></div>
-                           <div>
-                               <h3 className="text-xl font-bold text-primary-text group-hover:text-accent-2">Reel</h3>
+                       <button onClick={() => handleModeSelect('reel')} className={`flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl transition-all group text-left ${user?.tier === 'free' ? 'opacity-50' : 'hover:bg-accent-2/10 hover:border-accent-2'}`}>
+                           <div className="p-4 bg-secondary-bg rounded-full text-accent-2 group-hover:scale-110 transition-transform">
+                               {user?.tier === 'free' ? <Lock className="w-8 h-8" /> : <Film className="w-8 h-8" />}
+                           </div>
+                           <div className="flex-1">
+                               <div className="flex items-center justify-between">
+                                   <h3 className="text-xl font-bold text-primary-text group-hover:text-accent-2">Reel</h3>
+                                   {user?.tier === 'free' && <span className="px-2 py-0.5 bg-accent-2/20 text-accent-2 text-[10px] rounded font-bold uppercase">Pro</span>}
+                               </div>
                                <p className="text-sm text-secondary-text">Share vertical videos to Vortex.</p>
                            </div>
                        </button>
-                       <button onClick={() => handleModeSelect('story')} className="flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl hover:bg-purple-500/10 hover:border-purple-500 transition-all group text-left">
-                           <div className="p-4 bg-secondary-bg rounded-full text-purple-500 group-hover:scale-110 transition-transform"><Globe className="w-8 h-8" /></div>
-                           <div>
-                               <h3 className="text-xl font-bold text-primary-text group-hover:text-purple-500">Story</h3>
+                       <button onClick={() => handleModeSelect('story')} className={`flex items-center gap-4 p-6 bg-secondary-bg/50 border border-border-color rounded-2xl transition-all group text-left ${user?.tier === 'free' ? 'opacity-50' : 'hover:bg-purple-500/10 hover:border-purple-500'}`}>
+                           <div className="p-4 bg-secondary-bg rounded-full text-purple-500 group-hover:scale-110 transition-transform">
+                               {user?.tier === 'free' ? <Lock className="w-8 h-8" /> : <Globe className="w-8 h-8" />}
+                           </div>
+                           <div className="flex-1">
+                               <div className="flex items-center justify-between">
+                                   <h3 className="text-xl font-bold text-primary-text group-hover:text-purple-500">Story</h3>
+                                   {user?.tier === 'free' && <span className="px-2 py-0.5 bg-purple-500/20 text-purple-500 text-[10px] rounded font-bold uppercase">Pro</span>}
+                               </div>
                                <p className="text-sm text-secondary-text">Ephemeral updates (24h).</p>
                            </div>
                        </button>

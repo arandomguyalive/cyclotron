@@ -363,13 +363,20 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                         {commentsCount > 0 && <span className="text-xs font-bold text-accent-1 font-mono">{commentsCount}</span>}
                     </div>
                     <div className="flex items-center gap-1.5">
-                        <Share2 onClick={async () => {
-                            try {
-                                await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });
-                                navigator.clipboard.writeText(`${window.location.origin}/profile?view=${post.userId}`);
-                                toast("Link Copied", "info");
-                            } catch (e) {}
-                        }} className="w-6 h-6 text-primary-text cursor-pointer" />
+                                        <Share2 
+                                            onClick={async () => {
+                                                if (isFree) {
+                                                    toast("UPGRADE REQUIRED: Secure sharing restricted.", "error");
+                                                    return;
+                                                }
+                                                try {
+                                                    await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });
+                                                    navigator.clipboard.writeText(`${window.location.origin}/profile?view=${post.userId}`);
+                                                    toast("Link Copied to Clipboard", "info");
+                                                } catch (e) {}
+                                            }}
+                                            className="w-6 h-6 text-primary-text hover:text-accent-1 transition-colors cursor-pointer" 
+                                        />
                         {sharesCount > 0 && <span className="text-xs font-bold text-secondary-text font-mono">{sharesCount}</span>}
                     </div>
                 </div>
