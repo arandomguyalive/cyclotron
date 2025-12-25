@@ -79,7 +79,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       setCurrentView(view);
   }
 
-  const isOwner = user?.isOwner || ['abhi18', 'kinjal18'].includes(user?.handle?.toLowerCase() || '');
+  const isOwner = user?.isOwner || ['ABHI18', 'KINJAL18'].includes(user?.handle?.toUpperCase() || "");
 
   // Tier Access Helpers
   const canAccessGhost = ['professional', 'ultra_elite', 'sovereign'].includes(user?.tier || '');

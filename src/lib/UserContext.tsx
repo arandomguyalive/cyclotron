@@ -117,32 +117,33 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                   });
               }
 
-              // Map old tier names to new hierarchy if they exist
-              const legacyMap: Record<string, UserTier> = {
-                  "lobby": "lobby",
-                  "shield": "shield",
-                  "professional": "professional",
-                  "ultra_elite": "ultra_elite"
-              };
-
-              if (data.tier && legacyMap[data.tier]) {
-                  data.tier = legacyMap[data.tier];
-                  needsFix = true;
-              }
-
-              if (data.accessType === "LIFETIME_BLACKLIST") {
-                  data.isBlacklist = true;
-                  data.tier = "professional";
-                  needsFix = true;
-              }
-
-              if (needsFix) {
-                  await setDoc(userRef, data, { merge: true });
-                  return; 
-              }
-
-              const isOwner = ['ABHI18', 'KINJAL18'].includes(data.handle?.toUpperCase());
-              if (isOwner) {
+                          // Map old tier names to new hierarchy if they exist
+                          const legacyMap: Record<string, UserTier> = {
+                              "free": "lobby",
+                              "premium": "shield",
+                              "gold": "professional",
+                              "platinum": "ultra_elite",
+                              "lifetime": "professional"
+                          };
+              
+                          if (data.tier && legacyMap[data.tier]) {
+                              data.tier = legacyMap[data.tier];
+                              needsFix = true;
+                          }
+              
+                          if (data.accessType === "LIFETIME_BLACKLIST" && data.tier !== "professional") {
+                              data.isBlacklist = true;
+                              data.tier = "professional";
+                              needsFix = true;
+                          }
+              
+                          if (needsFix) {
+                              await setDoc(userRef, data, { merge: true });
+                              return; 
+                          }
+              
+                          const handleUpper = data.handle?.toUpperCase() || "";
+                          const isOwner = ['ABHI18', 'KINJAL18'].includes(handleUpper);              if (isOwner) {
                   data.isOwner = true;
                   // If tier isn't set yet (newly created), default to sovereign
                   if (!data.tier) data.tier = "sovereign";
