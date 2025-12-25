@@ -181,7 +181,7 @@ function ProfileContent() {
   if (userLoading || fetching || !targetUser) {
       return (
           <div className="min-h-screen flex items-center justify-center bg-primary-bg text-accent-1 font-mono animate-pulse">
-              ESTABLISHING ENCRYPTED UPLINK...
+              SYNCING SECURE PROFILE...
           </div>
       );
   }

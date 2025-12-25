@@ -112,6 +112,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             }
 
             if (needsFix) {
+                console.log("Synchronizing secure profile data...");
                 await setDoc(userRef, { stats: data.stats }, { merge: true });
                 return; 
             }

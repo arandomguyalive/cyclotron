@@ -135,7 +135,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               
               {/* Header */}
               <div className="px-6 py-4 border-b border-border-color flex items-center justify-between bg-primary-bg">
-                <h2 className="text-lg font-bold text-primary-text">Edit Neural Identity</h2>
+                <h2 className="text-lg font-bold text-primary-text">Profile Settings</h2>
                 <button onClick={onClose} className="p-2 hover:bg-secondary-bg rounded-full transition-colors">
                   <X className="w-5 h-5 text-secondary-text" />
                 </button>
@@ -154,7 +154,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                     ) : (
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-secondary-text group-hover:text-accent-1">
                             <ImageIcon className="w-8 h-8 mb-2" />
-                            <span className="text-[10px] font-mono uppercase tracking-widest">Upload Cover</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Update Cover</span>
                         </div>
                     )}
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
@@ -181,10 +181,10 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                   </div>
                   <div className="flex gap-4">
                       <button onClick={randomizeAvatar} className="text-[10px] font-bold uppercase tracking-widest text-secondary-text hover:text-accent-1 transition-colors">
-                        Randomize Signal
+                        Randomize Photo
                       </button>
                       <button onClick={() => avatarInputRef.current?.click()} className="text-[10px] font-bold uppercase tracking-widest text-accent-1">
-                        Upload Image
+                        Upload Photo
                       </button>
                   </div>
                 </div>
@@ -192,7 +192,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                 {/* Fields */}
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-text ml-1">Identity Label</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-text ml-1">Display Name</label>
                     <input 
                       type="text" 
                       value={name}
@@ -202,7 +202,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-text ml-1">Frequency Address (@)</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-text ml-1">Username (@)</label>
                     <div className="relative">
                         <span className="absolute left-4 top-3 text-secondary-text">@</span>
                         <input 
@@ -215,7 +215,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-text ml-1">Neural Bio / Manifesto</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-text ml-1">Bio / About Me</label>
                     <textarea 
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
@@ -237,12 +237,12 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                   {isSaving ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        SYNCING...
+                        SAVING...
                       </>
                   ) : (
                       <>
                         <Save className="w-4 h-4" />
-                        SYNC NEURAL LINK
+                        UPDATE PROFILE
                       </>
                   )}
                 </button>
