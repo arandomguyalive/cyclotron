@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/UserContext";
-import { useSonic } from "@/lib/SonicContext";
-import { ImpactStyle } from "@capacitor/haptics";
+import { useSonic, ImpactStyle } from "@/lib/SonicContext";
 import { motion } from "framer-motion";
 import { StoriesTray } from "@/components/feed/StoriesTray";
 import { SignalGrid } from "@/components/home/SignalGrid";

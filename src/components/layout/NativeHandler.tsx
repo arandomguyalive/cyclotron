@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { Keyboard } from '@capacitor/keyboard';
+import { Keyboard, KeyboardResize } from '@capacitor/keyboard';
 
 export function NativeHandler() {
   useEffect(() => {
@@ -26,7 +26,7 @@ export function NativeHandler() {
       try {
         // Ensure keyboard resizes the webview so inputs aren't covered
         if (Capacitor.getPlatform() === 'ios') {
-           await Keyboard.setResizeMode({ mode: 'native' as "native" }); 
+           await Keyboard.setResizeMode({ mode: KeyboardResize.Native }); 
         }
       } catch (e) {
         console.warn('Keyboard initialization failed', e);

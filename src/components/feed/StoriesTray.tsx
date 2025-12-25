@@ -6,7 +6,7 @@ import { Plus, X, ChevronRight, ChevronLeft, Lock } from "lucide-react";
 import { collection, query, where, getDocs, orderBy, limit, onSnapshot, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
-import { useSonic } from "@/lib/SonicContext";
+import { useSonic, ImpactStyle } from "@/lib/SonicContext";
 
 interface Story {
   id: string;
