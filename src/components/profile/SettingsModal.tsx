@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useSonic } from "@/lib/SonicContext";
 import { EditProfileModal } from "./EditProfileModal";
 import { ThemeSelectorModal } from "./ThemeSelectorModal";
-import { useUser } from "@/lib/UserContext";
+import { useUser, UserProfile } from "@/lib/UserContext";
 import { useRouter } from "next/navigation";
 
 interface SettingsModalProps {
