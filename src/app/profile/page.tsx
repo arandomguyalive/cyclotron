@@ -59,6 +59,11 @@ function ProfileContent() {
   const y = useTransform(scrollY, [0, 300], [0, 150]);
   const opacity = useTransform(scrollY, [0, 300], [1, 0.5]);
 
+  const handleButtonClick = () => {
+    playClick(300, 0.05, 'square');
+    playHaptic();
+  };
+
   useEffect(() => {
     if (!userLoading && !firebaseUser) {
         router.push("/login");
@@ -70,13 +75,11 @@ function ProfileContent() {
 
     setFetching(true);
     
-    // --- REAL-TIME PROFILE LISTENER ---
     const userRef = doc(db, "users", uidToFetch);
     const unsubscribeProfile = onSnapshot(userRef, (docSnap) => {
         if (docSnap.exists()) {
             setTargetUser({ uid: docSnap.id, ...docSnap.data() } as UserProfileData);
         } else {
-            // Fallback for missing user
             setTargetUser({
                 uid: uidToFetch,
                 displayName: "Unknown Operative",
@@ -90,7 +93,6 @@ function ProfileContent() {
         setFetching(false);
     });
 
-    // Fetch Posts (One-time is fine for grid)
     const fetchContent = async () => {
         try {
             const postsQ = query(collection(db, "posts"), where("userId", "==", uidToFetch), limit(18));
@@ -108,7 +110,6 @@ function ProfileContent() {
     };
     fetchContent();
 
-    // Check Follow Status
     let unsubscribeFollow: (() => void) | null = null;
     if (!isOwnProfile && firebaseUser) {
         const followRef = doc(db, "users", firebaseUser.uid, "following", uidToFetch);
@@ -132,9 +133,9 @@ function ProfileContent() {
       const targetUserDocRef = doc(db, "users", targetUser.uid);
       const currentUserDocRef = doc(db, "users", firebaseUser.uid);
 
-      const batch = writeBatch(db);
-      
       try {
+          console.log(`[FOLLOW] Action. target: ${targetUser.uid}, current: ${firebaseUser.uid}, isFollowing: ${isFollowing}`);
+          const batch = writeBatch(db);
           if (isFollowing) {
               batch.delete(followRef);
               batch.delete(followerRef);
@@ -160,7 +161,7 @@ function ProfileContent() {
               toast(`Established link with @${targetUser.handle}`, "success");
           }
       } catch (e: any) { 
-          console.error("Link failure", e);
+          console.error("[FOLLOW] Batch failure", e);
           toast("Signal Interference: Action Aborted.", "error");
       }
   };
@@ -173,11 +174,6 @@ function ProfileContent() {
       } else {
           toast(`${type} module online.`, "success");
       }
-  };
-
-  const handleButtonClick = () => {
-    playClick(300, 0.05, 'square');
-    playHaptic();
   };
 
   if (userLoading || fetching || !targetUser) {

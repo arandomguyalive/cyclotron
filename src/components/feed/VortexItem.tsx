@@ -116,6 +116,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
         return;
     }
 
+    console.log(`[LIKE] Attempting toggle. postId: ${post.id}, liked: ${liked}`);
     const batch = writeBatch(db);
     const postRef = doc(db, "posts", post.id);
     const userLikeRef = doc(db, "users", firebaseUser.uid, "likes", post.id);
@@ -145,8 +146,9 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
             batch.delete(userLikeRef);
         }
         await batch.commit();
+        console.log("[LIKE] Batch committed successfully.");
     } catch (e) {
-        console.error("Like failure", e);
+        console.error("[LIKE] Batch failed:", e);
     }
   };
 

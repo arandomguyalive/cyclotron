@@ -66,6 +66,7 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
   const handleSubmit = async () => {
     if (!input.trim() || !firebaseUser || !canComment) return;
     
+    console.log(`[COMMENT] Attempting submission. postId: ${postId}, text: ${input.substring(0, 10)}...`);
     playClick(500, 0.1, 'square');
     const text = input.trim();
     setInput(""); // Optimistic clear
@@ -97,9 +98,10 @@ export function CommentModal({ postId, isOpen, onClose, postOwnerId }: CommentMo
       }
 
       await batch.commit();
+      console.log("[COMMENT] Batch committed successfully.");
 
     } catch (e) {
-      console.error("Comment failed", e);
+      console.error("[COMMENT] Batch failed:", e);
       alert("Transmission failed. Secure channel required.");
     }
   };
