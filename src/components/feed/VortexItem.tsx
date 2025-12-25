@@ -194,38 +194,41 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
   const isShieldTier = tier === 'premium';
 
   return (
-    <div className={cn("relative h-full w-full overflow-hidden bg-cyber-black rounded-xl border border-white/10 shadow-2xl")}>
+    <div className={cn("relative h-full w-full overflow-hidden bg-cyber-black rounded-xl border border-white/10 shadow-lg translate-z-0 backface-hidden")}>
       {/* Media Layer */}
-      <div className={cn("absolute inset-0 bg-black", isFree ? "filter grayscale blur-[1px] brightness-75 contrast-125" : "")}>
+      <div className={cn("absolute inset-0 bg-black")}>
           {p.mediaType === 'video' ? (
               <SecurePlayer src={p.mediaUrl} />
           ) : (
               <img 
                 src={p.mediaUrl} 
                 alt="Post Content" 
-                className="w-full h-full object-cover opacity-80"
+                className="w-full h-full object-cover opacity-70"
               />
           )}
+          
+          {/* Signal Weak / Free Tier Overlay (High Performance) */}
+          {isFree && (
+              <div className="absolute inset-0 bg-black/40 backdrop-grayscale-[0.5] flex items-center justify-center">
+                  <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-screen" />
+                  <div className="z-10 flex flex-col items-center gap-2">
+                      <AlertTriangle className="w-8 h-8 text-brand-orange animate-pulse" />
+                      <span className="text-xs font-bold text-brand-orange uppercase tracking-widest">Signal Throttled</span>
+                  </div>
+              </div>
+          )}
       </div>
-
-      {/* Free Tier Overlay: Signal Weak */}
-      {isFree && (
-          <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-black/80 px-3 py-1 rounded border border-brand-orange/30">
-              <AlertTriangle className="w-4 h-4 text-brand-orange animate-pulse" />
-              <span className="text-[10px] font-bold text-brand-orange uppercase tracking-wider">Signal Weak</span>
-          </div>
-      )}
 
       {/* Forensic Watermark (Gold+) - Overlay */}
       {watermarkText && isForensicTier && (
         <div 
-            className="absolute inset-0 flex flex-wrap content-around justify-around pointer-events-none opacity-10 font-mono text-white text-xs z-10"
+            className="absolute inset-0 flex flex-wrap content-around justify-around pointer-events-none opacity-5 font-mono text-white text-[10px] z-10"
             style={{
-                transform: 'rotate(-30deg) scale(1.5)',
+                transform: 'rotate(-30deg) scale(1.2)',
                 overflow: 'hidden',
             }}
         >
-            {Array(20).fill(0).map((_, i) => (
+            {Array(15).fill(0).map((_, i) => (
                 <span key={i} className="mx-4 my-2 whitespace-nowrap">{watermarkText}</span>
             ))}
         </div>

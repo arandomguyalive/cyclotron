@@ -153,7 +153,7 @@ export default function VortexPage() {
           </motion.div>
       )}
 
-      <div className="relative w-full h-full md:max-w-md md:aspect-[9/16] preserve-3d flex items-center justify-center pointer-events-none">
+      <div className="relative w-full h-full md:max-w-md md:aspect-[9/16] flex items-center justify-center pointer-events-none">
         {items.slice(Math.max(0, activeIndex - 1), Math.min(items.length, activeIndex + 2)).map((item) => (
             <TunnelItem 
                 key={item.id} 
@@ -175,13 +175,17 @@ export default function VortexPage() {
 function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkText, isFree, tier }: { index: number, post: Post, parentZ: MotionValue<number>, activeIndex: number, onCollect: () => void, watermarkText?: string, isFree?: boolean, tier: string }) {
     const baseZ = index * GAP;
     const z = useTransform(parentZ, (currentZ: number) => baseZ + currentZ);
-    const opacity = useTransform(z, [-GAP, -GAP/2, 0, GAP*3], [0, 0, 1, 0]);
-    const scale = useTransform(z, [-GAP, 0, GAP*4], [1.1, 1, 0.9]);
-    const display = useTransform(z, (currentZ) => (currentZ < -GAP*2 || currentZ > GAP*5) ? "none" : "flex");
+    
+    // Performance Tweak: Use simple opacity and scale instead of deep 3D stacking
+    const opacity = useTransform(z, [-GAP, 0, GAP, GAP * 2], [0, 1, 0.3, 0]);
+    const scale = useTransform(z, [-GAP, 0, GAP * 2], [1.1, 1, 0.85]);
+    
+    // Optimization: Drastically reduce display range
+    const display = useTransform(z, (currentZ) => (currentZ < -GAP || currentZ > GAP * 3) ? "none" : "flex");
 
     const hasArtifact = index % 3 === 0; 
-    const artifactX = (index % 2 === 0 ? 1 : -1) * 150; 
-    const artifactY = -200; 
+    const artifactX = (index % 2 === 0 ? 1 : -1) * 120; 
+    const artifactY = -180; 
 
     return (
         <motion.div
@@ -193,17 +197,18 @@ function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkTex
                 position: 'absolute',
                 width: '100%',
                 height: '100%',
-                transformStyle: 'preserve-3d',
+                transformStyle: 'flat', // Heavy 3D objects should be flat relative to parent
                 alignItems: 'center',
                 justifyContent: 'center',
-                willChange: 'transform, opacity'
+                willChange: 'transform, opacity',
+                backfaceVisibility: 'hidden'
             }}
             className="origin-center p-4 pointer-events-auto"
         >
              <VortexItem post={post} index={index} watermarkText={watermarkText} isFree={isFree} tier={tier} />
 
-             {hasArtifact && (
-                 <div style={{ transform: `translate3d(${artifactX}px, ${artifactY}px, 100px)` }} className="absolute z-[70] pointer-events-auto">
+             {hasArtifact && activeIndex === index && (
+                 <div style={{ transform: `translate3d(${artifactX}px, ${artifactY}px, 50px)` }} className="absolute z-[70] pointer-events-auto">
                      <Artifact onCollect={onCollect} />
                  </div>
              )}
