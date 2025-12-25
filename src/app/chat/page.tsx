@@ -53,6 +53,8 @@ function ChatListContent() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [view, setView] = useState<'direct' | 'factions'>('direct');
 
+  const chats = realChats;
+
   // Handle auto-starting chat from userId param
   useEffect(() => {
       if (!firebaseUser || !targetUserId) return;
