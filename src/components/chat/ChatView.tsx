@@ -241,7 +241,7 @@ export function ChatView({ chatId }: ChatViewProps) {
           <h2 className="font-bold text-primary-text">{chatPartner?.handle || "Agent Zero"}</h2>
           <div className="flex items-center gap-1 text-xs opacity-80">{isFree ? <><AlertTriangle className="w-3 h-3 text-brand-orange" /> <span className="text-brand-orange">UNSECURED</span></> : <><Lock className="w-3 h-3 text-accent-1" /> <span className="text-accent-1">E2EE</span></>}</div>
         </div>
-        {!isFree && !chatId.startsWith("faction-") && (
+        {( !isFree || currentUserProfile?.isOwner ) && !chatId.startsWith("faction-") && (
             <button onClick={() => setIsBurnerMode(!isBurnerMode)} className={`p-2 rounded-full transition-all ${isBurnerMode ? 'bg-brand-orange/20 text-brand-orange animate-pulse' : 'text-secondary-text hover:text-primary-text'}`}><Flame className="w-5 h-5" /></button>
         )}
       </div>
@@ -255,7 +255,7 @@ export function ChatView({ chatId }: ChatViewProps) {
 
       <div className="p-4 bg-primary-bg border-t border-border-color sticky bottom-0 z-50 pb-safe-area-inset-bottom">
         <div className="flex items-center gap-2 relative">
-          <button onClick={() => toast(isFree ? "Restricted" : "Mock Open", isFree ? "warning" : "success")} className={`p-2 rounded-full ${isFree ? 'opacity-50' : 'text-accent-1'}`}><Paperclip className="w-5 h-5" /></button>
+          <button onClick={() => toast((isFree && !currentUserProfile?.isOwner) ? "Restricted" : "Mock Open", (isFree && !currentUserProfile?.isOwner) ? "warning" : "success")} className={`p-2 rounded-full ${(isFree && !currentUserProfile?.isOwner) ? 'opacity-50' : 'text-accent-1'}`}><Paperclip className="w-5 h-5" /></button>
           <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSend()} placeholder="Type encrypted message..." className="flex-1 bg-secondary-bg border border-border-color rounded-full px-4 py-3 text-primary-text focus:border-accent-1 outline-none" />
           <button onClick={handleSend} className="w-10 h-10 rounded-full bg-accent-1 flex items-center justify-center text-primary-bg"><Send className="w-5 h-5" /></button>
         </div>

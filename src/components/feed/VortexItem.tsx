@@ -198,6 +198,8 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' 
 
   const isForensicTier = ['professional', 'ultra_elite', 'sovereign'].includes(tier);
   const isShieldTier = tier === 'shield';
+  const showForensic = isForensicTier && !currentUserProfile?.visualOverride;
+  const showShield = isShieldTier && !currentUserProfile?.visualOverride;
   const showGlitched = isFree && !currentUserProfile?.visualOverride;
 
   return (
@@ -220,13 +222,13 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' 
           )}
       </div>
 
-      {watermarkText && isForensicTier && (
+      {watermarkText && showForensic && (
         <div className="absolute inset-0 flex flex-wrap content-around justify-around pointer-events-none opacity-5 font-mono text-white text-[10px] z-10" style={{ transform: 'rotate(-30deg) scale(1.2)', overflow: 'hidden' }}>
             {Array(15).fill(0).map((_, i) => <span key={i} className="mx-4 my-2 whitespace-nowrap">{watermarkText}</span>)}
         </div>
       )}
 
-      {watermarkText && isShieldTier && (
+      {watermarkText && showShield && (
         <div className="absolute bottom-20 right-4 pointer-events-none z-10 bg-black/50 px-2 py-1 rounded backdrop-blur-sm border border-brand-cyan/20">
           <span className="text-brand-cyan/50 text-[10px] font-mono tracking-widest uppercase">{watermarkText}</span>
         </div>

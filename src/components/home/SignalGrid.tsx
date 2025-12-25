@@ -367,7 +367,7 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                     </div>
                     <div className="flex items-center gap-1.5">
                         <Share2 onClick={async () => {
-                            if (isFree) { toast("UPGRADE REQUIRED: Secure sharing restricted.", "error"); return; }
+                            if (isFree && !user?.isOwner) { toast("UPGRADE REQUIRED: Secure sharing restricted.", "error"); return; }
                             try {
                                 await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });
                                 navigator.clipboard.writeText(`${window.location.origin}/profile?view=${post.userId}`);
