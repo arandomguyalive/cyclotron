@@ -67,11 +67,11 @@ function ProfileContent() {
     }
     
     const fetchData = async () => {
+        const uidToFetch = viewId || firebaseUser?.uid;
+        if (!uidToFetch) return;
+
         setFetching(true);
         try {
-            const uidToFetch = viewId || firebaseUser?.uid;
-            if (!uidToFetch) return;
-
             // Handle Mock Users
             if (uidToFetch.startsWith("mock-")) {
                 setTargetUser({
@@ -80,7 +80,7 @@ function ProfileContent() {
                     handle: "mock_agent_" + uidToFetch.split('-')[1],
                     bio: "This is a simulated profile. Real data encrypted.",
                     avatarSeed: uidToFetch,
-                    tier: "premium", // Mock users are premium
+                    tier: "premium", 
                     stats: { following: "10", followers: "50", likes: "100", credits: "5000", reputation: "20" }
                 } as UserProfileData);
                 setFetching(false);
@@ -100,21 +100,19 @@ function ProfileContent() {
                     }
                 }
             } catch (err) {
-                console.warn("Firestore profile fetch failed (using fallback):", err);
+                // Silently ignore permission errors
             }
 
             // Fallback if data missing (Permissions or Not Found)
             if (!profileData) {
-                // If viewing own profile but fetch failed, try to use Context
                 if (isOwnProfile && currentUser) {
                      profileData = { uid: firebaseUser!.uid, ...currentUser } as UserProfileData;
                 } else {
-                     // Basic placeholder for external user if DB blocked
                      profileData = {
                          uid: uidToFetch,
-                         displayName: "Unknown User",
+                         displayName: isOwnProfile ? "Ghost User" : "Unknown User",
                          handle: "encrypted_signal",
-                         bio: "Profile data unavailable.",
+                         bio: "Profile data unavailable due to network restrictions.",
                          avatarSeed: uidToFetch,
                          tier: "free",
                          stats: { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' }
@@ -122,42 +120,44 @@ function ProfileContent() {
                 }
             }
 
+            // Apply simulated stats
+            if (!uidToFetch.startsWith("mock-")) {
+                const storageKey = `sim_stats_${uidToFetch}`;
+                const simStats = JSON.parse(localStorage.getItem(storageKey) || '{}');
+                
+                if (simStats.followers) {
+                    if (!profileData.stats) profileData.stats = { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' };
+                    profileData.stats = { ...profileData.stats, followers: simStats.followers };
+                }
+                if (simStats.following) {
+                    if (!profileData.stats) profileData.stats = { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' };
+                    profileData.stats = { ...profileData.stats, following: simStats.following };
+                }
+            }
+            
+            setTargetUser(profileData);
+
             // Fetch Posts
             try {
-                const postsQ = query(
-                    collection(db, "posts"),
-                    where("userId", "==", uidToFetch),
-                    limit(18)
-                );
+                const postsQ = query(collection(db, "posts"), where("userId", "==", uidToFetch), limit(18));
                 const postsSnap = await getDocs(postsQ);
                 setUserPosts(postsSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
-            } catch (err) {
-                // console.warn("Posts fetch failed (using simulation logic):", err);
-            }
+            } catch (err) {}
 
-            // Fetch Likes (Only if own profile or high tier - for now just own)
+            // Fetch Likes
             if (isOwnProfile) {
                 let fetchedLikes: MinimalPost[] = [];
                 try {
-                    const likesQ = query(
-                        collection(db, "users", firebaseUser!.uid, "likes"),
-                        orderBy("timestamp", "desc"),
-                        limit(18)
-                    );
+                    const likesQ = query(collection(db, "users", firebaseUser!.uid, "likes"), orderBy("timestamp", "desc"), limit(18));
                     const likesSnap = await getDocs(likesQ);
                     fetchedLikes = likesSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost));
-                } catch (err) {
-                    // console.warn("Likes fetch failed (using simulation):", err);
-                }
+                } catch (err) {}
 
-                // Merge Simulated Likes
                 const simLikes = JSON.parse(localStorage.getItem(`sim_likes_${firebaseUser!.uid}`) || '[]');
                 if (simLikes.length > 0) {
                     const existingIds = new Set(fetchedLikes.map(p => p.id));
                     simLikes.forEach((p: any) => {
-                        if (!existingIds.has(p.id)) {
-                            fetchedLikes.unshift(p as MinimalPost);
-                        }
+                        if (!existingIds.has(p.id)) fetchedLikes.unshift(p as MinimalPost);
                     });
                 }
                 setLikedPosts(fetchedLikes);
@@ -168,22 +168,15 @@ function ProfileContent() {
                 try {
                     const followRef = doc(db, "users", firebaseUser.uid, "following", uidToFetch);
                     const followSnap = await getDoc(followRef);
-                    if (followSnap.exists()) {
-                        setIsFollowing(true);
-                    } else {
-                        // Check simulation storage
-                        const simFollowing = localStorage.getItem(`sim_following_${uidToFetch}`);
-                        setIsFollowing(simFollowing === "true");
-                    }
+                    if (followSnap.exists()) setIsFollowing(true);
+                    else setIsFollowing(localStorage.getItem(`sim_following_${uidToFetch}`) === "true");
                 } catch (e) {
-                    // Fallback on error
-                    const simFollowing = localStorage.getItem(`sim_following_${uidToFetch}`);
-                    setIsFollowing(simFollowing === "true");
+                    setIsFollowing(localStorage.getItem(`sim_following_${uidToFetch}`) === "true");
                 }
             }
 
         } catch (e) {
-            console.error("Profile fetch error", e);
+            console.error("Profile logic error", e);
         } finally {
             setFetching(false);
         }
