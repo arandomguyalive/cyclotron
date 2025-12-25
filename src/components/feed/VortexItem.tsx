@@ -6,86 +6,60 @@ import { motion } from "framer-motion";
 import { Heart, MessageCircle, Share2, Disc, Music, Plus, Play, AlertTriangle, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SecurePlayer } from "./SecurePlayer";
-import { Timestamp, collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc, deleteDoc, getCountFromServer, writeBatch } from "firebase/firestore";
+import { Timestamp, collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc, deleteDoc, getCountFromServer, writeBatch, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useScreenshot } from "@/lib/useScreenshot";
-import { useUser } from "@/lib/UserContext";
-import { useToast } from "@/lib/ToastContext";
-import { CommentModal } from "./CommentModal";
 
-export interface Post {
-  id: string;
-  type?: "post" | "reel" | "story" | "text" | "drop";
-  caption: string;
-  mediaUrl: string;
-  mediaType: "image" | "video";
-  userId: string;
-  userHandle: string;
-  userAvatar: string;
-  likes: number;
-  shares?: number; // Added shares
-  createdAt: Timestamp | Date;
-}
-
-export interface Ad {
-  id: string;
-  type: "ad";
-  title: string;
-  description: string;
-  cta: string;
-  color: string;
-}
-
-interface SimLike {
-  id: string;
-  [key: string]: unknown;
-}
+// ... (keep Post interface)
 
 interface VortexProps {
-  post: Post | Ad;
+  post: Post; 
   index: number;
   watermarkText?: string;
   isFree?: boolean; 
-  tier?: string; // Add tier prop
+  tier?: string;
 }
 
 export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }: VortexProps) {
   const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState((post as Post).likes || 0);
-  const [shares, setShares] = useState((post as Post).shares || 0);
+  const [likes, setLikes] = useState(post.likes || 0);
+  const [shares, setShares] = useState(post.shares || 0);
   const [commentsCount, setCommentsCount] = useState(0);
   const [isCommentOpen, setIsCommentOpen] = useState(false);
   const { firebaseUser, user: currentUserProfile } = useUser();
   const { toast } = useToast();
 
   useEffect(() => {
-      if (post.type === 'ad' || !firebaseUser) return;
+      if (!firebaseUser || !post.id) return;
 
-      // 1. Sync Local/Simulated Likes
-      const simLikes: SimLike[] = JSON.parse(localStorage.getItem(`sim_likes_${firebaseUser.uid}`) || '[]');
-      if (simLikes.find((i) => i.id === post.id)) {
-          setTimeout(() => {
-              setLiked(true);
-              // Visually correct the count if it seems low
-              setLikes(prev => Math.max(prev, (post as Post).likes + 1)); 
-          }, 0);
-      }
+      // 1. Real-time Post Listener (Likes/Shares)
+      const unsubscribePost = onSnapshot(doc(db, "posts", post.id), (snap) => {
+          if (snap.exists()) {
+              const data = snap.data();
+              setLikes(data.likes || 0);
+              setShares(data.shares || 0);
+          }
+      });
 
-      // 2. Fetch Comment Count
-      const fetchCount = async () => {
-          try {
-              const coll = collection(db, "posts", post.id, "comments");
-              const snapshot = await getCountFromServer(coll);
-              setCommentsCount(snapshot.data().count);
-          } catch (e) { }
+      // 2. Check if I liked this post
+      const unsubscribeLike = onSnapshot(doc(db, "users", firebaseUser.uid, "likes", post.id), (snap) => {
+          setLiked(snap.exists());
+      });
+
+      // 3. Fetch Comment Count
+      const unsubscribeComments = onSnapshot(collection(db, "posts", post.id, "comments"), (snap) => {
+          setCommentsCount(snap.size);
+      });
+
+      return () => {
+          unsubscribePost();
+          unsubscribeLike();
+          unsubscribeComments();
       };
-      fetchCount();
   }, [post.id, firebaseUser]);
 
   useScreenshot(async () => {
-      if (post.type === 'ad' || !firebaseUser || (post as Post).userId === firebaseUser.uid) return;
+      if (!firebaseUser || post.userId === firebaseUser.uid) return;
       
-      // Throttle
       const key = `shot_post_${post.id}`;
       const last = sessionStorage.getItem(key);
       if (last && Date.now() - parseInt(last) < 5000) return;
@@ -94,12 +68,12 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
       toast("⚠️ Content Protected. Owner notified.", "error");
 
       try {
-          await addDoc(collection(db, "users", (post as Post).userId, "notifications"), {
+          await addDoc(collection(db, "users", post.userId, "notifications"), {
               type: "SCREENSHOT_POST",
               actorId: firebaseUser.uid,
               actorHandle: currentUserProfile?.handle || "Unknown",
               postId: post.id,
-              caption: (post as Post).caption?.substring(0, 20) || "Media",
+              caption: post.caption?.substring(0, 20) || "Media",
               timestamp: serverTimestamp(),
               read: false
           });
@@ -108,24 +82,8 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
       }
   });
 
-  if (post.type === 'ad') {
-    return (
-      <div className={cn("relative h-full w-full overflow-hidden bg-cyber-black rounded-xl border border-white/10 shadow-2xl flex flex-col items-center justify-center p-8 text-center", post.color)}>
-        <div className="absolute inset-0 opacity-20 bg-gradient-to-br from-black via-transparent to-black" />
-        <h2 className="text-4xl font-black uppercase mb-4 tracking-tighter relative z-10">{post.title}</h2>
-        <p className="text-sm font-mono mb-8 opacity-80 relative z-10">{post.description}</p>
-        <button className="px-8 py-3 bg-white text-black font-bold uppercase tracking-widest hover:scale-105 transition-transform relative z-10">
-          {post.cta}
-        </button>
-        <div className="absolute top-4 right-4 bg-black/50 px-2 py-1 rounded text-[10px] font-bold uppercase border border-white/20">
-          Sponsored
-        </div>
-      </div>
-    );
-  }
-
   // --- STANDARD POST RENDERING ---
-  const p = post as Post; // Type assertion
+  const p = post; 
 
   const toggleLike = async () => {
     if (!firebaseUser) {
@@ -133,16 +91,12 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
         return;
     }
 
-    const newLiked = !liked;
-    setLiked(newLiked);
-    setLikes(prev => newLiked ? prev + 1 : prev - 1);
-
     const batch = writeBatch(db);
     const postRef = doc(db, "posts", post.id);
     const userLikeRef = doc(db, "users", firebaseUser.uid, "likes", post.id);
 
     try {
-        if (newLiked) {
+        if (!liked) {
             batch.update(postRef, { likes: increment(1) });
             batch.set(userLikeRef, {
                 postId: post.id,
@@ -150,7 +104,6 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
                 timestamp: serverTimestamp()
             });
 
-            // Notify Owner
             if (p.userId !== firebaseUser.uid) {
                 const notifRef = doc(collection(db, "users", p.userId, "notifications"));
                 batch.set(notifRef, {
@@ -168,26 +121,19 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
         }
         await batch.commit();
     } catch (e) {
-        console.error("Like failed", e);
-        // Revert optimistic UI
-        setLiked(!newLiked);
-        setLikes(prev => !newLiked ? prev + 1 : prev - 1);
+        console.error("Like failure", e);
     }
   };
 
   const handleShare = async () => {
       if (isFree) {
-          toast("UPGRADE REQUIRED: Secure sharing is restricted to Premium tiers.", "error");
+          toast("UPGRADE REQUIRED: Secure sharing restricted.", "error");
           return;
       }
       
-      setShares(prev => (prev || 0) + 1);
-      
       try {
           await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });
-      } catch (e) {
-          // Simulation fallback handled by optimistic update
-      }
+      } catch (e) {}
 
       if (navigator.share) {
           try {
@@ -196,11 +142,8 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
                   text: `Intercepted transmission from @${p.userHandle}`,
                   url: window.location.origin + `/profile?view=${p.userId}`
               });
-          } catch (err) {
-              console.log("Share aborted");
-          }
+          } catch (err) {}
       } else {
-          // Fallback for desktop/unsupported
           navigator.clipboard.writeText(window.location.origin + `/profile?view=${p.userId}`);
           toast("Link copied to clipboard.", "success");
       }

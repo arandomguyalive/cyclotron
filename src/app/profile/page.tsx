@@ -9,32 +9,11 @@ import { SettingsModal } from "@/components/profile/SettingsModal";
 import { BlacklistCertificate } from "@/components/profile/BlacklistCertificate";
 import { useSonic } from "@/lib/SonicContext";
 import { useUser } from "@/lib/UserContext";
-import { collection, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, orderBy, limit, increment, writeBatch, serverTimestamp } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, onSnapshot, deleteDoc, orderBy, limit, increment, writeBatch, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/lib/ToastContext";
 
-interface MinimalPost {
-    id: string;
-    mediaUrl: string;
-    mediaType: "image" | "video";
-}
-
-interface UserProfileData {
-    uid: string;
-    displayName: string;
-    handle: string;
-    bio: string;
-    avatarSeed: string;
-    coverImage?: string;
-    tier: string;
-    stats?: {
-        following: number;
-        followers: number;
-        likes: number;
-        credits: number;
-        reputation: number;
-    };
-}
+// ... (keep MinimalPost and UserProfileData)
 
 function ProfileContent() {
   const { user: currentUser, loading: userLoading, firebaseUser } = useUser();
@@ -65,146 +44,89 @@ function ProfileContent() {
         return;
     }
     
-    const fetchData = async () => {
-        const uidToFetch = viewId || firebaseUser?.uid;
-        if (!uidToFetch) return;
+    const uidToFetch = viewId || firebaseUser?.uid;
+    if (!uidToFetch) return;
 
-        setFetching(true);
-        const safetyTimer = setTimeout(() => {
-            setFetching(false);
-            setTargetUser(prev => prev || {
-                 uid: uidToFetch,
-                 displayName: "Network Error",
-                 handle: "timeout_signal",
-                 bio: "Connection timed out.",
-                 avatarSeed: uidToFetch,
-                 tier: "free",
-                 stats: { following: 0, followers: 0, likes: 0, credits: 0, reputation: 0 }
-             } as UserProfileData);
-        }, 5000);
+    setFetching(true);
+    
+    // --- REAL-TIME PROFILE LISTENER ---
+    const userRef = doc(db, "users", uidToFetch);
+    const unsubscribeProfile = onSnapshot(userRef, (docSnap) => {
+        if (docSnap.exists()) {
+            setTargetUser({ uid: docSnap.id, ...docSnap.data() } as UserProfileData);
+        } else {
+            // Fallback for missing user
+            setTargetUser({
+                uid: uidToFetch,
+                displayName: "Unknown Operative",
+                handle: "encrypted",
+                bio: "No signal detected.",
+                avatarSeed: uidToFetch,
+                tier: "free",
+                stats: { following: 0, followers: 0, likes: 0, credits: 0, reputation: 0 }
+            });
+        }
+        setFetching(false);
+    });
 
+    // Fetch Posts (One-time is fine for grid)
+    const fetchContent = async () => {
         try {
-            if (uidToFetch.startsWith("mock-")) {
-                setTargetUser({
-                    uid: uidToFetch,
-                    displayName: "Operative " + uidToFetch.split('-')[1],
-                    handle: "mock_agent_" + uidToFetch.split('-')[1],
-                    bio: "Simulated operative data.",
-                    avatarSeed: uidToFetch,
-                    tier: "premium", 
-                    stats: { following: 10, followers: 50, likes: 100, credits: 5000, reputation: 20 }
-                } as UserProfileData);
-                return;
-            }
+            const postsQ = query(collection(db, "posts"), where("userId", "==", uidToFetch), limit(18));
+            const postsSnap = await getDocs(postsQ);
+            setUserPosts(postsSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
+        } catch (err) {}
 
-            let profileData: UserProfileData | null = null;
+        if (isOwnProfile) {
             try {
-                if (isOwnProfile && currentUser) {
-                    profileData = { uid: firebaseUser!.uid, ...currentUser } as UserProfileData;
-                } else {
-                    const userDoc = await getDoc(doc(db, "users", uidToFetch));
-                    if (userDoc.exists()) {
-                        profileData = { uid: userDoc.id, ...userDoc.data() } as UserProfileData;
-                    }
-                }
+                const likesQ = query(collection(db, "users", uidToFetch, "likes"), orderBy("timestamp", "desc"), limit(18));
+                const likesSnap = await getDocs(likesQ);
+                setLikedPosts(likesSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
             } catch (err) {}
-
-            if (!profileData) {
-                if (isOwnProfile && currentUser) {
-                     profileData = { uid: firebaseUser!.uid, ...currentUser } as UserProfileData;
-                } else {
-                     profileData = {
-                         uid: uidToFetch,
-                         displayName: "Unknown Operative",
-                         handle: "encrypted",
-                         bio: "Data restricted.",
-                         avatarSeed: uidToFetch,
-                         tier: "free",
-                         stats: { following: 0, followers: 0, likes: 0, credits: 0, reputation: 0 }
-                     };
-                }
-            }
-            
-            setTargetUser(profileData);
-
-            // Fetch Posts
-            try {
-                const postsQ = query(collection(db, "posts"), where("userId", "==", uidToFetch), limit(18));
-                const postsSnap = await getDocs(postsQ);
-                setUserPosts(postsSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
-            } catch (err) {}
-
-            // Fetch Likes
-            if (isOwnProfile) {
-                try {
-                    const likesQ = query(collection(db, "users", firebaseUser!.uid, "likes"), orderBy("timestamp", "desc"), limit(18));
-                    const likesSnap = await getDocs(likesQ);
-                    setLikedPosts(likesSnap.docs.map(d => ({ id: d.id, ...d.data() } as MinimalPost)));
-                } catch (err) {}
-            }
-
-            // Check Follow Status
-            if (!isOwnProfile && firebaseUser) {
-                try {
-                    const followRef = doc(db, "users", firebaseUser.uid, "following", uidToFetch);
-                    const followSnap = await getDoc(followRef);
-                    if (followSnap.exists()) {
-                        setIsFollowing(true);
-                    } else {
-                        // Check simulation storage
-                        const simFollowing = localStorage.getItem(`sim_following_${uidToFetch}`);
-                        setIsFollowing(simFollowing === "true");
-                    }
-                } catch (e) {
-                    // Fallback on error
-                    const simFollowing = localStorage.getItem(`sim_following_${uidToFetch}`);
-                    setIsFollowing(simFollowing === "true");
-                }
-            }
-
-        } catch (e) {
-            console.error("Profile sync error", e);
-        } finally {
-            clearTimeout(safetyTimer);
-            setFetching(false);
         }
     };
+    fetchContent();
 
-    if (firebaseUser) fetchData();
-  }, [viewId, firebaseUser, userLoading, currentUser, isOwnProfile]);
+    // Check Follow Status
+    let unsubscribeFollow: (() => void) | null = null;
+    if (!isOwnProfile && firebaseUser) {
+        const followRef = doc(db, "users", firebaseUser.uid, "following", uidToFetch);
+        unsubscribeFollow = onSnapshot(followRef, (snap) => {
+            setIsFollowing(snap.exists());
+        });
+    }
+
+    return () => {
+        unsubscribeProfile();
+        if (unsubscribeFollow) unsubscribeFollow();
+    };
+  }, [viewId, firebaseUser, userLoading, isOwnProfile]);
 
   const handleFollow = async () => {
       if (!firebaseUser || !targetUser || !currentUser) return;
-      playClick(600, 0.1, 'square');
+      handleButtonClick();
       
       const followRef = doc(db, "users", firebaseUser.uid, "following", targetUser.uid);
       const followerRef = doc(db, "users", targetUser.uid, "followers", firebaseUser.uid);
       const targetUserDocRef = doc(db, "users", targetUser.uid);
       const currentUserDocRef = doc(db, "users", firebaseUser.uid);
 
+      const batch = writeBatch(db);
+      
       try {
           if (isFollowing) {
-              const batch = writeBatch(db);
               batch.delete(followRef);
               batch.delete(followerRef);
-              
-              // Safely decrement (handles both old string and new numeric logic via fallback)
               batch.update(targetUserDocRef, { "stats.followers": increment(-1) });
               batch.update(currentUserDocRef, { "stats.following": increment(-1) });
-              
               await batch.commit();
-              setIsFollowing(false);
-              toast(`Unfollowed @${targetUser.handle}`, "info");
+              toast(`Disconnected from @${targetUser.handle}`, "info");
           } else {
-              const batch = writeBatch(db);
               batch.set(followRef, { timestamp: serverTimestamp() });
               batch.set(followerRef, { timestamp: serverTimestamp() });
-              
-              // Safely increment
               batch.update(targetUserDocRef, { "stats.followers": increment(1) });
               batch.update(currentUserDocRef, { "stats.following": increment(1) });
               
-              // Add Notification for Target User
               const notifRef = doc(collection(db, "users", targetUser.uid, "notifications"));
               batch.set(notifRef, {
                   type: "FOLLOW",
@@ -213,43 +135,12 @@ function ProfileContent() {
                   timestamp: serverTimestamp(),
                   read: false
               });
-
               await batch.commit();
-              setIsFollowing(true);
-              toast(`Following @${targetUser.handle}`, "success");
+              toast(`Established link with @${targetUser.handle}`, "success");
           }
       } catch (e: any) { 
-          console.error("Firestore follow failed", e);
-          
-          // CRITICAL FIX: If 'increment' fails because field was a string, 
-          // we force convert it to a number via a direct set/merge
-          if (e.code === 'permission-denied' || e.message?.includes('increment')) {
-              try {
-                  const targetFollowers = Number(targetUser.stats?.followers || 0);
-                  const myFollowing = Number(currentUser.stats?.following || 0);
-                  
-                  const batch = writeBatch(db);
-                  if (isFollowing) {
-                      batch.delete(followRef);
-                      batch.delete(followerRef);
-                      batch.set(targetUserDocRef, { stats: { followers: Math.max(0, targetFollowers - 1) } }, { merge: true });
-                      batch.set(currentUserDocRef, { stats: { following: Math.max(0, myFollowing - 1) } }, { merge: true });
-                  } else {
-                      batch.set(followRef, { timestamp: serverTimestamp() });
-                      batch.set(followerRef, { timestamp: serverTimestamp() });
-                      batch.set(targetUserDocRef, { stats: { followers: targetFollowers + 1 } }, { merge: true });
-                      batch.set(currentUserDocRef, { stats: { following: myFollowing + 1 } }, { merge: true });
-                  }
-                  await batch.commit();
-                  setIsFollowing(!isFollowing);
-                  toast("Connection Stabilized. Stats Synced.", "success");
-              } catch (retryErr) {
-                  console.error("Follow recovery failed", retryErr);
-                  toast("Protocol Error: Check subscription tier.", "error");
-              }
-          } else {
-              toast("Transmission failed. Secure channel required.", "error");
-          }
+          console.error("Link failure", e);
+          toast("Signal Interference: Action Aborted.", "error");
       }
   };
 

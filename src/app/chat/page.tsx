@@ -17,21 +17,7 @@ interface Chat {
   participants: string[]; // UIDs of participants
   lastMessage: string;
   lastMessageTimestamp: Timestamp | Date;
-  // Other metadata like chat name, avatar, etc.
-  mockName?: string;
-  mockAvatar?: string;
 }
-
-const mockChats: Chat[] = [
-    {
-        id: "mock-c1",
-        participants: [],
-        lastMessage: "U2FsdGVkX1+...", // Encrypted-looking text
-        lastMessageTimestamp: new Date(Date.now() - 1000 * 60 * 5),
-        mockName: "Cyber_Ghost",
-        mockAvatar: "Ghost"
-    }
-];
 
 const factions = [
     { id: "faction-netrunner", name: "Netrunners", description: "Hackers and data brokers.", icon: "bg-cyan-500" },

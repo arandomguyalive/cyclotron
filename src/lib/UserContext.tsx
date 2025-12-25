@@ -10,7 +10,7 @@ import {
   signOut as firebaseSignOut, 
   User 
 } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 
 export interface UserProfile {
   displayName: string;
@@ -43,7 +43,7 @@ interface UserContextType {
   user: UserProfile | null;
   firebaseUser: User | null;
   loading: boolean;
-  updateUser: (updates: Partial<UserProfile>) => void;
+  updateUser: (updates: any) => Promise<void>; // Any to support dot-notation strings
   loginAnonymously: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, handle: string) => Promise<void>;
@@ -53,17 +53,11 @@ interface UserContextType {
 const defaultUser: UserProfile = {
   displayName: "KM18 Sovereign",
   handle: "km18_nexus",
-  bio: "Architect of the Cyclotron. Digital sovereignty is the only truth.",
+  bio: "Architect of the Cyclotron.",
   avatarSeed: "KM18",
   faction: "Ghost",
   tier: "sovereign",
-  stats: {
-    following: 245,
-    followers: 12400,
-    likes: 84200,
-    credits: 2450,
-    reputation: 50,
-  },
+  stats: { following: 0, followers: 0, likes: 0, credits: 0, reputation: 0 }
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -74,72 +68,67 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    let unsubscribeSnapshot: (() => void) | null = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
       setFirebaseUser(currentUser);
       
       if (currentUser) {
-        // Try to fetch real profile from Firestore
-        try {
-          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-          let userData: UserProfile;
+        const userRef = doc(db, "users", currentUser.uid);
+        
+        // Use onSnapshot for real-time local profile updates
+        unsubscribeSnapshot = onSnapshot(userRef, async (docSnap) => {
+          if (docSnap.exists()) {
+            let data = docSnap.data() as UserProfile;
+            
+            // --- DATA FIXER (Resilience Layer) ---
+            // If we detect legacy string stats, convert them to numbers and fix the doc
+            let needsFix = false;
+            const fixedStats = { ...data.stats };
+            
+            Object.keys(data.stats || {}).forEach(key => {
+                const val = (data.stats as any)[key];
+                if (typeof val === 'string') {
+                    (fixedStats as any)[key] = Number(val.replace(/[^\d.-]/g, '')) || 0;
+                    needsFix = true;
+                }
+            });
 
-          if (userDoc.exists()) {
-            userData = userDoc.data() as UserProfile;
+            if (needsFix) {
+                console.log("Legacy Data Detected. Converting to Numeric Signal...");
+                await updateDoc(userRef, { stats: fixedStats });
+                return; // Let the next snapshot trigger with fixed data
+            }
+
+            if (data.accessType === "LIFETIME_BLACKLIST") data.tier = "lifetime";
+            setUser(data);
           } else {
-            // Fallback to default/mock user
-            const saved = localStorage.getItem("oblivion_user");
-            userData = saved ? JSON.parse(saved) : defaultUser;
+            // New user or guest
+            setUser(defaultUser);
           }
-
-          // Check for Lifetime Access
-          if (userData.accessType === "LIFETIME_BLACKLIST") {
-              userData.tier = "lifetime";
-          }
-
-          // Apply Simulated Tier Override
-          const simulatedTier = localStorage.getItem("simulated_tier");
-          if (simulatedTier) {
-              userData = { ...userData, tier: simulatedTier as UserProfile['tier'] };
-          }
-
-          setUser(userData);
-
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
-          setUser(defaultUser);
-        }
+          setLoading(false);
+        });
       } else {
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+        unsubscribeAuth();
+        if (unsubscribeSnapshot) unsubscribeSnapshot();
+    };
   }, []);
 
-  const updateUser = async (updates: Partial<UserProfile>) => {
+  const updateUser = async (updates: any) => {
     if (!firebaseUser) return;
-
     try {
-        await setDoc(doc(db, "users", firebaseUser.uid), updates, { merge: true });
-        
-        setUser((prev) => {
-          if (!prev) return null;
-          const newState = { ...prev, ...updates };
-          
-          // Persist simulation
-          if (updates.tier) {
-              localStorage.setItem("simulated_tier", updates.tier);
-          }
-
-          // If we are anonymous/testing, save to local storage
-          if (firebaseUser?.isAnonymous) {
-              localStorage.setItem("oblivion_user", JSON.stringify(newState));
-          }
-          return newState;
-        });
+        // Use updateDoc for targeted key updates (prevents wiping nested objects)
+        await updateDoc(doc(db, "users", firebaseUser.uid), updates);
     } catch (e) {
-        console.error("Failed to update user profile", e);
+        console.error("Profile sync failed", e);
+        // Fallback to setDoc merge if updateDoc fails (e.g. stats object missing)
+        await setDoc(doc(db, "users", firebaseUser.uid), updates, { merge: true });
     }
   };
 

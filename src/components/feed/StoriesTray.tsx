@@ -20,32 +20,6 @@ interface Story {
   caption?: string;
 }
 
-// Mock Stories for Testing
-const mockStories: Story[] = [
-    {
-        id: "mock-s1",
-        mediaUrl: "https://images.unsplash.com/photo-1531297461136-82lw8u22k1j5?q=80&w=1000",
-        mediaType: "image",
-        userId: "mock-u1",
-        userHandle: "neon_shadow",
-        userAvatar: "Felix",
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 86400000),
-        caption: "System override initiated. #signals"
-    },
-    {
-        id: "mock-s2",
-        mediaUrl: "https://images.unsplash.com/photo-1535905557558-afc4877a26fc?q=80&w=1000",
-        mediaType: "image",
-        userId: "mock-u2",
-        userHandle: "cyber_punk",
-        userAvatar: "Jocelyn",
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 86400000),
-        caption: "Midnight run."
-    }
-];
-
 export function StoriesTray() {
   const { user, firebaseUser } = useUser();
   const [realStories, setRealStories] = useState<Story[]>([]);
@@ -70,13 +44,12 @@ export function StoriesTray() {
       setRealStories(newStories);
     }, (error) => {
       console.warn("Stories fetch failed:", error);
-      // Fallback to empty or mocks handled by default
     });
 
     return () => unsubscribe();
   }, []);
 
-  const stories = realStories.length > 0 ? realStories : mockStories;
+  const stories = realStories;
   const hasStories = stories.length > 0;
   
   const isFree = user?.tier === 'free';
