@@ -11,6 +11,7 @@ import { db } from "@/lib/firebase";
 import { useScreenshot } from "@/lib/useScreenshot";
 import { useUser } from "@/lib/UserContext";
 import { useToast } from "@/lib/ToastContext";
+import { CommentModal } from "./CommentModal";
 
 export interface Post {
   id: string;
@@ -45,6 +46,7 @@ interface VortexProps {
 export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }: VortexProps) {
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState((post as Post).likes || 0);
+  const [isCommentOpen, setIsCommentOpen] = useState(false);
   const { firebaseUser, user: currentUserProfile } = useUser();
   const { toast } = useToast();
 
@@ -168,7 +170,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
       if (isFree) {
           toast("UPGRADE REQUIRED: Frequency modulation (comments) restricted.", "error");
       } else {
-          toast("Comms Channel Open (Mock Interface)", "info");
+          setIsCommentOpen(true);
       }
   };
 
@@ -316,6 +318,13 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'free' }
           </div>
         </div>
       </div>
+      
+      <CommentModal 
+        postId={p.id} 
+        isOpen={isCommentOpen} 
+        onClose={() => setIsCommentOpen(false)} 
+        postOwnerId={p.userId}
+      />
     </div>
   );
 }
