@@ -93,15 +93,9 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
           await deleteDoc(doc(db, "posts", signal.id));
           
           // 2. Award Rewards
-          const currentRep = user.stats.reputation || 0;
-          const currentCreds = user.stats.credits || 0;
-          
-          updateUser({
-              stats: {
-                  ...user.stats,
-                  reputation: currentRep + 20,
-                  credits: currentCreds + 100
-              }
+          await updateUser({
+              "stats.reputation": (user.stats.reputation || 0) + 20,
+              "stats.credits": (user.stats.credits || 0) + 100
           });
 
           // 3. Update local state

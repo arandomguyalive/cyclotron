@@ -96,15 +96,10 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
       // 3. Award Gamification Rewards
       const repReward = 10;
       const credReward = 50;
-      const currentRep = user.stats.reputation || 0;
-      const currentCreds = user.stats.credits || 0;
 
       await updateUser({
-          stats: {
-              ...user.stats,
-              reputation: currentRep + repReward,
-              credits: currentCreds + credReward
-          }
+          "stats.reputation": (user.stats.reputation || 0) + repReward,
+          "stats.credits": (user.stats.credits || 0) + credReward
       });
 
       setIsSuccess(true);
