@@ -88,47 +88,41 @@ function ProfileContent() {
             }
 
             // Fetch User Data
-            let profileData: UserProfileData;
-            if (isOwnProfile && currentUser) {
-                profileData = { uid: firebaseUser!.uid, ...currentUser } as UserProfileData;
-            } else {
-                const userDoc = await getDoc(doc(db, "users", uidToFetch));
-                if (userDoc.exists()) {
-                    profileData = { uid: userDoc.id, ...userDoc.data() } as UserProfileData;
+            let profileData: UserProfileData | null = null;
+            
+            try {
+                if (isOwnProfile && currentUser) {
+                    profileData = { uid: firebaseUser!.uid, ...currentUser } as UserProfileData;
                 } else {
-                    toast("User not found", "error");
-                    router.push("/profile");
-                    return;
-                }
-            }
-            
-            // Apply simulated stats (Persistence for Permission Denied scenario)
-            if (!uidToFetch.startsWith("mock-")) {
-                const storageKey = `sim_stats_${uidToFetch}`;
-                const rawSim = localStorage.getItem(storageKey);
-                console.log(`[Profile] Checking storage key: ${storageKey}, Found: ${rawSim}`);
-                
-                const simStats = JSON.parse(rawSim || '{}');
-                if (simStats.followers) {
-                    // Initialize stats if missing from DB
-                    if (!profileData.stats) {
-                        profileData.stats = { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' };
+                    const userDoc = await getDoc(doc(db, "users", uidToFetch));
+                    if (userDoc.exists()) {
+                        profileData = { uid: userDoc.id, ...userDoc.data() } as UserProfileData;
                     }
-                    console.log(`[Profile] Applying simulated followers: ${simStats.followers}`);
-                    profileData.stats = { ...profileData.stats, followers: simStats.followers };
                 }
-                if (simStats.following) {
-                    if (!profileData.stats) {
-                        profileData.stats = { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' };
-                    }
-                    console.log(`[Profile] Applying simulated following: ${simStats.following}`);
-                    profileData.stats = { ...profileData.stats, following: simStats.following };
-                }
+            } catch (err) {
+                console.warn("Firestore profile fetch failed (using fallback):", err);
             }
-            
-            setTargetUser(profileData);
 
-            // Fetch Posts
+            // Fallback if data missing (Permissions or Not Found)
+            if (!profileData) {
+                // If viewing own profile but fetch failed, try to use Context
+                if (isOwnProfile && currentUser) {
+                     profileData = { uid: firebaseUser!.uid, ...currentUser } as UserProfileData;
+                } else {
+                     // Basic placeholder for external user if DB blocked
+                     profileData = {
+                         uid: uidToFetch,
+                         displayName: "Unknown User",
+                         handle: "encrypted_signal",
+                         bio: "Profile data unavailable.",
+                         avatarSeed: uidToFetch,
+                         tier: "free",
+                         stats: { following: '0', followers: '0', likes: '0', credits: '0', reputation: '0' }
+                     };
+                }
+            }
+
+            // Apply simulated stats (Persistence for Permission Denied scenario)
             const postsQ = query(
                 collection(db, "posts"),
                 where("userId", "==", uidToFetch),
