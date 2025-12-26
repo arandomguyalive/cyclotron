@@ -117,9 +117,11 @@ export default function LoginPage() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-2"
+            className="flex items-center gap-3 mb-4"
           >
-            <span className="text-[8px] font-mono tracking-[0.5em] text-secondary-text uppercase opacity-50">A KM18 Production</span>
+            <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-brand-cyan shadow-[0_0_8px_#00D4E5]" />
+            <span className="text-[10px] font-black tracking-[0.4em] text-brand-cyan uppercase">A KM18 Production</span>
+            <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-brand-cyan shadow-[0_0_8px_#00D4E5]" />
           </motion.div>
           <div className="w-16 h-16 bg-accent-1/10 rounded-2xl flex items-center justify-center mb-4 border border-accent-1/30 shadow-[0_0_20px_rgba(0,212,229,0.1)]">
             <Shield className="w-8 h-8 text-accent-1" />
@@ -159,7 +161,7 @@ export default function LoginPage() {
                         </motion.div>
                     ) : (
                         <motion.div key="login" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-4 py-4">
-                            <InputGroup label="KM18 Neural Identifier" icon={Globe} value={email} onChange={setEmail} placeholder="Email, Handle, or Phone" />
+                            <InputGroup label="KM18 Access Key" icon={Globe} value={email} onChange={setEmail} placeholder="Email, Handle, or Phone Number" />
                         </motion.div>
                     )}
                 </AnimatePresence>
