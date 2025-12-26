@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Redressed } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AppShell } from "@/components/layout/AppShell";
@@ -11,6 +11,12 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const redressed = Redressed({
+  variable: "--font-redressed",
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -69,7 +75,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-primary-bg text-primary-text overflow-x-hidden selection:bg-accent-1 selection:text-primary-bg`}
+        className={`${geistSans.variable} ${geistMono.variable} ${redressed.variable} antialiased bg-primary-bg text-primary-text overflow-x-hidden selection:bg-accent-1 selection:text-primary-bg`}
       >
         <Providers>
           <AppShell>

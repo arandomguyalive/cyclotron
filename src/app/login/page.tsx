@@ -120,7 +120,7 @@ export default function LoginPage() {
             className="flex items-center gap-3 mb-4"
           >
             <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-brand-cyan shadow-[0_0_8px_#00D4E5]" />
-            <span className="text-[10px] font-black tracking-[0.4em] text-brand-cyan uppercase">A KM18 Production</span>
+            <span className="text-sm font-redressed tracking-[0.2em] text-brand-cyan">A KM18 Production</span>
             <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-brand-cyan shadow-[0_0_8px_#00D4E5]" />
           </motion.div>
           <div className="w-16 h-16 bg-accent-1/10 rounded-2xl flex items-center justify-center mb-4 border border-accent-1/30 shadow-[0_0_20px_rgba(0,212,229,0.1)]">

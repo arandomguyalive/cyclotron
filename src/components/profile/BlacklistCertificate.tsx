@@ -61,7 +61,7 @@ export function BlacklistCertificate({ handle, dateJoined, id, onClose }: Blackl
                 <div className="relative p-8 space-y-6 font-mono">
                     <div className="flex justify-between items-end border-b border-amber-500/10 pb-2 group hover:bg-white/5 transition-colors px-2 rounded">
                         <span className="text-xs text-amber-700/70 uppercase tracking-widest">Codename</span>
-                        <span className="text-xl font-bold text-white tracking-wider">@{handle}</span>
+                        <span className="text-2xl font-redressed text-white tracking-wider">@{handle}</span>
                     </div>
                     
                     <div className="flex justify-between items-end border-b border-amber-500/10 pb-2 group hover:bg-white/5 transition-colors px-2 rounded">
