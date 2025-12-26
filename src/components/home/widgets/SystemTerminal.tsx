@@ -7,19 +7,19 @@ import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestor
 import { db } from "@/lib/firebase";
 
 const LOGS_FREE = [
-    "KM18 // Standard Encryption",
-    "KM18 // Public IP Visible",
-    "KM18 // Masking: Off",
-    "KM18 // Connection: Standard",
-    "KM18 // Footprint: Detected"
+    <><span className="font-blackjack text-emerald-500/80 mr-1 text-sm">KM18</span> // Standard Encryption</>,
+    <><span className="font-blackjack text-emerald-500/80 mr-1 text-sm">KM18</span> // Public IP Visible</>,
+    <><span className="font-blackjack text-emerald-500/80 mr-1 text-sm">KM18</span> // Masking: Off</>,
+    <><span className="font-blackjack text-emerald-500/80 mr-1 text-sm">KM18</span> // Connection: Standard</>,
+    <><span className="font-blackjack text-emerald-500/80 mr-1 text-sm">KM18</span> // Footprint: Detected</>
 ];
 
 const LOGS_PREMIUM = [
-    "KM18 // Enhanced Encryption",
-    "KM18 // Location: Masked",
-    "KM18 // VPN: Tunnel Established",
-    "KM18 // Connection: Optimized",
-    "KM18 // Footprint: Hidden"
+    <><span className="font-blackjack text-emerald-500/80 mr-1 text-sm">KM18</span> // Enhanced Encryption</>,
+    <><span className="font-blackjack text-emerald-500/80 mr-1 text-sm">KM18</span> // Location: Masked</>,
+    <><span className="font-blackjack text-emerald-500/80 mr-1 text-sm">KM18</span> // VPN: Tunnel Established</>,
+    <><span className="font-blackjack text-emerald-500/80 mr-1 text-sm">KM18</span> // Connection: Optimized</>,
+    <><span className="font-blackjack text-emerald-500/80 mr-1 text-sm">KM18</span> // Footprint: Hidden</>
 ];
 
 export function SystemTerminal() {
@@ -28,17 +28,19 @@ export function SystemTerminal() {
     const logs = isFree ? LOGS_FREE : LOGS_PREMIUM;
     
     const [currentLog, setCurrentLog] = useState(logs[0]);
+    const [logIndex, setLogIndex] = useState(0);
     const [alert, setAlert] = useState<string | null>(null);
 
     // Standard Log Rotation
     useEffect(() => {
         if (alert) return; // Don't rotate if showing alert
         const interval = setInterval(() => {
-            const randomLog = logs[Math.floor(Math.random() * logs.length)];
-            setCurrentLog(randomLog);
+            const nextIdx = (logIndex + 1) % logs.length;
+            setLogIndex(nextIdx);
+            setCurrentLog(logs[nextIdx]);
         }, 4000);
         return () => clearInterval(interval);
-    }, [logs, alert]);
+    }, [logs, alert, logIndex]);
 
     // Security Alert Listener
     useEffect(() => {
@@ -76,7 +78,7 @@ export function SystemTerminal() {
                     {alert ? "SECURITY BREACH" : "Status"}
                 </span>
                 <motion.span 
-                    key={alert || currentLog}
+                    key={alert ? 'alert' : `log-${logIndex}`}
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}

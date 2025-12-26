@@ -5,6 +5,9 @@
   .font-redressed {
     font-family: var(--font-redressed), cursive;
   }
+  .font-blackjack {
+    font-family: var(--font-blackjack), cursive;
+  }
 }
 
 :root {

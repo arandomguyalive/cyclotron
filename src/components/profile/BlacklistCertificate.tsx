@@ -78,7 +78,7 @@ export function BlacklistCertificate({ handle, dateJoined, id, onClose }: Blackl
                 {/* Footer / QR Area */}
                 <div className="relative p-6 bg-gradient-to-r from-amber-950/30 to-black flex items-center justify-between border-t border-amber-500/20">
                     <div className="text-[9px] text-amber-700/80 leading-tight font-mono">
-                        AUTHORITY: KM18 SOVEREIGN<br/>
+                        AUTHORITY: <span className="font-blackjack text-amber-500 text-sm normal-case tracking-normal">KM18</span> SOVEREIGN<br/>
                         CLASS: LIFETIME_TIER_3<br/>
                         STATUS: <span className="text-amber-500 font-bold animate-pulse">IRREVOCABLE</span>
                     </div>

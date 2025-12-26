@@ -88,7 +88,7 @@ function SplashScreen() {
                     className="mb-8"
                 >
                     <span className="text-xs md:text-sm font-mono tracking-[0.4em] text-secondary-text uppercase">
-                        A <span className="text-brand-cyan font-bold">KM18</span> Production
+                        A <span className="text-brand-cyan font-blackjack text-xl normal-case tracking-normal">KM18</span> Production
                     </span>
                 </motion.div>
 

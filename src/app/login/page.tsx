@@ -120,14 +120,14 @@ export default function LoginPage() {
             className="flex items-center gap-3 mb-4"
           >
             <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-brand-cyan shadow-[0_0_8px_#00D4E5]" />
-            <span className="text-sm font-redressed tracking-[0.2em] text-brand-cyan">A KM18 Production</span>
+            <span className="text-sm font-redressed tracking-[0.2em] text-brand-cyan">A <span className="font-blackjack text-lg">KM18</span> Production</span>
             <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-brand-cyan shadow-[0_0_8px_#00D4E5]" />
           </motion.div>
           <div className="w-16 h-16 bg-accent-1/10 rounded-2xl flex items-center justify-center mb-4 border border-accent-1/30 shadow-[0_0_20px_rgba(0,212,229,0.1)]">
             <Shield className="w-8 h-8 text-accent-1" />
           </div>
           <h1 className="text-4xl font-black text-primary-text tracking-tighter uppercase italic">ABHED</h1>
-          <span className="text-[10px] font-bold tracking-[0.4em] text-accent-1 uppercase opacity-70">KM18 Neural Security</span>
+          <span className="text-[10px] font-bold tracking-[0.4em] text-accent-1 uppercase opacity-70"><span className="font-blackjack text-sm">KM18</span> Neural Security</span>
         </div>
 
         <div className="bg-secondary-bg/40 backdrop-blur-2xl border border-border-color rounded-[2.5rem] p-8 shadow-2xl">
@@ -161,7 +161,7 @@ export default function LoginPage() {
                         </motion.div>
                     ) : (
                         <motion.div key="login" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-4 py-4">
-                            <InputGroup label="KM18 Access Key" icon={Globe} value={email} onChange={setEmail} placeholder="Email, Handle, or Phone Number" />
+                            <InputGroup label={<><span className="font-blackjack text-xs">KM18</span> Access Key</>} icon={Globe} value={email} onChange={setEmail} placeholder="Email, Handle, or Phone Number" />
                         </motion.div>
                     )}
                 </AnimatePresence>
