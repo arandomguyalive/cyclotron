@@ -103,17 +103,17 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier, billingCycle = "m
                 
                 {paymentStep === "form" && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full text-center">
-                        <h3 className="text-2xl font-bold text-primary-text mb-2 tracking-tight">Request <span className="font-blackjack text-3xl text-brand-cyan">KM18</span> Clearance</h3>
+                        <h3 className="text-2xl font-bold text-primary-text mb-2 tracking-tight">Request Clearance</h3>
                         <p className={`text-4xl font-black mb-6 ${currentTier.color}`}>{getPrice()}</p>
                         
                         <div className="space-y-3">
                             <button className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 bg-white text-black font-black uppercase text-xs tracking-widest hover:bg-brand-cyan transition-colors">
                                 <CreditCard className="w-5 h-5" />
-                                <span className="font-blackjack text-2xl normal-case tracking-normal">KM18</span> Secure Card Link
+                                Secure Card Link
                             </button>
                             <button onClick={handlePayment} className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 bg-secondary-bg border border-border-color text-primary-text font-black uppercase text-xs tracking-widest hover:bg-white/5 transition-colors">
                                 <CheckCircle2 className="w-5 h-5 text-brand-cyan" />
-                                Protocol Bypass (Developer)
+                                Protocol Bypass
                             </button>
                         </div>
                     </motion.div>
