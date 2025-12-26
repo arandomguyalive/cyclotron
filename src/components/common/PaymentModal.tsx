@@ -92,7 +92,7 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier, billingCycle = "m
             <div className="w-full max-w-md bg-secondary-bg border border-border-color rounded-3xl overflow-hidden pointer-events-auto shadow-2xl">
               
               <div className="relative px-6 py-4 border-b border-border-color flex items-center justify-center bg-primary-bg">
-                <h2 className="text-lg font-bold text-primary-text uppercase tracking-widest"><span className="font-blackjack text-xl normal-case tracking-normal">KM18</span> Protocol Payment</h2>
+                <h2 className="text-lg font-bold text-primary-text uppercase tracking-widest"><span className="font-blackjack text-2xl normal-case tracking-normal">KM18</span> Protocol Payment</h2>
                 <button onClick={onClose} className="absolute right-4 p-2 hover:bg-secondary-bg rounded-full transition-colors">
                   <X className="w-5 h-5 text-secondary-text" />
                 </button>
@@ -103,13 +103,13 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier, billingCycle = "m
                 
                 {paymentStep === "form" && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full text-center">
-                        <h3 className="text-2xl font-bold text-primary-text mb-2 tracking-tight">Request <span className="font-blackjack text-2xl text-brand-cyan">KM18</span> Clearance</h3>
+                        <h3 className="text-2xl font-bold text-primary-text mb-2 tracking-tight">Request <span className="font-blackjack text-3xl text-brand-cyan">KM18</span> Clearance</h3>
                         <p className={`text-4xl font-black mb-6 ${currentTier.color}`}>{getPrice()}</p>
                         
                         <div className="space-y-3">
                             <button className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 bg-white text-black font-black uppercase text-xs tracking-widest hover:bg-brand-cyan transition-colors">
                                 <CreditCard className="w-5 h-5" />
-                                <span className="font-blackjack text-lg normal-case tracking-normal">KM18</span> Secure Card Link
+                                <span className="font-blackjack text-2xl normal-case tracking-normal">KM18</span> Secure Card Link
                             </button>
                             <button onClick={handlePayment} className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 bg-secondary-bg border border-border-color text-primary-text font-black uppercase text-xs tracking-widest hover:bg-white/5 transition-colors">
                                 <CheckCircle2 className="w-5 h-5 text-brand-cyan" />
@@ -123,7 +123,7 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier, billingCycle = "m
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center py-8">
                         <Loader2 className="w-16 h-16 animate-spin text-brand-cyan mb-4" />
                         <h3 className="text-xl font-bold text-primary-text uppercase tracking-widest font-mono">Verifying Protocols...</h3>
-                        <p className="text-[10px] text-secondary-text mt-2 uppercase tracking-widest">Communicating with <span className="font-blackjack text-sm normal-case tracking-normal">KM18</span> Neural Registry</p>
+                        <p className="text-[10px] text-secondary-text mt-2 uppercase tracking-widest">Communicating with <span className="font-blackjack text-lg normal-case tracking-normal">KM18</span> Neural Registry</p>
                     </motion.div>
                 )}
 
@@ -133,7 +133,7 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier, billingCycle = "m
                             <CheckCircle2 className="w-12 h-12 text-brand-cyan" />
                         </div>
                         <h3 className="text-2xl font-black text-brand-cyan uppercase tracking-tighter italic">Clearance Granted</h3>
-                        <p className="text-xs text-primary-text mt-2 font-mono">Welcome to the <span className="font-blackjack text-sm normal-case tracking-normal">KM18</span> {currentTier.name} Protocol.</p>
+                        <p className="text-xs text-primary-text mt-2 font-mono">Welcome to the <span className="font-blackjack text-lg normal-case tracking-normal">KM18</span> {currentTier.name} Protocol.</p>
                     </motion.div>
                 )}
               </div>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Redressed, Caveat } from "next/font/google";
+import { Geist, Geist_Mono, Redressed, Mrs_Saint_Delafield } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AppShell } from "@/components/layout/AppShell";
@@ -20,8 +20,9 @@ const redressed = Redressed({
   subsets: ["latin"],
 });
 
-const blackjack = Caveat({
+const blackjack = Mrs_Saint_Delafield({
   variable: "--font-blackjack",
+  weight: "400",
   subsets: ["latin"],
 });
 

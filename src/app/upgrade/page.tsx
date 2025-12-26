@@ -82,7 +82,7 @@ export default function UpgradePage() {
                 <button onClick={() => router.back()} className="text-secondary-text hover:text-white transition-colors">
                     <ArrowLeft className="w-6 h-6" />
                 </button>
-                <h1 className="text-xl font-bold tracking-widest text-white uppercase"><span className="font-blackjack text-2xl normal-case tracking-normal text-brand-cyan">KM18</span> Protocols</h1>
+                <h1 className="text-xl font-bold tracking-widest text-white uppercase"><span className="font-blackjack text-3xl normal-case tracking-normal text-brand-cyan">KM18</span> Protocols</h1>
                 <div className="w-6" />
             </header>
 
@@ -102,12 +102,12 @@ export default function UpgradePage() {
                                 <Infinity className="w-6 h-6" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black text-amber-500 uppercase tracking-tighter"><span className="font-blackjack text-3xl normal-case tracking-normal">KM18</span> Blacklist</h2>
+                                <h2 className="text-2xl font-black text-amber-500 uppercase tracking-tighter"><span className="font-blackjack text-4xl normal-case tracking-normal">KM18</span> Blacklist</h2>
                                 <span className="text-[10px] font-bold text-amber-700 uppercase tracking-[0.3em]">Alpha Registry Protocol</span>
                             </div>
                         </div>
                         <p className="text-sm text-secondary-text max-w-md mb-6 leading-relaxed">
-                            Be among the first 500 creators to secure **Lifetime <span className="font-blackjack text-amber-500 text-lg">KM18</span> Professional Access**. No recurring fees. Eternal sovereignty.
+                            Be among the first 500 creators to secure **Lifetime <span className="font-blackjack text-amber-500 text-2xl">KM18</span> Professional Access**. No recurring fees. Eternal sovereignty.
                         </p>
                         
                         <div className="flex flex-col gap-4">

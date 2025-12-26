@@ -7,6 +7,13 @@
   }
   .font-blackjack {
     font-family: var(--font-blackjack), cursive;
+    background: linear-gradient(to right, #00D4E5, #FFFFFF, #00D4E5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+    transform: skewX(-5deg);
+    filter: drop-shadow(0 0 5px rgba(0, 212, 229, 0.4));
   }
 }
 
