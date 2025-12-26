@@ -117,11 +117,11 @@ export default function LoginPage() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 mb-4"
+            className="flex items-center gap-3 mb-6"
           >
-            <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-brand-cyan shadow-[0_0_8px_#00D4E5]" />
-            <span className="text-sm font-redressed tracking-[0.2em] text-brand-cyan">A <span className="font-blackjack text-2xl">KM18</span> Production</span>
-            <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-brand-cyan shadow-[0_0_8px_#00D4E5]" />
+            <div className="h-[1px] w-10 bg-gradient-to-r from-transparent to-amber-500 shadow-[0_0_8px_#B8860B]" />
+            <span className="text-sm font-redressed tracking-[0.2em] text-amber-500/80 uppercase">A <span className="font-blackjack text-3xl">KM18</span> Production</span>
+            <div className="h-[1px] w-10 bg-gradient-to-l from-transparent to-amber-500 shadow-[0_0_8px_#B8860B]" />
           </motion.div>
           <div className="w-16 h-16 bg-accent-1/10 rounded-2xl flex items-center justify-center mb-4 border border-accent-1/30 shadow-[0_0_20px_rgba(0,212,229,0.1)]">
             <Shield className="w-8 h-8 text-accent-1" />
@@ -161,7 +161,7 @@ export default function LoginPage() {
                         </motion.div>
                     ) : (
                         <motion.div key="login" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-4 py-4">
-                            <InputGroup label={<><span className="font-blackjack text-lg">KM18</span> Access Key</>} icon={Globe} value={email} onChange={setEmail} placeholder="Email, Handle, or Phone Number" />
+                            <InputGroup label="Access Key" icon={Globe} value={email} onChange={setEmail} placeholder="Email, Handle, or Phone Number" />
                         </motion.div>
                     )}
                 </AnimatePresence>

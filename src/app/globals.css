@@ -7,13 +7,31 @@
   }
   .font-blackjack {
     font-family: var(--font-blackjack), cursive;
-    background: linear-gradient(to right, #00D4E5, #FFFFFF, #00D4E5);
+    background: linear-gradient(
+      to right, 
+      #B8860B 0%, 
+      #FFD700 25%, 
+      #FFFACD 50%, 
+      #FFD700 75%, 
+      #B8860B 100%
+    );
+    background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     display: inline-block;
     transform: skewX(-5deg);
-    filter: drop-shadow(0 0 5px rgba(0, 212, 229, 0.4));
+    padding-block: 0.25em; /* Prevent vertical clipping */
+    margin-block: -0.25em; /* Offset padding to maintain alignment */
+    overflow: visible;
+    filter: drop-shadow(0 0 8px rgba(184, 134, 11, 0.3));
+    animation: gold-shimmer 4s linear infinite;
+  }
+}
+
+@keyframes gold-shimmer {
+  to {
+    background-position: 200% center;
   }
 }
 
