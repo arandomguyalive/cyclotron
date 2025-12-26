@@ -82,7 +82,7 @@ export default function UpgradePage() {
                 <button onClick={() => router.back()} className="text-secondary-text hover:text-white transition-colors">
                     <ArrowLeft className="w-6 h-6" />
                 </button>
-                <h1 className="text-xl font-bold tracking-widest text-white uppercase">Upgrade Protocol</h1>
+                <h1 className="text-xl font-bold tracking-widest text-white uppercase">KM18 Protocols</h1>
                 <div className="w-6" />
             </header>
 
@@ -102,12 +102,12 @@ export default function UpgradePage() {
                                 <Infinity className="w-6 h-6" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black text-amber-500 uppercase tracking-tighter">The Blacklist</h2>
-                                <span className="text-[10px] font-bold text-amber-700 uppercase tracking-[0.3em]">Founding Member Protocol</span>
+                                <h2 className="text-2xl font-black text-amber-500 uppercase tracking-tighter">KM18 Blacklist</h2>
+                                <span className="text-[10px] font-bold text-amber-700 uppercase tracking-[0.3em]">Alpha Registry Protocol</span>
                             </div>
                         </div>
                         <p className="text-sm text-secondary-text max-w-md mb-6 leading-relaxed">
-                            Be among the first 500 creators to secure **Lifetime Professional Access**. No recurring fees. Eternal sovereignty.
+                            Be among the first 500 creators to secure **Lifetime KM18 Professional Access**. No recurring fees. Eternal sovereignty.
                         </p>
                         
                         <div className="flex flex-col gap-4">
@@ -150,7 +150,7 @@ export default function UpgradePage() {
                             <h2 className={`text-2xl font-bold mb-1 ${tier.textColor}`}>{tier.name}</h2>
                             <p className="text-3xl font-black mb-6">{formatPrice(tier)}</p>
                             <ul className="text-sm text-secondary-text space-y-3 mb-8 text-left w-full">
-                                {tier.features.map((f, idx) => <li key={idx} className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /><span>{f}</span></li>)}
+                                {tier.features.map((f, idx) => <li key={idx} className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-brand-cyan shrink-0" /><span>{f}</span></li>)}
                             </ul>
                             <button 
                                 onClick={() => { 
@@ -160,7 +160,7 @@ export default function UpgradePage() {
                                 }} 
                                 className={`mt-auto w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs ${tier.buttonBgColor} hover:scale-[1.02] transition-transform`}
                             >
-                                {tier.buttonText}
+                                Request {tier.name} Clearance
                             </button>
                         </motion.div>
                     ))}

@@ -24,7 +24,9 @@ export default function VortexPage() {
   const lastWheelTime = useRef(0);
   const { playClick, playHaptic } = useSonic();
   
-  const watermarkText = (user && !isFree) ? user.handle.toUpperCase() : undefined;
+  const isForensic = ['professional', 'ultra_elite', 'sovereign'].includes(user?.tier || 'lobby');
+  const isShield = user?.tier === 'shield';
+  const watermarkText = (user && (isForensic || isShield)) ? user.handle.toUpperCase() : undefined;
 
   const smoothZ = useSpring(zPosition, {
       stiffness: 120,

@@ -92,27 +92,28 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier, billingCycle = "m
             <div className="w-full max-w-md bg-secondary-bg border border-border-color rounded-3xl overflow-hidden pointer-events-auto shadow-2xl">
               
               <div className="relative px-6 py-4 border-b border-border-color flex items-center justify-center bg-primary-bg">
-                <h2 className="text-lg font-bold text-primary-text uppercase tracking-widest">Protocol Payment</h2>
+                <h2 className="text-lg font-bold text-primary-text uppercase tracking-widest">KM18 Protocol Payment</h2>
                 <button onClick={onClose} className="absolute right-4 p-2 hover:bg-secondary-bg rounded-full transition-colors">
                   <X className="w-5 h-5 text-secondary-text" />
                 </button>
               </div>
 
+              {/* Content */}
               <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto flex flex-col items-center justify-center">
                 
                 {paymentStep === "form" && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full text-center">
-                        <h3 className="text-2xl font-bold text-primary-text mb-2 tracking-tight">Activate {currentTier.name}</h3>
+                        <h3 className="text-2xl font-bold text-primary-text mb-2 tracking-tight">Request KM18 Clearance</h3>
                         <p className={`text-4xl font-black mb-6 ${currentTier.color}`}>{getPrice()}</p>
                         
                         <div className="space-y-3">
                             <button className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 bg-white text-black font-black uppercase text-xs tracking-widest hover:bg-brand-cyan transition-colors">
                                 <CreditCard className="w-5 h-5" />
-                                Secure Card Link
+                                KM18 Secure Card Link
                             </button>
                             <button onClick={handlePayment} className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 bg-secondary-bg border border-border-color text-primary-text font-black uppercase text-xs tracking-widest hover:bg-white/5 transition-colors">
                                 <CheckCircle2 className="w-5 h-5 text-brand-cyan" />
-                                Bypass Payment (Test)
+                                Protocol Bypass (Developer)
                             </button>
                         </div>
                     </motion.div>
@@ -121,18 +122,18 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier, billingCycle = "m
                 {paymentStep === "processing" && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center py-8">
                         <Loader2 className="w-16 h-16 animate-spin text-brand-cyan mb-4" />
-                        <h3 className="text-xl font-bold text-primary-text uppercase tracking-widest font-mono">Synchronizing...</h3>
-                        <p className="text-xs text-secondary-text mt-2">Verifying secure channels with KM18 Authority.</p>
+                        <h3 className="text-xl font-bold text-primary-text uppercase tracking-widest font-mono">Verifying Protocols...</h3>
+                        <p className="text-[10px] text-secondary-text mt-2 uppercase tracking-widest">Communicating with KM18 Neural Registry</p>
                     </motion.div>
                 )}
 
                 {paymentStep === "success" && (
                     <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center py-8">
-                        <div className="w-20 h-20 bg-brand-cyan/20 rounded-full flex items-center justify-center mb-6">
+                        <div className="w-20 h-20 bg-brand-cyan/20 rounded-full flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(0,212,229,0.3)]">
                             <CheckCircle2 className="w-12 h-12 text-brand-cyan" />
                         </div>
-                        <h3 className="text-2xl font-black text-brand-cyan uppercase tracking-tighter italic">Link Established</h3>
-                        <p className="text-sm text-primary-text mt-2">Welcome to the {currentTier.name} Protocol.</p>
+                        <h3 className="text-2xl font-black text-brand-cyan uppercase tracking-tighter italic">Clearance Granted</h3>
+                        <p className="text-xs text-primary-text mt-2 font-mono">Welcome to the KM18 {currentTier.name} Protocol.</p>
                     </motion.div>
                 )}
               </div>

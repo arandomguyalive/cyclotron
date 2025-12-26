@@ -114,11 +114,18 @@ export default function LoginPage() {
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md my-12 relative z-10">
         
         <div className="flex flex-col items-center mb-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-2"
+          >
+            <span className="text-[8px] font-mono tracking-[0.5em] text-secondary-text uppercase opacity-50">A KM18 Production</span>
+          </motion.div>
           <div className="w-16 h-16 bg-accent-1/10 rounded-2xl flex items-center justify-center mb-4 border border-accent-1/30 shadow-[0_0_20px_rgba(0,212,229,0.1)]">
             <Shield className="w-8 h-8 text-accent-1" />
           </div>
           <h1 className="text-4xl font-black text-primary-text tracking-tighter uppercase italic">ABHED</h1>
-          <span className="text-[10px] font-bold tracking-[0.4em] text-accent-1 uppercase opacity-70">Premium Social Security</span>
+          <span className="text-[10px] font-bold tracking-[0.4em] text-accent-1 uppercase opacity-70">KM18 Neural Security</span>
         </div>
 
         <div className="bg-secondary-bg/40 backdrop-blur-2xl border border-border-color rounded-[2.5rem] p-8 shadow-2xl">
@@ -152,7 +159,7 @@ export default function LoginPage() {
                         </motion.div>
                     ) : (
                         <motion.div key="login" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-4 py-4">
-                            <InputGroup label="Identity Identifier" icon={Globe} value={email} onChange={setEmail} placeholder="Email, Handle, or Phone" />
+                            <InputGroup label="KM18 Neural Identifier" icon={Globe} value={email} onChange={setEmail} placeholder="Email, Handle, or Phone" />
                         </motion.div>
                     )}
                 </AnimatePresence>

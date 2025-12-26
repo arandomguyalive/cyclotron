@@ -7,19 +7,19 @@ import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestor
 import { db } from "@/lib/firebase";
 
 const LOGS_FREE = [
-    "Standard Encryption Active",
-    "Public IP Visible",
-    "Masking: Off",
-    "Connection: Standard",
-    "Digital Footprint: Detected"
+    "KM18 // Standard Encryption",
+    "KM18 // Public IP Visible",
+    "KM18 // Masking: Off",
+    "KM18 // Connection: Standard",
+    "KM18 // Footprint: Detected"
 ];
 
 const LOGS_PREMIUM = [
-    "Enhanced Encryption Active",
-    "Location: Masked",
-    "VPN: Tunnel Established",
-    "Connection: Optimized",
-    "Digital Footprint: Hidden"
+    "KM18 // Enhanced Encryption",
+    "KM18 // Location: Masked",
+    "KM18 // VPN: Tunnel Established",
+    "KM18 // Connection: Optimized",
+    "KM18 // Footprint: Hidden"
 ];
 
 export function SystemTerminal() {

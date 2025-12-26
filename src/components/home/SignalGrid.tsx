@@ -151,6 +151,12 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
     const [sharesCount, setSharesCount] = useState(post.shares || 0);
     const [likesCount, setLikesCount] = useState(post.likes || 0);
 
+    const isForensicTier = ['professional', 'ultra_elite', 'sovereign'].includes(viewerTier);
+    const isShieldTier = viewerTier === 'shield';
+    const showForensic = isForensicTier && !user?.visualOverride;
+    const showShield = isShieldTier && !user?.visualOverride;
+    const watermarkText = (user && (isForensicTier || isShieldTier)) ? user.handle.toUpperCase() : undefined;
+
     useEffect(() => {
         const unsubscribePost = onSnapshot(doc(db, "posts", post.id), (snap) => {
             if (snap.exists()) {
@@ -350,6 +356,19 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                     {isFree && user?.isOwner && (
                         <div className="absolute top-4 left-4 p-1 bg-brand-cyan/20 rounded border border-brand-cyan/50" title="Architect Bypass Active">
                             <Cpu className="w-3 h-3 text-brand-cyan" />
+                        </div>
+                    )}
+
+                    {/* Watermarks */}
+                    {watermarkText && showForensic && (
+                        <div className="absolute inset-0 flex flex-wrap content-around justify-around pointer-events-none opacity-5 font-mono text-white text-[8px] z-10" style={{ transform: 'rotate(-30deg) scale(1.2)', overflow: 'hidden' }}>
+                            {Array(12).fill(0).map((_, i) => <span key={i} className="mx-4 my-2 whitespace-nowrap">{watermarkText}</span>)}
+                        </div>
+                    )}
+
+                    {watermarkText && showShield && (
+                        <div className="absolute bottom-4 right-4 pointer-events-none z-10 bg-black/50 px-2 py-1 rounded backdrop-blur-sm border border-brand-cyan/20">
+                            <span className="text-brand-cyan/50 text-[8px] font-mono tracking-widest uppercase">{watermarkText}</span>
                         </div>
                     )}
                 </div>
