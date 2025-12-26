@@ -119,9 +119,9 @@ export default function LoginPage() {
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-3 mb-6"
           >
-            <div className="h-[1px] w-10 bg-gradient-to-r from-transparent to-amber-500 shadow-[0_0_8px_#B8860B]" />
-            <span className="text-sm font-redressed tracking-[0.2em] text-amber-500/80 uppercase">A <span className="font-blackjack text-3xl">KM18</span> Production</span>
-            <div className="h-[1px] w-10 bg-gradient-to-l from-transparent to-amber-500 shadow-[0_0_8px_#B8860B]" />
+            <div className="h-[1px] w-10 bg-gradient-to-r from-transparent to-brand-orange shadow-[0_0_8px_#EB7955]" />
+            <span className="text-sm font-redressed tracking-[0.2em] text-brand-orange/80">A <span className="font-blackjack text-3xl">KM18</span> Production</span>
+            <div className="h-[1px] w-10 bg-gradient-to-l from-transparent to-brand-orange shadow-[0_0_8px_#EB7955]" />
           </motion.div>
           <div className="w-16 h-16 bg-accent-1/10 rounded-2xl flex items-center justify-center mb-4 border border-accent-1/30 shadow-[0_0_20px_rgba(0,212,229,0.1)]">
             <Shield className="w-8 h-8 text-accent-1" />

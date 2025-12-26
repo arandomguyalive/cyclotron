@@ -9,11 +9,11 @@
     font-family: var(--font-blackjack), cursive;
     background: linear-gradient(
       to right, 
-      #B8860B 0%, 
-      #FFD700 25%, 
-      #FFFACD 50%, 
-      #FFD700 75%, 
-      #B8860B 100%
+      #B24531 0%, 
+      #EB7955 25%, 
+      #FFCDEC 50%, 
+      #EB7955 75%, 
+      #B24531 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
@@ -21,17 +21,25 @@
     color: transparent;
     display: inline-block;
     transform: skewX(-5deg);
-    padding-block: 0.25em; /* Prevent vertical clipping */
-    margin-block: -0.25em; /* Offset padding to maintain alignment */
+    padding-block: 0.25em;
+    padding-inline: 0.2em; /* Prevent side clipping */
+    margin-block: -0.25em;
+    margin-inline: -0.2em;
     overflow: visible;
-    filter: drop-shadow(0 0 8px rgba(184, 134, 11, 0.3));
-    animation: gold-shimmer 4s linear infinite;
+    filter: drop-shadow(0 0 12px rgba(235, 121, 85, 0.2));
+    animation: ember-flow 6s ease-in-out infinite;
   }
 }
 
-@keyframes gold-shimmer {
-  to {
-    background-position: 200% center;
+@keyframes ember-flow {
+  0% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+  100% {
+    background-position: 0% center;
   }
 }
 

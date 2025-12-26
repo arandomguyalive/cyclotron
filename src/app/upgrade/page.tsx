@@ -82,7 +82,7 @@ export default function UpgradePage() {
                 <button onClick={() => router.back()} className="text-secondary-text hover:text-white transition-colors">
                     <ArrowLeft className="w-6 h-6" />
                 </button>
-                <h1 className="text-xl font-bold tracking-widest text-white uppercase"><span className="font-blackjack text-3xl normal-case tracking-normal text-brand-cyan">KM18</span> Protocols</h1>
+                <h1 className="text-xl font-bold tracking-widest text-white uppercase"><span className="font-blackjack text-3xl normal-case tracking-normal text-brand-orange">KM18</span> Protocols</h1>
                 <div className="w-6" />
             </header>
 
@@ -91,23 +91,23 @@ export default function UpgradePage() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="relative p-8 rounded-3xl bg-black border border-amber-500/30 overflow-hidden shadow-[0_0_50px_rgba(245,158,11,0.1)]"
+                    className="relative p-8 rounded-3xl bg-black border border-brand-orange/30 overflow-hidden shadow-[0_0_50px_rgba(235,121,85,0.1)]"
                 >
                     <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <Infinity className="w-24 h-24 text-amber-500" />
+                        <Infinity className="w-24 h-24 text-brand-orange" />
                     </div>
                     <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-amber-500/20 text-amber-500 rounded-lg border border-amber-500/30">
+                            <div className="p-2 bg-brand-orange/20 text-brand-orange rounded-lg border border-brand-orange/30">
                                 <Infinity className="w-6 h-6" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black text-amber-500 uppercase tracking-tighter"><span className="font-blackjack text-4xl normal-case tracking-normal">KM18</span> Blacklist</h2>
-                                <span className="text-[10px] font-bold text-amber-700 uppercase tracking-[0.3em]">Alpha Registry Protocol</span>
+                                <h2 className="text-2xl font-black text-brand-orange uppercase tracking-tighter"><span className="font-blackjack text-4xl normal-case tracking-normal">KM18</span> Blacklist</h2>
+                                <span className="text-[10px] font-bold text-brand-orange/70 uppercase tracking-[0.3em]">Alpha Registry Protocol</span>
                             </div>
                         </div>
                         <p className="text-sm text-secondary-text max-w-md mb-6 leading-relaxed">
-                            Be among the first 500 creators to secure **Lifetime <span className="font-blackjack text-amber-500 text-2xl">KM18</span> Professional Access**. No recurring fees. Eternal sovereignty.
+                            Be among the first 500 creators to secure **Lifetime <span className="font-blackjack text-brand-orange text-2xl">KM18</span> Professional Access**. No recurring fees. Eternal sovereignty.
                         </p>
                         
                         <div className="flex flex-col gap-4">
@@ -160,7 +160,7 @@ export default function UpgradePage() {
                                 }} 
                                 className={`mt-auto w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs ${tier.buttonBgColor} hover:scale-[1.02] transition-transform`}
                             >
-                                Request {tier.name} Clearance
+                                {tier.buttonText}
                             </button>
                         </motion.div>
                     ))}
