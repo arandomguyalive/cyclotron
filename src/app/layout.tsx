@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Redressed, Pinyon_Script } from "next/font/google";
+import { Geist, Geist_Mono, Redressed, Quintessential } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AppShell } from "@/components/layout/AppShell";
@@ -20,7 +20,7 @@ const redressed = Redressed({
   subsets: ["latin"],
 });
 
-const blackjack = Pinyon_Script({
+const blackjack = Quintessential({
   variable: "--font-blackjack",
   weight: "400",
   subsets: ["latin"],
