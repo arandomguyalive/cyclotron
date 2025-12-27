@@ -9,23 +9,20 @@
     font-family: var(--font-blackjack), cursive;
     background: linear-gradient(
       to right, 
-      #6B0098 0%, 
-      #EB7955 50%, 
-      #6B0098 100%
+      #A855F7 0%, 
+      #FFD700 50%, 
+      #FF53B2 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     display: inline-block;
-    transform: skewX(-5deg);
-    padding-block: 0.3em;
-    padding-inline: 0.4em; /* Increased to prevent flourish clipping */
-    margin-block: -0.3em;
-    margin-inline: -0.4em;
-    overflow: visible;
-    filter: drop-shadow(0 0 15px rgba(107, 0, 152, 0.2));
-    animation: ember-flow 8s ease-in-out infinite; /* Slower, more elegant flow */
+    padding-block: 0.2em;
+    padding-inline: 0.1em;
+    margin-block: -0.2em;
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+    animation: ember-flow 3s ease-in-out infinite;
   }
 }
 

@@ -144,12 +144,14 @@ export function ChatView({ chatId }: ChatViewProps) {
     if (!chatId || !firebaseUser) return;
 
     if (chatId.startsWith("mock-")) {
-        setChatPartner({ uid: "mock-partner", handle: "Cyber_Ghost", avatarSeed: "Ghost" });
-        setMessages([
-            { id: "m1", text: "The grid is unstable today.", encrypted: "U2FsdGVkX1+...", senderId: "mock-partner", senderHandle: "Cyber_Ghost", senderAvatar: "Ghost", timestamp: new Date() },
-            { id: "m2", text: "Affirmative.", encrypted: "U2FsdGVkX1+...", senderId: firebaseUser.uid, senderHandle: currentUserProfile?.handle || "You", senderAvatar: currentUserProfile?.avatarSeed || "User", timestamp: new Date() }
-        ]);
-        setChatLoading(false);
+        if (chatLoading) {
+            setChatPartner({ uid: "mock-partner", handle: "Cyber_Ghost", avatarSeed: "Ghost" });
+            setMessages([
+                { id: "m1", text: "The grid is unstable today.", encrypted: "U2FsdGVkX1+...", senderId: "mock-partner", senderHandle: "Cyber_Ghost", senderAvatar: "Ghost", timestamp: new Date() },
+                { id: "m2", text: "Affirmative.", encrypted: "U2FsdGVkX1+...", senderId: firebaseUser.uid, senderHandle: currentUserProfile?.handle || "You", senderAvatar: currentUserProfile?.avatarSeed || "User", timestamp: new Date() }
+            ]);
+            setChatLoading(false);
+        }
         return;
     }
 

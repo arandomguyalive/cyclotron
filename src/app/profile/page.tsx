@@ -77,7 +77,10 @@ function ProfileContent() {
     const uidToFetch = viewId || firebaseUser?.uid;
     if (!uidToFetch) return;
 
-    setFetching(true);
+    // Avoid setting state if we already have data for this user to prevent flash/loop
+    if (!targetUser || targetUser.uid !== uidToFetch) {
+       setFetching(true);
+    }
     
     const userRef = doc(db, "users", uidToFetch);
     const unsubscribeProfile = onSnapshot(userRef, (docSnap) => {

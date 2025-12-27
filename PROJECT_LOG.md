@@ -37,8 +37,96 @@
 
 ## 2. Comprehensive Project Log (Chronological)
 
-### Phases 1 - 13: Development & Resilience (See Archives)
-*   Established core UI, 3D Vortex, Auth, Tiered Security, real-time sync, and AdBlocker resilience.
+### Phase 1: Core Foundation & Monolith Decoupling
+*   **Goal:** Establish the project structure and move away from a monolithic architecture.
+*   **Key Actions:** 
+    *   Initialized React/Next.js environment with Tailwind CSS.
+    *   Refactored large components into a modular directory structure (`src/components`, `src/lib`).
+    *   Centralized styling in `tailwind.config.js` for brand consistency.
+
+### Phase 2: Firebase Infrastructure & Security Initialization
+*   **Goal:** Implement robust back-end services and secure hardcoded secrets.
+*   **Key Actions:**
+    *   Created a dedicated `firebase.ts` service for Auth, Firestore, and Storage.
+    *   Removed all hardcoded API keys and transitioned to environment variables.
+    *   Implemented initial `firestore.rules` for basic data protection.
+
+### Phase 3: Testing Framework Implementation
+*   **Goal:** Ensure application stability and prevent regression bugs.
+*   **Key Actions:**
+    *   Set up Jest and React Testing Library.
+    *   Wrote initial unit tests for critical UI components and utilities.
+    *   Created `TESTING_GUIDE.md` for standardized verification.
+
+### Phase 4: Social Architecture & Vortex Prototyping
+*   **Goal:** Establish the unique "depth-based" navigation and social state.
+*   **Key Actions:**
+    *   Developed the first **3D Vortex Tunnel** prototype for vertical media.
+    *   Initialized the **Signal Grid** as a high-fidelity 2D alternative.
+    *   Implemented real-time content fetching from the `posts` collection.
+
+### Phase 5: Cyberpunk Aesthetic & Glassmorphism
+*   **Goal:** Define the "State of the Art" fluid holographic visual identity.
+*   **Key Actions:**
+    *   Integrated **Framer Motion** for depth-based transitions and holographic UI effects.
+    *   Implemented the **Glassmorphism** engine with noise overlays and blurred mesh backgrounds.
+    *   Optimized layout for **PWA deployment** with edge-to-edge content.
+
+### Phase 6: Project Pivot to ABHED (Project Onyx)
+*   **Goal:** Transition from a task manager to a privacy-focused social media ecosystem.
+*   **Key Actions:**
+    *   Softened terminology and redesigned UI for "Mass Appeal."
+    *   Established the "Digital Fortress" theme with Glassmorphism and Noise effects.
+    *   Implemented the triple-identifier login shell (preparing for handle/phone support).
+
+### Phase 7: The Vortex (3D Content Engine)
+*   **Goal:** Create a depth-based, visceral content feed.
+*   **Key Actions:**
+    *   Developed the Z-axis scrolling logic for vertical videos.
+    *   Integrated `framer-motion` for fluid holographic transitions.
+    *   Implemented "Cycle" gamification rewards for content interaction.
+
+### Phase 8: Sonic UI & Haptic Feedback System
+*   **Goal:** Use audio and touch to create an immersive, tactile interface.
+*   **Key Actions:**
+    *   Created `SonicContext.tsx` to manage system sounds and haptics.
+    *   Added background "Machine Hum" and click-triggered haptic pulses.
+    *   Fixed overlapping issues between audio players and chat icons on small screens.
+
+### Phase 9: Tiered Security Architecture
+*   **Goal:** Define the user hierarchy and restriction logic.
+*   **Key Actions:**
+    *   Implemented the 5-tier system: `Lobby`, `Shield`, `Professional`, `Ultra Elite`, `Sovereign`.
+    *   Added visual degradation (grayscale/blur) for restricted tiers.
+    *   Gated high-bandwidth features (Reels/Stories) to non-Lobby tiers.
+
+### Phase 10: Social Logic & Real-time Connectivity
+*   **Goal:** Implement core social interactions.
+*   **Key Actions:**
+    *   Developed persistent Follow/Unfollow logic with live stat counters.
+    *   Implemented real-time Likes and Comment threads.
+    *   Created the "Signal Grid" (2D Feed) as a high-fidelity alternative to the Vortex.
+
+### Phase 11: Privacy Hardening & Screenshot Protection
+*   **Goal:** Ensure content exclusivity and prevent unauthorized capture.
+*   **Key Actions:**
+    *   Integrated multi-layer screenshot detection.
+    *   Developed the "Biometric Focus Lock" (pausing content when focus is lost).
+    *   Implemented automated security notifications for post owners.
+
+### Phase 12: Messaging & E2EE Simulation
+*   **Goal:** Create a secure communication channel.
+*   **Key Actions:**
+    *   Developed `ChatView` with local AES encryption (Crypto-JS).
+    *   Implemented "Burner Mode" for self-destructing messages.
+    *   Added real-time message notifications for chat partners.
+
+### Phase 13: Identity & Faction Recruitment
+*   **Goal:** Overhaul the onboarding experience and custom profile identity.
+*   **Key Actions:**
+    *   Enabled custom avatar uploads via Firebase Storage.
+    *   Implemented the "Neural Scan" login sequence.
+    *   Expanded registration to include Faction selection (**Netrunner, Corp, Drifter, Ghost**).
 
 ### Phase 14: Hierarchy Hardening & Loophole Closure (Dec 25, 2025)
 *   **Goal:** Enforce tiered restrictions and stabilize layout stacking context.
@@ -75,16 +163,30 @@
     *   **Auth Automation:** Successfully initialized owner auth accounts via Firebase CLI and implemented profile auto-provisioning logic.
     *   **Security Gating:** Restricted simulation and seeding tools exclusively to verified "Architect" handles.
 
+### Phase 18: Mirror Reality & Vesper Flow Branding (Dec 25, 2025)
+*   **Goal:** Implement high-fidelity tier simulation for owners and finalize the KM18 visual signature.
+*   **Key Actions:**
+    *   **Mirror Reality System:** Owners can now simulate any tier's visual experience (glitches, watermarks, ads) while retaining functional "God-Mode" access via the **Master Key** bypass logic.
+    *   **Visual Override:** Added a global toggle for owners to strip all simulation effects and see the app in full fidelity instantly.
+    *   **Vesper Flow Signature:** Re-established the **KM18** brand with a unique **Mrs Saint Delafield** script flowing between **Royal Purple** and **Burnt Orange**.
+    *   **Anti-Clipping Engineering:** Fine-tuned CSS padding and overflow to preserve complex script flourishes.
+    *   **UI De-cluttering:** Removed redundant brand prefixes from action items to improve professional aesthetics and intuition.
+
+### Phase 19: The Royal Signature Overhaul (Dec 27, 2025)
+*   **Goal:** Elevate the KM18 visual identity to a "Sovereign Gold" standard.
+*   **Key Actions:**
+    *   **Typography Upgrade:** Replaced `Mrs_Saint_Delafield` with **`Pinyon Script`** for a thicker, more aristocratic stroke.
+    *   **Obsidian Gold Gradient:** Updated the brand signature to flow from **Electric Violet** to **Luminous Gold** to **Hot Pink**.
+    *   **Luminous Animation:** Accelerated the flow animation (3s) and added a golden "Shimmer" glow for maximum visibility against dark backgrounds.
+
 ---
 
-## 3. Current System Status (As of Dec 25, 2025)
+## 3. Current System Status (As of Dec 27, 2025)
 
-*   ✅ **Authentication:** Redesigned "Fortress Gate" active with Faction Recruitment and Neural Scan tech.
-*   ✅ **Identity:** Custom Profile Picture uploads enabled and synced across all social features.
-*   ✅ **Feeds:** Dynamic Vortex (3D) and Signal Grid (2D) 100% data-driven.
-*   ✅ **Social Metrics:** Live sync for Followers, Following, Likes, and Comments.
-*   ✅ **Hierarchy:** Tier-based restrictions active for creation, sharing, and viewing.
-*   ✅ **Security:** Handle uniqueness check, password validation, and AdBlocker resilience protocols active.
-*   ✅ **Layout:** Optimized stacking context; high-precision haptics integrated.
+*   ✅ **Branding:** "Royal Signature" (Gold/Violet/Pink) active with `Pinyon Script`.
+*   ✅ **Authentication:** Triple-identifier login (Email/Handle/Phone) active with Architect-level auto-provisioning.
+*   ✅ **Architect Core:** God-Mode console enabled for owners with Reality Switching and Stat Forging.
+*   ✅ **Notifications:** 100% synchronized social triggers (Follow, Like, Comment, Message, Screenshot).
+*   ✅ **Simulation:** Mirror Reality engine allows precise tier-based visual auditing.
 
-**Conclusion:** ABHED has reached a state of "Commercial Readiness," featuring a highly personalized, secure, and immersive social onboarding experience.
+**Conclusion:** ABHED has reached its peak visual and functional state, combining ironclad security with elite aesthetic prestige.

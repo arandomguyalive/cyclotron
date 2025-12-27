@@ -14,6 +14,7 @@ import { Post } from "@/components/feed/VortexItem";
 interface SignalPost extends Post {
     arX: number;
     arY: number;
+    distance: number;
 }
 
 interface ScannerModalProps {
@@ -50,6 +51,7 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
               ...doc.data(),
               arX: Math.random() * 80 + 10,
               arY: Math.random() * 60 + 20,
+              distance: Math.floor(Math.random() * 1000)
           } as SignalPost));
           
           setSignals(found);
@@ -188,7 +190,7 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
                                     <Package className="w-6 h-6 text-white" />
                                 </div>
                                 <div className="mt-2 px-2 py-1 bg-black/50 backdrop-blur rounded text-[10px] text-brand-orange font-bold uppercase tracking-wider">
-                                    {Math.floor(Math.random() * 50)}m
+                                    {signal.distance}m
                                 </div>
                             </motion.div>
                         ))}
@@ -238,7 +240,7 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
                                                 {signal.type === 'drop' ? 'DEAD DROP' : `@${signal.userHandle}`}
                                             </span>
                                             <span className={`text-[10px] border px-1 rounded ${signal.type === 'drop' ? 'text-brand-orange border-brand-orange/30' : 'text-brand-cyan/70 border-brand-cyan/20'}`}>
-                                                {Math.floor(Math.random() * 1000)}m
+                                                {signal.distance}m
                                             </span>
                                         </div>
                                         <p className="text-xs text-secondary-text line-clamp-1">
