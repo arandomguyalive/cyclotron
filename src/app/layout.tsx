@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Redressed, Quintessential } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AppShell } from "@/components/layout/AppShell";
+import { DebugOverlay } from "@/components/common/DebugOverlay";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -86,6 +87,7 @@ export default function RootLayout({
         <Providers>
           <AppShell>
             {children}
+            <DebugOverlay />
           </AppShell>
         </Providers>
       </body>

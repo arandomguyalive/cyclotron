@@ -128,30 +128,37 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                           };
               
                           if (data.tier && legacyMap[data.tier]) {
+                              console.log("[UserContext] Mapping legacy tier:", data.tier, "->", legacyMap[data.tier]);
                               data.tier = legacyMap[data.tier];
                               needsFix = true;
                           }
               
-                          if (data.accessType === "LIFETIME_BLACKLIST" && data.tier !== "professional") {
+                          // Allow Lifetime Blacklist users to upgrade to higher tiers (Ultra Elite/Sovereign)
+                          const higherTiers: UserTier[] = ["ultra_elite", "sovereign"];
+                          if (data.accessType === "LIFETIME_BLACKLIST" && !higherTiers.includes(data.tier) && data.tier !== "professional") {
+                              console.log("[UserContext] Enforcing Lifetime Blacklist tier: professional");
                               data.isBlacklist = true;
                               data.tier = "professional";
                               needsFix = true;
                           }
               
                           if (needsFix) {
+                              console.log("[UserContext] Applying document fixes to Firestore...");
                               await setDoc(userRef, data, { merge: true });
                               return; 
                           }
               
                           const handleUpper = data.handle?.toUpperCase() || "";
-                          const isOwner = ['ABHI18', 'KINJAL18'].includes(handleUpper);              if (isOwner) {
-                  data.isOwner = true;
-                  // If tier isn't set yet (newly created), default to sovereign
-                  if (!data.tier) data.tier = "sovereign";
-                  data.isBlacklist = true;
-              }
+                          const isOwner = ['ABHI18', 'KINJAL18'].includes(handleUpper);
+                          
+                          if (isOwner) {
+                              data.isOwner = true;
+                              if (!data.tier) data.tier = "sovereign";
+                              data.isBlacklist = true;
+                          }
 
-              setUser({ ...data, uid: currentUser.uid, isBlacklist: data.isBlacklist || false, isOwner });
+                          console.log("[UserContext] Finalizing user state:", { handle: data.handle, tier: data.tier, isOwner });
+                          setUser({ ...data, uid: currentUser.uid, isBlacklist: data.isBlacklist || false, isOwner });
             } else {
               // Document doesn't exist - Check if it's an owner logging in for the first time
               const ownerEmails = ['abhi18@abhed.network', 'kinjal18@abhed.network'];

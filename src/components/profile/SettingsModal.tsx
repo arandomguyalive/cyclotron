@@ -162,7 +162,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 }} 
                                 isPaid={user?.tier !== 'lobby'} // Indicate if already paid
                             />
-                            {user?.tier === 'sovereign' && (
+                            {(user?.tier === 'sovereign' || isOwner) && (
                                 <SettingItem 
                                     icon={Crown} 
                                     label="Sovereign Console" 
