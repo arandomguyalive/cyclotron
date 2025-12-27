@@ -37,7 +37,7 @@ export default function SovereignDashboardPage() {
     });
 
     useEffect(() => {
-        if (!loading && (!firebaseUser || user?.tier !== 'sovereign')) {
+        if (!loading && (!firebaseUser || (user?.tier !== 'sovereign' && !user?.isOwner))) {
             toast("Access Denied: Sovereign Clearance Required", "error");
             router.push("/home");
         }
@@ -87,7 +87,7 @@ export default function SovereignDashboardPage() {
         }
     };
 
-    if (loading || user?.tier !== 'sovereign') {
+    if (loading || (user?.tier !== 'sovereign' && !user?.isOwner)) {
         return (
             <div className="h-screen w-full flex items-center justify-center bg-primary-bg text-accent-1">
                 <Loader2 className="w-10 h-10 animate-spin mb-4" />

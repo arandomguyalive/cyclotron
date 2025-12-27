@@ -25,8 +25,7 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier, billingCycle = "m
 
   const handlePayment = () => {
     setPaymentStep("processing");
-    setTimeout(() => {
-      setPaymentStep("success");
+    setTimeout(async () => {
       
       const updates: Partial<UserProfile> = { 
           tier: upgradeToTier,
@@ -38,8 +37,15 @@ export function PaymentModal({ isOpen, onClose, upgradeToTier, billingCycle = "m
           updates.accessType = 'LIFETIME_BLACKLIST';
       }
       
-      updateUser(updates);
-      setTimeout(onClose, 1500);
+      try {
+          await updateUser(updates);
+          setPaymentStep("success");
+          setTimeout(onClose, 1500);
+      } catch (error) {
+          console.error("Upgrade failed:", error);
+          // Ideally handle error state here, but for now just close or stay on processing
+          setPaymentStep("form"); 
+      }
     }, 2000);
   };
 

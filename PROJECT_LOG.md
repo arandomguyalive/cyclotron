@@ -192,6 +192,8 @@
     *   **Font Transition:** Replaced `Pinyon Script` with **`Quintessential`** for a more distinctive, structured calligraphic feel.
     *   **Style Maintenance:** Retained the Cyan Neon gradient and high-voltage glow effects.
     *   **UI Refinement:** Removed redundant "KM18" prefix from the Login page "Neural Security" footer for a cleaner look.
+    *   **Upgrade Repair:** Fixed a race condition in `PaymentModal` by awaiting `updateUser` database writes, ensuring account tier changes persist.
+    *   **Architect Core Fix:** Updated the Sovereign Dashboard to allow `isOwner` permission bypass, ensuring owners retain access regardless of their currently simulated tier.
 
 ---
 
