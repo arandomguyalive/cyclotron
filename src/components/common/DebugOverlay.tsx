@@ -6,6 +6,12 @@ export function DebugOverlay() {
     const { user, firebaseUser } = useUser();
     const [isOpen, setIsOpen] = useState(true);
 
+    // Restrict access to Owners only
+    const allowedHandles = ['ABHI18', 'KINJAL18'];
+    const isAllowed = user?.handle && allowedHandles.includes(user.handle.toUpperCase());
+
+    if (!isAllowed) return null;
+
     if (!isOpen) {
         return (
             <button 
