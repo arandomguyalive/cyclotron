@@ -9,9 +9,9 @@
     font-family: var(--font-blackjack), cursive;
     background: linear-gradient(
       to right, 
-      #A855F7 0%, 
-      #FFD700 50%, 
-      #FF53B2 100%
+      #006096 0%, 
+      #00D4E5 50%, 
+      #FFFFFF 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
@@ -21,7 +21,7 @@
     padding-block: 0.2em;
     padding-inline: 0.1em;
     margin-block: -0.2em;
-    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+    filter: drop-shadow(0 0 10px rgba(0, 212, 229, 0.8));
     animation: ember-flow 3s ease-in-out infinite;
   }
 }

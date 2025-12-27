@@ -79,7 +79,7 @@ function ProfileContent() {
 
     // Avoid setting state if we already have data for this user to prevent flash/loop
     if (!targetUser || targetUser.uid !== uidToFetch) {
-       setFetching(true);
+       setTimeout(() => setFetching(true), 0);
     }
     
     const userRef = doc(db, "users", uidToFetch);

@@ -34,8 +34,10 @@ export function ScannerModal({ isOpen, onClose, userRegion = "global" }: Scanner
 
   useEffect(() => {
     if (isOpen) {
-      setScanning(true);
-      setSignals([]);
+      setTimeout(() => {
+          setScanning(true);
+          setSignals([]);
+      }, 0);
       playClick(800, 0.5, 'sine'); // Long scan sound
 
       // 1. Listen to signals matching region or global

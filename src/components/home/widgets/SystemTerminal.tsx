@@ -7,19 +7,19 @@ import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestor
 import { db } from "@/lib/firebase";
 
 const LOGS_FREE = [
-    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span> // Standard Encryption</>,
-    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span> // Public IP Visible</>,
-    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span> // Masking: Off</>,
-    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span> // Connection: Standard</>,
-    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span> // Footprint: Detected</>
+    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span>{" // Standard Encryption"}</>,
+    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span>{" // Public IP Visible"}</>,
+    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span>{" // Masking: Off"}</>,
+    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span>{" // Connection: Standard"}</>,
+    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span>{" // Footprint: Detected"}</>
 ];
 
 const LOGS_PREMIUM = [
-    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span> // Enhanced Encryption</>,
-    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span> // Location: Masked</>,
-    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span> // VPN: Tunnel Established</>,
-    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span> // Connection: Optimized</>,
-    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span> // Footprint: Hidden</>
+    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span>{" // Enhanced Encryption"}</>,
+    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span>{" // Location: Masked"}</>,
+    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span>{" // VPN: Tunnel Established"}</>,
+    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span>{" // Connection: Optimized"}</>,
+    <><span className="font-blackjack text-brand-orange mr-1 text-base">KM18</span>{" // Footprint: Hidden"}</>
 ];
 
 export function SystemTerminal() {
