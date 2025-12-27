@@ -156,7 +156,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                           if (isOwner) {
                               data.isOwner = true;
                               if (!data.tier) data.tier = "sovereign";
-                              data.isBlacklist = true;
+                              // data.isBlacklist = true; // REMOVED: Allow owners to toggle blacklist status manually
                           }
 
                           console.log("[UserContext] Finalizing user state:", { handle: data.handle, tier: data.tier, isOwner });
