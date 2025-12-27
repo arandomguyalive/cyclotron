@@ -127,15 +127,19 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                               "lifetime": "professional"
                           };
               
+                          const handleUpper = data.handle?.toUpperCase() || "";
+                          const isOwner = ['ABHI18', 'KINJAL18'].includes(handleUpper);
+
                           if (data.tier && legacyMap[data.tier]) {
                               console.log("[UserContext] Mapping legacy tier:", data.tier, "->", legacyMap[data.tier]);
                               data.tier = legacyMap[data.tier];
                               needsFix = true;
                           }
               
-                          // Allow Lifetime Blacklist users to upgrade to higher tiers (Ultra Elite/Sovereign)
+                          // Allow Lifetime Blacklist users to upgrade to higher tiers, but prevent accidental downgrades
+                          // EXCEPTION: Owners can simulate ANY tier (Lobby/Shield) without auto-correction.
                           const higherTiers: UserTier[] = ["ultra_elite", "sovereign"];
-                          if (data.accessType === "LIFETIME_BLACKLIST" && !higherTiers.includes(data.tier) && data.tier !== "professional") {
+                          if (!isOwner && data.accessType === "LIFETIME_BLACKLIST" && !higherTiers.includes(data.tier) && data.tier !== "professional") {
                               console.log("[UserContext] Enforcing Lifetime Blacklist tier: professional");
                               data.isBlacklist = true;
                               data.tier = "professional";
@@ -148,8 +152,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                               return; 
                           }
               
-                          const handleUpper = data.handle?.toUpperCase() || "";
-                          const isOwner = ['ABHI18', 'KINJAL18'].includes(handleUpper);
                           
                           if (isOwner) {
                               data.isOwner = true;
