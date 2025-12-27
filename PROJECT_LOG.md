@@ -191,6 +191,7 @@
 *   **Key Actions:**
     *   **Font Transition:** Replaced `Pinyon Script` with **`Quintessential`** for a more distinctive, structured calligraphic feel.
     *   **Style Maintenance:** Retained the Cyan Neon gradient and high-voltage glow effects.
+    *   **UI Refinement:** Removed redundant "KM18" prefix from the Login page "Neural Security" footer for a cleaner look.
 
 ---
 

@@ -129,7 +129,7 @@ export default function LoginPage() {
             <Shield className="w-8 h-8 text-accent-1" />
           </div>
           <h1 className="text-4xl font-black text-primary-text tracking-tighter uppercase italic">ABHED</h1>
-          <span className="text-[10px] font-bold tracking-[0.4em] text-accent-1 uppercase opacity-70"><span className="font-blackjack text-lg">KM18</span> Neural Security</span>
+          <span className="text-[10px] font-bold tracking-[0.4em] text-accent-1 uppercase opacity-70">Neural Security</span>
         </div>
 
         <div className="bg-secondary-bg/40 backdrop-blur-2xl border border-border-color rounded-[2.5rem] p-8 shadow-2xl">
