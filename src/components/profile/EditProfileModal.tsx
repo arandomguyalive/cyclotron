@@ -89,12 +89,12 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
 
         // 3. Sync to Context/Firestore
         await updateUser({
-            displayName: name,
-            handle,
-            bio,
-            avatarSeed,
-            avatarUrl,
-            coverImage: coverImageUrl
+            displayName: name || "",
+            handle: handle || "",
+            bio: bio || "",
+            avatarSeed: avatarSeed || "default",
+            avatarUrl: avatarUrl || null,
+            coverImage: coverImageUrl || null
         });
         
         onClose();
