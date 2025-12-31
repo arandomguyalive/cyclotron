@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { useUser } from "@/lib/UserContext";
 import { collection, query, orderBy, limit, onSnapshot, Timestamp, doc, updateDoc, increment, setDoc, serverTimestamp, writeBatch, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Heart, MessageCircle, Share2, MoreHorizontal, Bookmark, Eye, Cpu } from "lucide-react";
+import { Heart, MessageCircle, MoreHorizontal, Bookmark, Eye, Cpu } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/lib/ToastContext";
 import { extractMessageFromImage } from "@/lib/steg";
 import { CommentModal } from "@/components/feed/CommentModal";
-import { UserAvatar } from "../ui/UserAvatar";
+import { IconShareNeural } from "../ui/IconShareNeural";
 import { IdentityBadges } from "../ui/IdentityBadges";
 
 interface Post {
@@ -385,7 +385,7 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                         {commentsCount > 0 && <span className="text-xs font-bold text-accent-1 font-mono">{commentsCount}</span>}
                     </div>
                     <div className="flex items-center gap-1.5">
-                        <Share2 onClick={async () => {
+                        <IconShareNeural onClick={async () => {
                             if (isFree && !user?.isOwner) { toast("UPGRADE REQUIRED: Secure sharing restricted.", "error"); return; }
                             try {
                                 await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });

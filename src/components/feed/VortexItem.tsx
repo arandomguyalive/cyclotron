@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, Share2, Disc, Music, Plus, Play, AlertTriangle, ShieldCheck, Cpu } from "lucide-react";
+import { Heart, MessageCircle, Disc, Music, Plus, Play, AlertTriangle, ShieldCheck, Cpu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SecurePlayer } from "./SecurePlayer";
 import { Timestamp, collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc, deleteDoc, getCountFromServer, writeBatch, onSnapshot } from "firebase/firestore";
@@ -14,6 +14,7 @@ import { useToast } from "@/lib/ToastContext";
 import { CommentModal } from "./CommentModal";
 import { UserAvatar } from "../ui/UserAvatar";
 import { IdentityBadges } from "../ui/IdentityBadges";
+import { IconShareNeural } from "../ui/IconShareNeural";
 
 export interface Post {
   id: string;
@@ -258,7 +259,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' 
           </div>
 
           <div className="flex flex-col items-center gap-1">
-            <button onClick={handleShare} className="p-2"><Share2 className="w-8 h-8 text-white drop-shadow-md" /></button>
+            <button onClick={handleShare} className="p-2"><IconShareNeural className="w-8 h-8 text-white drop-shadow-md" /></button>
             <span className="text-xs font-bold text-white drop-shadow-md">{shares}</span>
           </div>
 
