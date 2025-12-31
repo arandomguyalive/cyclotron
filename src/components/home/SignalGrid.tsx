@@ -10,6 +10,7 @@ import { useToast } from "@/lib/ToastContext";
 import { extractMessageFromImage } from "@/lib/steg";
 import { CommentModal } from "@/components/feed/CommentModal";
 import { IconShareNeural } from "../ui/IconShareNeural";
+import { UserAvatar } from "../ui/UserAvatar";
 import { IdentityBadges } from "../ui/IdentityBadges";
 
 interface Post {
