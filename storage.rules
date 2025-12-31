@@ -1,0 +1,31 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Match avatar images: avatars/{userId}_{timestamp}
+    match /avatars/{imageId} {
+      // Anyone can view an avatar
+      allow read: if true;
+      
+      // Only the owner can upload/delete their own avatar
+      // We verify the filename starts with the user's UID
+      allow write: if request.auth != null 
+                   && imageId.matches(request.auth.uid + '.*')
+                   && request.resource.size < 5 * 1024 * 1024 // Max 5MB
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // Match cover images: covers/{userId}_{timestamp}
+    match /covers/{imageId} {
+      allow read: if true;
+      allow write: if request.auth != null 
+                   && imageId.matches(request.auth.uid + '.*')
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+    
+    // Default deny for other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
