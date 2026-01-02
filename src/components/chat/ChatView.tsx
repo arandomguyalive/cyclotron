@@ -269,7 +269,7 @@ export function ChatView({ chatId }: ChatViewProps) {
 }
 
 function MessageBubble({ message, isMine, senderHandle, senderAvatar, senderAvatarUrl, isGroup = false }: { message: ChatMessage, isMine: boolean, senderHandle: string, senderAvatar: string, senderAvatarUrl?: string, isGroup?: boolean }) {
-  const [isRevealed, setIsRevealed] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(isMine);
   const [isBurnt, setIsBurnt] = useState(message.isBurnt || false); 
   const [scratchProgress, setScratchProgress] = useState(0);
   const [burnProgress, setBurnProgress] = useState(0);
