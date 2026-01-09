@@ -1,20 +1,44 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle, Shield, Zap, Diamond, Crown, Infinity, ArrowLeft, Lock } from "lucide-react";
 import { useUser, UserTier } from "@/lib/UserContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PaymentModal } from "@/components/common/PaymentModal";
 
 export default function UpgradePage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { user } = useUser();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [selectedTier, setSelectedTier] = useState<UserTier>("shield");
     const [isBlacklistMode, setIsBlacklistMode] = useState(false);
     const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
-    const [spotsLeft, setSpotsLeft] = useState(487);
+    const [spotsLeft, setSpotsLeft] = useState(13); // Default low number
+
+    useEffect(() => {
+        // Auto-open blacklist modal if mode is set
+        const mode = searchParams.get('mode');
+        if (mode === 'blacklist') {
+            setSelectedTier("professional");
+            setIsBlacklistMode(true);
+            setIsPaymentModalOpen(true);
+        }
+
+        // Sync simulated spots with landing page or generate new unique number
+        const stored = sessionStorage.getItem("blacklist_simulated_count");
+        if (stored) {
+            const joined = parseInt(stored, 10);
+            setSpotsLeft(500 - joined);
+        } else {
+            // If they came directly, generate a random joined number (412-489)
+            // ensuring spots left is between 11 and 88
+            const randomJoined = Math.floor(Math.random() * (489 - 412 + 1)) + 412;
+            sessionStorage.setItem("blacklist_simulated_count", randomJoined.toString());
+            setSpotsLeft(500 - randomJoined);
+        }
+    }, [searchParams]);
 
     type TierOption = {
         id: UserTier;

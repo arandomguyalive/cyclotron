@@ -195,9 +195,17 @@
     *   **Upgrade Repair:** Fixed a race condition in `PaymentModal` by awaiting `updateUser` database writes, ensuring account tier changes persist.
     *   **Architect Core Fix:** Updated the Sovereign Dashboard to allow `isOwner` permission bypass, ensuring owners retain access regardless of their currently simulated tier.
 
+### Phase 22: Blacklist Launch Infrastructure (Jan 9, 2026)
+*   **Goal:** Enable public onboarding for the exclusive "Blacklist" tier with high-fidelity sales funnel.
+*   **Key Actions:**
+    *   **Public Landing Page:** Created `/blacklist` with "State of the Art" visuals, randomized social proof (Joined Count), and "Forensic Immunity" marketing copy.
+    *   **Smart Redirection:** Implemented `redirect` query param handling in `/login` to ensure smooth onboarding for new users joining via the Blacklist link.
+    *   **Sales Funnel Integration:** Updated `/upgrade` to auto-trigger the Blacklist payment modal via `?mode=blacklist` and synchronized the "Spots Remaining" countdown with the landing page.
+    *   **Influencer Outreach:** Integrated `fetch_real_influencers.py` and database for targeted recruitment.
+
 ---
 
-## 3. Current System Status (As of Dec 27, 2025)
+## 3. Current System Status (As of Jan 9, 2026)
 
 *   ✅ **Branding:** "Cyan Neon" active with **Quintessential** typography.
 *   ✅ **Authentication:** Triple-identifier login (Email/Handle/Phone) active with Architect-level auto-provisioning.

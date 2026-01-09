@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Shield, AlertTriangle, Fingerprint, Eye, EyeOff, Terminal, Briefcase, Truck, Ghost, Check, Loader2, Calendar, Smartphone, Mail, Globe } from "lucide-react";
 import { useUser, UserProfile } from "@/lib/UserContext";
@@ -18,6 +18,7 @@ export default function LoginPage() {
   const { login, signup, firebaseUser, loading } = useUser();
   const { playClick, playHaptic } = useSonic();
   const router = useRouter();
+  const searchParams = useSearchParams();
   
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -35,9 +36,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (firebaseUser && !loading) {
-      router.push("/home");
+      const redirectPath = searchParams.get('redirect');
+      router.push(redirectPath || "/home");
     }
-  }, [firebaseUser, loading, router]);
+  }, [firebaseUser, loading, router, searchParams]);
 
   const validateAge = (dateString: string) => {
       const today = new Date();
