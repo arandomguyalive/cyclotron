@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Shield, AlertTriangle, Fingerprint, Eye, EyeOff, Terminal, Briefcase, Truck, Ghost, Check, Loader2, Calendar, Smartphone, Mail, Globe } from "lucide-react";
@@ -14,7 +14,7 @@ const circles = [
     { id: "Ghost", name: "Ghost Circle", icon: Ghost, color: "text-zinc-400", desc: "Privacy focused." },
 ];
 
-export default function LoginPage() {
+function LoginForm() {
   const { login, signup, firebaseUser, loading } = useUser();
   const { playClick, playHaptic } = useSonic();
   const router = useRouter();
@@ -207,5 +207,13 @@ function InputGroup({ label, icon: Icon, value, onChange, placeholder, type = "t
                 <Icon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-text" />
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-primary-bg"><Loader2 className="w-10 h-10 animate-spin text-accent-1" /></div>}>
+            <LoginForm />
+        </Suspense>
     );
 }

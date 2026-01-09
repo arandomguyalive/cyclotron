@@ -2,12 +2,64 @@
 
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle, Shield, Zap, Diamond, Crown, Infinity, ArrowLeft, Lock } from "lucide-react";
+import { CheckCircle, Shield, Zap, Diamond, Crown, Infinity, ArrowLeft, Lock, Loader2 } from "lucide-react";
 import { useUser, UserTier } from "@/lib/UserContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { PaymentModal } from "@/components/common/PaymentModal";
 
-export default function UpgradePage() {
+type TierOption = {
+    id: UserTier;
+    name: string;
+    monthlyPrice: number;
+    features: string[];
+    buttonText: string;
+    bgColor: string;
+    borderColor: string;
+    textColor: string;
+    buttonBgColor: string;
+    icon: any;
+};
+
+const tiers: TierOption[] = [
+    {
+        id: "shield",
+        name: "The Shield",
+        monthlyPrice: 999,
+        features: ["Ad-Free Signal", "Standard Encryption", "Secure Data Flow", "Full Bandwidth"],
+        buttonText: "Activate Shield",
+        bgColor: "bg-brand-cyan/10",
+        borderColor: "border-brand-cyan/20",
+        textColor: "text-brand-cyan",
+        buttonBgColor: "bg-brand-cyan text-black",
+        icon: Shield
+    },
+    {
+        id: "professional",
+        name: "Professional",
+        monthlyPrice: 9999,
+        features: ["All Shield Features", "Forensic Gating", "Geo-Fencing Suite", "Priority Uplink"],
+        buttonText: "Go Professional",
+        bgColor: "bg-brand-hot-pink/10",
+        borderColor: "border-brand-hot-pink/20",
+        textColor: "text-brand-hot-pink",
+        buttonBgColor: "bg-brand-hot-pink text-black",
+        icon: Zap
+    },
+    {
+        id: "ultra_elite",
+        name: "Ultra Elite",
+        monthlyPrice: 99999,
+        features: ["All Professional Features", "Biometric Focus", "Personal Archive", "Zero Commission"],
+        buttonText: "Join the Elite",
+        bgColor: "bg-white/10",
+        borderColor: "border-white/20",
+        textColor: "text-white",
+        buttonBgColor: "bg-white text-black",
+        icon: Diamond
+    }
+];
+
+function UpgradeContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user } = useUser();
@@ -39,58 +91,6 @@ export default function UpgradePage() {
             setSpotsLeft(500 - randomJoined);
         }
     }, [searchParams]);
-
-    type TierOption = {
-        id: UserTier;
-        name: string;
-        monthlyPrice: number;
-        features: string[];
-        buttonText: string;
-        bgColor: string;
-        borderColor: string;
-        textColor: string;
-        buttonBgColor: string;
-        icon: any;
-    };
-
-    const tiers: TierOption[] = [
-        {
-            id: "shield",
-            name: "The Shield",
-            monthlyPrice: 999,
-            features: ["Ad-Free Signal", "Standard Encryption", "Secure Data Flow", "Full Bandwidth"],
-            buttonText: "Activate Shield",
-            bgColor: "bg-brand-cyan/10",
-            borderColor: "border-brand-cyan/20",
-            textColor: "text-brand-cyan",
-            buttonBgColor: "bg-brand-cyan text-black",
-            icon: Shield
-        },
-        {
-            id: "professional",
-            name: "Professional",
-            monthlyPrice: 9999,
-            features: ["All Shield Features", "Forensic Gating", "Geo-Fencing Suite", "Priority Uplink"],
-            buttonText: "Go Professional",
-            bgColor: "bg-brand-hot-pink/10",
-            borderColor: "border-brand-hot-pink/20",
-            textColor: "text-brand-hot-pink",
-            buttonBgColor: "bg-brand-hot-pink text-black",
-            icon: Zap
-        },
-        {
-            id: "ultra_elite",
-            name: "Ultra Elite",
-            monthlyPrice: 99999,
-            features: ["All Professional Features", "Biometric Focus", "Personal Archive", "Zero Commission"],
-            buttonText: "Join the Elite",
-            bgColor: "bg-white/10",
-            borderColor: "border-white/20",
-            textColor: "text-white",
-            buttonBgColor: "bg-white text-black",
-            icon: Diamond
-        }
-    ];
 
     const formatPrice = (tier: TierOption) => {
         if (billingCycle === 'annual') {
@@ -225,5 +225,13 @@ export default function UpgradePage() {
                 isBlacklistMode={isBlacklistMode}
             />
         </div>
+    );
+}
+
+export default function UpgradePage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-primary-bg"><Loader2 className="w-10 h-10 animate-spin text-brand-orange" /></div>}>
+            <UpgradeContent />
+        </Suspense>
     );
 }
