@@ -68,7 +68,8 @@ function LoginForm() {
   const setupRecaptcha = () => {
       if (!recaptchaVerifierRef.current) {
           recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
-              'size': 'invisible',
+              'size': 'normal',
+              'theme': 'dark',
               'callback': () => {}
           });
       }
@@ -297,7 +298,7 @@ function LoginForm() {
                                         </button>
                                     )}
                                 </div>
-                                <div id="recaptcha-container"></div>
+                                <div id="recaptcha-container" className="flex justify-center my-2"></div>
                                 
                                 <AnimatePresence>
                                     {confirmationResult && !isPhoneVerified && (
