@@ -43,7 +43,18 @@ function LoginForm() {
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0);
   const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
+
+  useEffect(() => {
+      let timer: NodeJS.Timeout;
+      if (resendCountdown > 0) {
+          timer = setInterval(() => {
+              setResendCountdown((prev) => prev - 1);
+          }, 1000);
+      }
+      return () => clearInterval(timer);
+  }, [resendCountdown]);
 
   useEffect(() => {
       return () => {
@@ -82,6 +93,7 @@ function LoginForm() {
           const appVerifier = recaptchaVerifierRef.current;
           const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
           setConfirmationResult(confirmation);
+          setResendCountdown(30);
           playClick(800, 0.1, 'triangle');
       } catch (err: any) {
           console.error("OTP Error:", err);
@@ -271,10 +283,14 @@ function LoginForm() {
                                     {!isPhoneVerified && (
                                         <button 
                                             onClick={requestOtp} 
-                                            disabled={isSendingOtp || !!confirmationResult || !phone}
-                                            className="px-4 bg-accent-1/10 border border-accent-1/50 text-accent-1 rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-accent-1 hover:text-black transition-all disabled:opacity-30 disabled:pointer-events-none whitespace-nowrap"
+                                            disabled={isSendingOtp || resendCountdown > 0 || !phone}
+                                            className="px-4 bg-accent-1/10 border border-accent-1/50 text-accent-1 rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-accent-1 hover:text-black transition-all disabled:opacity-30 disabled:pointer-events-none whitespace-nowrap min-w-[80px]"
                                         >
-                                            {isSendingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : (confirmationResult ? 'Sent' : 'Verify')}
+                                            {isSendingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                                confirmationResult 
+                                                    ? (resendCountdown > 0 ? `Resend in ${resendCountdown}s` : 'Resend Code')
+                                                    : 'Verify'
+                                            )}
                                         </button>
                                     )}
                                 </div>
