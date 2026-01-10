@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Shield, AlertTriangle, Fingerprint, Eye, EyeOff, Terminal, Briefcase, Truck, Ghost, Check, Loader2, Calendar, Smartphone, Mail, Globe } from "lucide-react";
+import { User, Shield, AlertTriangle, Fingerprint, Eye, EyeOff, Terminal, Briefcase, Truck, Ghost, Check, Loader2, Calendar, Smartphone, Mail, Globe, Lock } from "lucide-react";
 import { useUser, UserProfile } from "@/lib/UserContext";
 import { useSonic, ImpactStyle } from "@/lib/SonicContext";
+import { auth } from "@/lib/firebase";
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
 
 const circles = [
     { id: "Netrunner", name: "Netrunner", icon: Terminal, color: "text-cyan-400", desc: "Tech & Data enthusiasts." },
@@ -34,6 +36,89 @@ function LoginForm() {
   const [dob, setDob] = useState("");
   const [phone, setPhone] = useState("");
   const [selectedCircle, setSelectedCircle] = useState<UserProfile['faction']>("Drifter");
+
+  // OTP State
+  const [otp, setOtp] = useState("");
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
+
+  useEffect(() => {
+      return () => {
+          if (recaptchaVerifierRef.current) {
+              recaptchaVerifierRef.current.clear();
+              recaptchaVerifierRef.current = null;
+          }
+      };
+  }, []);
+
+  const setupRecaptcha = () => {
+      if (!recaptchaVerifierRef.current) {
+          recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
+              'size': 'invisible',
+              'callback': () => {}
+          });
+      }
+  };
+
+  const requestOtp = async () => {
+      if (!phone || phone.length < 10) {
+          setError("Please enter a valid phone number.");
+          return;
+      }
+      setIsSendingOtp(true);
+      setError(null);
+      try {
+          setupRecaptcha();
+          if (!recaptchaVerifierRef.current) throw new Error("Recaptcha failed to initialize.");
+          
+          const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`; 
+          // Note: In a real app, you might want strict formatting. Assuming user enters country code or we default.
+          // For now, let's assume user enters e.g. +1... or we might need to prepend if missing.
+          // Let's rely on user entering full e164 or just try as is if it has +. 
+          
+          const appVerifier = recaptchaVerifierRef.current;
+          const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+          setConfirmationResult(confirmation);
+          playClick(800, 0.1, 'triangle');
+      } catch (err: any) {
+          console.error("OTP Error:", err);
+          setError(err.message || "Failed to send OTP. Try again.");
+          if (recaptchaVerifierRef.current) {
+             recaptchaVerifierRef.current.clear();
+             recaptchaVerifierRef.current = null;
+          }
+      } finally {
+          setIsSendingOtp(false);
+      }
+  };
+
+  const verifyOtp = async () => {
+      if (!otp || !confirmationResult) return;
+      setIsVerifyingOtp(true);
+      try {
+          // This signs the user in with phone auth
+          await confirmationResult.confirm(otp);
+          
+          // Verify success!
+          setIsPhoneVerified(true);
+          setConfirmationResult(null); // Clear OTP UI
+          playHaptic(ImpactStyle.Heavy);
+          playClick(1000, 0.2, 'sine');
+          
+          // IMPORTANT: The user is now signed in as the Phone User. 
+          // We must sign them out so they can proceed to create their main account.
+          await auth.signOut();
+          
+      } catch (err: any) {
+          console.error("OTP Verification Error:", err);
+          setError("Invalid OTP. Please check code.");
+      } finally {
+          setIsVerifyingOtp(false);
+      }
+  };
 
   useEffect(() => {
     if (firebaseUser && !loading) {
@@ -74,6 +159,7 @@ function LoginForm() {
           if (!validateAge(dob)) throw new Error("You must be 16 or older to join.");
           if (password.length < 6) throw new Error("Password must be at least 6 characters.");
           if (handle.length < 3) throw new Error("Username is too short.");
+          if (!isPhoneVerified) throw new Error("Please verify your phone number to continue.");
 
           await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -168,7 +254,58 @@ function LoginForm() {
                             <InputGroup label="Full Name" icon={User} value={fullName} onChange={setFullName} placeholder="Real Name" />
                             <InputGroup label="Username" icon={Terminal} value={handle} onChange={setHandle} placeholder="Unique Username" />
                             <InputGroup label="Email Address" icon={Mail} value={email} onChange={setEmail} placeholder="personal@email.com" />
-                            <InputGroup label="Phone Number" icon={Smartphone} value={phone} onChange={setPhone} placeholder="+1 000 000 0000" />
+                            <div className="space-y-2">
+                                <label className="text-[9px] font-bold uppercase tracking-widest text-secondary-text ml-4">Phone Verification {isPhoneVerified && <span className="text-green-400 ml-2">(VERIFIED)</span>}</label>
+                                <div className="relative flex gap-2">
+                                    <div className="relative flex-1">
+                                        <input 
+                                            type="tel" 
+                                            value={phone} 
+                                            onChange={(e) => setPhone(e.target.value)} 
+                                            disabled={isPhoneVerified || !!confirmationResult}
+                                            placeholder="+1 000 000 0000" 
+                                            className={`w-full bg-black/40 border ${isPhoneVerified ? 'border-green-500/50 text-green-400' : 'border-border-color'} rounded-2xl px-5 py-4 pl-12 text-primary-text placeholder:text-secondary-text/30 focus:border-accent-1 outline-none transition-all disabled:opacity-50`} 
+                                        />
+                                        <Smartphone className={`absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 ${isPhoneVerified ? 'text-green-400' : 'text-secondary-text'}`} />
+                                    </div>
+                                    {!isPhoneVerified && (
+                                        <button 
+                                            onClick={requestOtp} 
+                                            disabled={isSendingOtp || !!confirmationResult || !phone}
+                                            className="px-4 bg-accent-1/10 border border-accent-1/50 text-accent-1 rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-accent-1 hover:text-black transition-all disabled:opacity-30 disabled:pointer-events-none whitespace-nowrap"
+                                        >
+                                            {isSendingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : (confirmationResult ? 'Sent' : 'Verify')}
+                                        </button>
+                                    )}
+                                </div>
+                                <div id="recaptcha-container"></div>
+                                
+                                <AnimatePresence>
+                                    {confirmationResult && !isPhoneVerified && (
+                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="pt-2">
+                                            <div className="relative flex gap-2">
+                                                <div className="relative flex-1">
+                                                    <input 
+                                                        type="text" 
+                                                        value={otp} 
+                                                        onChange={(e) => setOtp(e.target.value)} 
+                                                        placeholder="Enter OTP Code" 
+                                                        className="w-full bg-black/40 border border-border-color rounded-2xl px-5 py-4 pl-12 text-primary-text placeholder:text-secondary-text/30 focus:border-accent-1 outline-none transition-all" 
+                                                    />
+                                                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-text" />
+                                                </div>
+                                                <button 
+                                                    onClick={verifyOtp} 
+                                                    disabled={isVerifyingOtp || !otp}
+                                                    className="px-4 bg-green-500/10 border border-green-500/50 text-green-400 rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-green-500 hover:text-black transition-all disabled:opacity-30 disabled:pointer-events-none"
+                                                >
+                                                    {isVerifyingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm'}
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                             <InputGroup label="Birth Date" icon={Calendar} value={dob} onChange={setDob} placeholder="YYYY-MM-DD" type="date" />
                             
                             <div className="space-y-2">
