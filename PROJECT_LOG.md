@@ -209,6 +209,7 @@
     *   **Email Verification:** Enforced strict `emailVerified` checks on login. New users now receive a verification link and are immediately signed out to ensure compliance.
     *   **Phone OTP Integration:** Implemented mandatory **Phone Number Verification** using Firebase Auth (Invisible Recaptcha) during the signup flow, including a 30s resend cooldown timer.
     *   **Signup UI Refinement:** Fixed "Birth Date" input asymmetry by enforcing consistent height (h-14) and standardizing appearance across all input types.
+    *   **Registration Stability:** Fixed a critical race condition where phone verification triggered an immediate redirect to `/home`, interrupting the account creation flow.
     *   **Sybil Resistance:** Blocked account creation until a valid phone number is confirmed via OTP, adding a physical cost to creating fake accounts.
     *   **Outreach Manager:** Deployed a standalone 'Abhed Outreach Manager' tool (in `outreach abhed`) for managing high-volume influencer campaigns.
 
@@ -222,4 +223,4 @@
 *   ✅ **Notifications:** 100% synchronized social triggers.
 *   ✅ **Outreach:** Dedicated toolset active for "Blacklist" tier recruitment.
 
-**Conclusion:** ABHED has hardened its perimeter. With robust verification now in place, the platform is ready for controlled public growth while maintaining its "exclusive club" integrity.
+**Conclusion:** ABHED has hardened its perimeter. With robust verification now in place and the signup flow stabilized, the platform is ready for controlled public growth while maintaining its "exclusive club" integrity.

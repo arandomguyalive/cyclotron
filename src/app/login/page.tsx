@@ -133,11 +133,14 @@ function LoginForm() {
   };
 
   useEffect(() => {
+    // Prevent redirect during registration flow (specifically phone auth step)
+    if (mode === 'register') return;
+
     if (firebaseUser && !loading) {
       const redirectPath = searchParams.get('redirect');
       router.push(redirectPath || "/home");
     }
-  }, [firebaseUser, loading, router, searchParams]);
+  }, [firebaseUser, loading, router, searchParams, mode]);
 
   const validateAge = (dateString: string) => {
       const today = new Date();
