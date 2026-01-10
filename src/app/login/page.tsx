@@ -378,8 +378,14 @@ function InputGroup({ label, icon: Icon, value, onChange, placeholder, type = "t
         <div className="space-y-2">
             <label className="text-[9px] font-bold uppercase tracking-widest text-secondary-text ml-4">{label}</label>
             <div className="relative">
-                <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full bg-black/40 border border-border-color rounded-2xl px-5 py-4 pl-12 text-primary-text placeholder:text-secondary-text/30 focus:border-accent-1 outline-none transition-all" />
-                <Icon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-text" />
+                <input 
+                    type={type} 
+                    value={value} 
+                    onChange={(e) => onChange(e.target.value)} 
+                    placeholder={placeholder} 
+                    className="w-full h-14 bg-black/40 border border-border-color rounded-2xl px-5 pl-12 text-primary-text placeholder:text-secondary-text/30 focus:border-accent-1 outline-none transition-all appearance-none [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-50 hover:[&::-webkit-calendar-picker-indicator]:opacity-100" 
+                />
+                <Icon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-text pointer-events-none" />
             </div>
         </div>
     );
