@@ -6,6 +6,7 @@ import {
   onAuthStateChanged, 
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendEmailVerification,
   signOut as firebaseSignOut, 
   User 
 } from "firebase/auth";
@@ -251,7 +252,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           }
       }
 
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCred = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Enforce Email Verification
+      if (!userCred.user.emailVerified) {
+          const isOwner = ['abhi18@abhed.network', 'kinjal18@abhed.network', 'admin@abhed.network'].includes(email.toLowerCase());
+          if (!isOwner) {
+             await firebaseSignOut(auth);
+             throw new Error("Access Denied: Please verify your email address.");
+          }
+      }
     } catch (error) {
       setLoading(false);
       throw error;
@@ -270,6 +280,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       try {
           const cred = await createUserWithEmailAndPassword(auth, details.email, details.password);
+          
+          // Send Verification Email
+          await sendEmailVerification(cred.user);
+
           const newUser: UserProfile = {
               fullName: details.fullName,
               displayName: details.handle,
@@ -285,7 +299,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               stats: { following: 0, followers: 0, likes: 0, credits: 500, reputation: 10 }
           };
           await setDoc(doc(db, "users", cred.user.uid), newUser);
-          setUser({ ...newUser, uid: cred.user.uid });
+          
+          // Sign out immediately to enforce verification
+          await firebaseSignOut(auth);
+          // Do not setUser here
+          
       } catch (error) {
           setLoading(false);
           throw error;

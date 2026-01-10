@@ -24,6 +24,7 @@ function LoginForm() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [verificationSent, setVerificationSent] = useState(false);
   
   // Registration State
   const [email, setEmail] = useState("");
@@ -91,6 +92,9 @@ function LoginForm() {
               phoneNumber: phone,
               faction: selectedCircle
           });
+          setVerificationSent(true);
+          setIsAuthenticating(false);
+          return;
       }
     } catch (err: any) {
       console.error(err);
@@ -136,6 +140,22 @@ function LoginForm() {
 
         <div className="bg-secondary-bg/40 backdrop-blur-2xl border border-border-color rounded-[2.5rem] p-8 shadow-2xl">
             
+            {verificationSent ? (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8">
+                    <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.2)]">
+                        <Mail className="w-10 h-10 text-green-400" />
+                    </div>
+                    <h3 className="text-2xl font-black text-primary-text mb-2 uppercase italic tracking-wider">Verification Sent</h3>
+                    <p className="text-secondary-text text-xs mb-8 leading-relaxed font-mono">
+                        Secure link dispatched to <span className="text-accent-1 font-bold">{email}</span>.
+                        <br/>Initialize verification sequence to proceed.
+                    </p>
+                    <button onClick={() => { setVerificationSent(false); setMode('login'); }} className="bg-accent-1 hover:bg-white text-black font-black py-4 px-8 rounded-xl uppercase tracking-widest text-xs transition-all shadow-lg shadow-accent-1/20">
+                        Return to Sign In
+                    </button>
+                </motion.div>
+            ) : (
+                <>
             <div className="flex p-1 bg-black/40 rounded-2xl mb-8 border border-white/5">
                 <button onClick={() => setMode('login')} className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${mode === 'login' ? 'bg-accent-1 text-black shadow-lg' : 'text-secondary-text'}`}>Sign In</button>
                 <button onClick={() => setMode('register')} className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${mode === 'register' ? 'bg-accent-1 text-black shadow-lg' : 'text-secondary-text'}`}>Join Now</button>
@@ -185,6 +205,8 @@ function LoginForm() {
                     <span className="uppercase text-xs tracking-widest font-bold">{isAuthenticating ? 'Connecting...' : (mode === 'login' ? 'Sign In' : 'Create Account')}</span>
                 </button>
             </div>
+            </>
+            )}
         </div>
 
         {error && (
