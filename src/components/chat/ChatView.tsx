@@ -13,8 +13,13 @@ import { useUser } from "@/lib/UserContext";
 import { useToast } from "@/lib/ToastContext";
 import { useScreenshot } from "@/lib/useScreenshot";
 import { UserAvatar } from "../ui/UserAvatar";
-import { TacticalMapModal } from "./TacticalMapModal";
 import { GeoGate } from "./GeoGate";
+import dynamic from 'next/dynamic';
+
+const TacticalMapModal = dynamic(
+  () => import('./TacticalMapModal').then((mod) => mod.TacticalMapModal),
+  { ssr: false }
+);
 
 interface ChatMessage {
   id: string;
