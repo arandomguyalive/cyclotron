@@ -5,7 +5,7 @@ import { motion, useMotionValue, useTransform, useSpring, PanInfo, AnimatePresen
 import { VortexItem, Post } from "@/components/feed/VortexItem";
 import { ChevronUp, Box, Loader2, WifiOff, Ghost } from "lucide-react";
 import { useSonic, ImpactStyle } from "@/lib/SonicContext";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
 
@@ -34,9 +34,9 @@ export default function VortexPage() {
       mass: 1.2
   });
 
-  // Subscribe to real Posts
+  // Subscribe to real Posts (Limited to 20 for performance)
   useEffect(() => {
-    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(20));
     const unsubscribe = onSnapshot(q, (snapshot) => {
         const newItems: Post[] = snapshot.docs.map(doc => ({
             id: doc.id,
@@ -163,6 +163,7 @@ export default function VortexPage() {
                 post={item}
                 parentZ={smoothZ} 
                 activeIndex={activeIndex}
+                isActive={activeIndex === items.indexOf(item)}
                 onCollect={() => setCycles(prev => prev + 100)} 
                 watermarkText={watermarkText}
                 isFree={isFree}
@@ -174,7 +175,7 @@ export default function VortexPage() {
   );
 }
 
-function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkText, isFree, tier }: { index: number, post: Post, parentZ: MotionValue<number>, activeIndex: number, onCollect: () => void, watermarkText?: string, isFree?: boolean, tier: string }) {
+function TunnelItem({ index, post, parentZ, activeIndex, isActive, onCollect, watermarkText, isFree, tier }: { index: number, post: Post, parentZ: MotionValue<number>, activeIndex: number, isActive: boolean, onCollect: () => void, watermarkText?: string, isFree?: boolean, tier: string }) {
     const baseZ = index * GAP;
     const z = useTransform(parentZ, (currentZ: number) => baseZ + currentZ);
     
@@ -207,7 +208,7 @@ function TunnelItem({ index, post, parentZ, activeIndex, onCollect, watermarkTex
             }}
             className="origin-center p-4 pointer-events-auto"
         >
-             <VortexItem post={post} index={index} watermarkText={watermarkText} isFree={isFree} tier={tier} />
+             <VortexItem post={post} index={index} watermarkText={watermarkText} isFree={isFree} tier={tier} isActive={isActive} />
 
              {hasArtifact && activeIndex === index && (
                  <div style={{ transform: `translate3d(${artifactX}px, ${artifactY}px, 50px)` }} className="absolute z-[70] pointer-events-auto">

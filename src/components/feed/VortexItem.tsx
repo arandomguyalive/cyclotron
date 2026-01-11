@@ -50,9 +50,10 @@ interface VortexProps {
   watermarkText?: string;
   isFree?: boolean; 
   tier?: string;
+  isActive?: boolean;
 }
 
-export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' }: VortexProps) {
+export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby', isActive = false }: VortexProps) {
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(post.likes || 0);
   const [shares, setShares] = useState(post.shares || 0);
@@ -62,15 +63,12 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' 
   const { toast } = useToast();
 
   useEffect(() => {
-      if (!firebaseUser || !post.id) return;
+      // Optimization: Update local state from prop if it changes
+      setLikes(post.likes || 0);
+      setShares(post.shares || 0);
 
-      const unsubscribePost = onSnapshot(doc(db, "posts", post.id), (snap) => {
-          if (snap.exists()) {
-              const data = snap.data();
-              setLikes(data.likes || 0);
-              setShares(data.shares || 0);
-          }
-      });
+      // Listener Gating: Only subscribe to expensive sub-collections if Active
+      if (!firebaseUser || !post.id || !isActive) return;
 
       const unsubscribeLike = onSnapshot(doc(db, "users", firebaseUser.uid, "likes", post.id), (snap) => {
           setLiked(snap.exists());
@@ -81,11 +79,10 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' 
       });
 
       return () => {
-          unsubscribePost();
           unsubscribeLike();
           unsubscribeComments();
       };
-  }, [post.id, firebaseUser]);
+  }, [post.id, post.likes, post.shares, firebaseUser, isActive]);
 
   useScreenshot(async () => {
       if (!firebaseUser || post.userId === firebaseUser.uid) return;
@@ -206,7 +203,7 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby' 
   return (
     <div className={cn("relative h-full w-full overflow-hidden bg-cyber-black rounded-xl border border-white/10 shadow-lg translate-z-0 backface-hidden")}>
       <div className={cn("absolute inset-0 bg-black")}>
-          {p.mediaType === 'video' ? <SecurePlayer src={p.mediaUrl} /> : <img src={p.mediaUrl} alt="Post Content" className="w-full h-full object-cover opacity-70" />}
+          {p.mediaType === 'video' ? <SecurePlayer src={p.mediaUrl} isActive={isActive} /> : <img src={p.mediaUrl} alt="Post Content" className="w-full h-full object-cover opacity-70" />}
           {showGlitched && (
               <div className="absolute inset-0 bg-black/40 backdrop-grayscale-[0.5] flex items-center justify-center">
                   <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-screen" />

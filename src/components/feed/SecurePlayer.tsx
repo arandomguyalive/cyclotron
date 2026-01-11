@@ -5,7 +5,7 @@ import { useUser } from "@/lib/UserContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { EyeOff, Lock } from "lucide-react";
 
-export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, securityLevel?: 'none' | 'blacklist' | 'tier3' }) {
+export function SecurePlayer({ src, securityLevel = 'none', isActive = false }: { src: string, securityLevel?: 'none' | 'blacklist' | 'tier3', isActive?: boolean }) {
         const { user, firebaseUser } = useUser();
         const videoRef = useRef<HTMLVideoElement>(null);
         const [isLocked, setIsLocked] = useState(true); // Start locked for hold-to-view
@@ -43,6 +43,16 @@ export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, sec
                 videoRef.current?.pause();
             }
         };
+
+    // Optimization: Pause when not active
+    useEffect(() => {
+        if (!videoRef.current) return;
+        if (isActive && !isLocked) {
+            videoRef.current.play().catch(() => {}); // Auto-resume if active and unlocked
+        } else {
+            videoRef.current.pause();
+        }
+    }, [isActive, isLocked]);
 
     useEffect(() => {
         if (!activeBiometric || isHoldToViewActive) return;
@@ -89,7 +99,7 @@ export function SecurePlayer({ src, securityLevel = 'none' }: { src: string, sec
                 ref={videoRef}
                 src={src} 
                 className={`w-full h-full object-cover transition-opacity duration-500 ${isLocked ? 'opacity-20 blur-md' : 'opacity-80'}`}
-                autoPlay={!isHoldToViewActive} // Only autoPlay if hold-to-view is not active
+                autoPlay={isActive && !isHoldToViewActive} // Only autoPlay if Active AND hold-to-view is not active
                 muted 
                 loop 
                 playsInline
