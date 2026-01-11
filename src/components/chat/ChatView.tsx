@@ -209,24 +209,28 @@ export function ChatView({ chatId }: ChatViewProps) {
   }, [messages]);
 
   const handleSend = async () => {
-    if ((!newMessage.trim() && !geoData) || !firebaseUser || !chatId) return;
+    if ((!input.trim() && !geoData) || !firebaseUser || !chatId) return;
 
     playClick(200, 0.1, 'sine');
     
     // Reset GeoData after sending
     const currentGeo = geoData; 
     setGeoData(null); 
-    setNewMessage("");
+    const textToSend = input; 
+    setInput("");
 
-    const encryptedText = CryptoJS.AES.encrypt(newMessage || "Location Drop", SECRET_KEY).toString();
+    const encryptedText = AES.encrypt(textToSend || "Location Drop", SECRET_KEY).toString();
 
     try {
       await addDoc(collection(db, "chats", chatId, "messages"), {
         senderId: firebaseUser.uid,
-        text: encryptedText,
+        senderHandle: currentUserProfile?.handle || "Agent",
+        senderAvatar: currentUserProfile?.avatarSeed || "User",
+        senderAvatarUrl: currentUserProfile?.avatarUrl || "",
+        encrypted: encryptedText,
         timestamp: serverTimestamp(),
-        isBurner: isBurner,
-        viewed: false,
+        isBurner: isBurnerMode,
+        type: 'text',
         ...(currentGeo && { geoLock: currentGeo })
       });
       
@@ -241,7 +245,7 @@ export function ChatView({ chatId }: ChatViewProps) {
       setGeoData({ lat, lng, radius });
       setShowMap(false);
       // Auto-fill a message if empty
-      if (!newMessage) setNewMessage("📍 SECURE LOCATION DROP");
+      if (!input) setInput("📍 SECURE LOCATION DROP");
   };
 
   if (userLoading || chatLoading) {
