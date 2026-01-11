@@ -23,9 +23,22 @@ interface TacticalMapModalProps {
 
 export function TacticalMapModal({ isOpen, onClose, onConfirm }: TacticalMapModalProps) {
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
-  const [radius, setRadius] = useState(50); // Default 50m
+  const [radius, setRadius] = useState(100); // Default increased to 100m
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [acquiring, setAcquiring] = useState(true);
+
+  // Helper to calculate distance between Pin and User (for Sender awareness)
+  const getDistanceFromUser = () => {
+      if (!userLocation || !position) return 0;
+      const R = 6371e3; 
+      const φ1 = userLocation.lat * Math.PI/180;
+      const φ2 = position.lat * Math.PI/180;
+      const Δφ = (position.lat-userLocation.lat) * Math.PI/180;
+      const Δλ = (position.lng-userLocation.lng) * Math.PI/180;
+      const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c; // in meters
+  };
 
   // Get current user location on mount
   useEffect(() => {
@@ -42,7 +55,6 @@ export function TacticalMapModal({ isOpen, onClose, onConfirm }: TacticalMapModa
           (err) => {
             console.error(err);
             setAcquiring(false);
-            // Optional: Handle error state (e.g. show permission denied message)
           },
           { enableHighAccuracy: true }
         );
@@ -84,13 +96,13 @@ export function TacticalMapModal({ isOpen, onClose, onConfirm }: TacticalMapModa
                 <MapContainer 
                   center={userLocation} 
                   zoom={18} 
-                  style={{ height: '100%', width: '100%', background: '#000' }}
+                  style={{ height: '100%', width: '100%', background: '#222' }}
                   zoomControl={false}
                 >
-                  {/* Dark Matter Tile Layer */}
+                  {/* Standard OSM Tile Layer (Easier to read streets) */}
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
                   
                   <MapEvents onLocationSelect={(lat, lng) => setPosition({ lat, lng })} />
@@ -107,7 +119,14 @@ export function TacticalMapModal({ isOpen, onClose, onConfirm }: TacticalMapModa
                   )}
                 </MapContainer>
                 
-                {/* Manual Refinement Hint */}
+                {/* Distance Warning Overlay */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[400] bg-black/80 backdrop-blur border border-white/20 px-3 py-1 rounded shadow-xl pointer-events-none text-center">
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wider">Distance from Device</p>
+                    <p className={`font-mono font-bold ${getDistanceFromUser() > 500 ? 'text-brand-orange animate-pulse' : 'text-brand-cyan'}`}>
+                        {Math.round(getDistanceFromUser())}m
+                    </p>
+                </div>
+
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] bg-brand-cyan/20 backdrop-blur-md border border-brand-cyan/50 px-3 py-1 rounded-full pointer-events-none">
                     <p className="text-[10px] font-mono text-brand-cyan uppercase tracking-tighter">Click Map to Refine Pin Position</p>
                 </div>
