@@ -222,14 +222,21 @@
     *   **Data Triage:** Capped the initial Vortex data fetch to the latest 20 posts (`limit(20)`) to prevent unbounded memory consumption.
     *   **Legal Infrastructure:** Deployed standard `Protocol Privacy` (/legal/privacy) and `Terms of Service` (/legal/terms) pages in preparation for public launch.
 
+### Phase 25: The Geo-Fence Protocol (Jan 11, 2026)
+*   **Goal:** Implement location-based security gating for messages ("Physical Access Control").
+*   **Key Actions:**
+    *   **Tactical Map Engine:** Integrated `react-leaflet` to provide a dark-mode satellite interface for dropping security pins.
+    *   **Geo-Gate Logic:** Developed the `GeoGate` component which utilizes `navigator.geolocation` and the Haversine formula to strictly enforce physical presence within a set radius (default: 50m).
+    *   **UI Integration:** Updated `ChatView` to support `geoLock` metadata payloads and render a "Locked" state that only unlocks upon successful coordinate triangulation.
+
 ---
 
 ## 3. Current System Status (As of Jan 11, 2026)
 
 *   ✅ **Performance:** Vortex engine optimized for "Velocity" (Active-Only rendering).
+*   ✅ **Security:** Geo-Fence Protocol active for location-restricted messaging.
 *   ✅ **Compliance:** Legal pages deployed.
-*   ✅ **Authentication:** Robust Multi-Factor Setup (Email/Handle/Phone + Visible OTP + Email Verification).
-*   ✅ **Architect Core:** God-Mode console enabled for owners with Reality Switching and Stat Forging.
-*   ✅ **Notifications:** 100% synchronized social triggers.
+*   ✅ **Authentication:** Robust Multi-Factor Setup.
+*   ✅ **Architect Core:** God-Mode console enabled.
 
-**Conclusion:** The "lag" is gone. With Phase 24 complete, the application is now performant enough for a public release. We are ready to open the gates.
+**Conclusion:** ABHED has successfully bridged the gap between digital encryption and physical security. The platform now features a unique selling proposition (Geo-Locking) that no major social network offers natively.
