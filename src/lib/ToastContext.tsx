@@ -48,8 +48,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={{ toast }}>
       {children}
       
-      {/* Toast Container */}
-      <div className="fixed top-4 left-0 right-0 z-[100] flex flex-col items-center gap-2 pointer-events-none px-4">
+      {/* Toast Container - Moved to Bottom for Infinite UI */}
+      <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-0 right-0 z-[100] flex flex-col-reverse items-center gap-2 pointer-events-none px-4">
         <AnimatePresence>
           {toasts.map((t) => (
             <HoloToast key={t.id} toast={t} onDismiss={() => removeToast(t.id)} />
@@ -81,9 +81,9 @@ function HoloToast({ toast, onDismiss }: { toast: Toast, onDismiss: () => void }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -20, scale: 0.9 }}
+      initial={{ opacity: 0, y: 20, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.9 }}
+      exit={{ opacity: 0, y: 20, scale: 0.9 }}
       layout
       className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-md shadow-lg max-w-sm w-full ${colors[toast.type]}`}
     >
