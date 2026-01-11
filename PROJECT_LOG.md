@@ -228,6 +228,7 @@
     *   **Tactical Map Engine:** Integrated `react-leaflet` to provide a dark-mode satellite interface for dropping security pins.
     *   **Geo-Gate Logic:** Developed the `GeoGate` component which utilizes `navigator.geolocation` and the Haversine formula to strictly enforce physical presence within a set radius (default: 50m).
     *   **UI Integration:** Updated `ChatView` to support `geoLock` metadata payloads and render a "Locked" state that only unlocks upon successful coordinate triangulation.
+    *   **Secure Uplink:** Implemented fully functional file attachments (Images/Videos) with Firebase Storage encryption, allowing users to combine Geo-Locks with media payloads.
 
 ---
 

@@ -8,7 +8,8 @@ import AES from "crypto-js/aes";
 import encUtf8 from "crypto-js/enc-utf8";
 import { useSonic, ImpactStyle } from "@/lib/SonicContext";
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, updateDoc, Timestamp, writeBatch } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, storage } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
 import { useToast } from "@/lib/ToastContext";
 import { useScreenshot } from "@/lib/useScreenshot";
@@ -32,7 +33,9 @@ interface ChatMessage {
   timestamp: Timestamp | Date;
   isBurner?: boolean;
   isBurnt?: boolean; 
-  type?: 'text' | 'system';
+  type?: 'text' | 'system' | 'image' | 'video';
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video';
   geoLock?: {
     lat: number;
     lng: number;
@@ -61,7 +64,9 @@ export function ChatView({ chatId }: ChatViewProps) {
   const [isBurnerMode, setIsBurnerMode] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [geoData, setGeoData] = useState<{ lat: number; lng: number; radius: number } | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 📸 Screenshot Detection System
   useScreenshot(async () => {
@@ -213,6 +218,52 @@ export function ChatView({ chatId }: ChatViewProps) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+        handleUpload(e.target.files[0]);
+    }
+  };
+
+  const handleUpload = async (file: File) => {
+    if (!firebaseUser || !chatId) return;
+    
+    setIsUploading(true);
+    playClick(150, 0.1, 'sine');
+
+    try {
+        const fileRef = ref(storage, `chats/${chatId}/${Date.now()}_${file.name}`);
+        await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(fileRef);
+        
+        // Determine type
+        const type = file.type.startsWith('video') ? 'video' : 'image';
+        
+        // Auto-send the media message
+        const currentGeo = geoData;
+        setGeoData(null); // Consumed
+        
+        await addDoc(collection(db, "chats", chatId, "messages"), {
+            senderId: firebaseUser.uid,
+            senderHandle: currentUserProfile?.handle || "Agent",
+            senderAvatar: currentUserProfile?.avatarSeed || "User",
+            senderAvatarUrl: currentUserProfile?.avatarUrl || "",
+            encrypted: "", // No text
+            mediaUrl: url,
+            mediaType: type,
+            timestamp: serverTimestamp(),
+            isBurner: isBurnerMode,
+            type: type, // 'image' or 'video'
+            ...(currentGeo && { geoLock: currentGeo })
+        });
+
+    } catch (e) {
+        console.error("Upload failed", e);
+        toast("Transmission Interrupted", "error");
+    } finally {
+        setIsUploading(false);
+    }
+  };
+
   const handleSend = async () => {
     if ((!input.trim() && !geoData) || !firebaseUser || !chatId) return;
 
@@ -282,10 +333,29 @@ export function ChatView({ chatId }: ChatViewProps) {
 
       <div className="p-4 bg-primary-bg border-t border-border-color sticky bottom-0 z-50 pb-safe-area-inset-bottom">
         <div className="flex items-center gap-2 relative">
+          <input 
+             type="file" 
+             ref={fileInputRef} 
+             onChange={handleFileSelect} 
+             className="hidden" 
+             accept="image/*,video/*"
+          />
           <button onClick={() => setShowMap(true)} className={`p-2 rounded-full transition-all ${geoData ? 'bg-brand-cyan text-black' : 'text-accent-1 hover:bg-accent-1/10'}`}>
              <MapPin className="w-5 h-5" />
           </button>
-          <button onClick={() => toast((isFree && !currentUserProfile?.isOwner) ? "Restricted" : "Mock Open", (isFree && !currentUserProfile?.isOwner) ? "warning" : "success")} className={`p-2 rounded-full ${(isFree && !currentUserProfile?.isOwner) ? 'opacity-50' : 'text-accent-1'}`}><Paperclip className="w-5 h-5" /></button>
+          <button 
+             onClick={() => {
+                 if (isFree && !currentUserProfile?.isOwner) {
+                     toast("Restricted: Upgrade to Attach Files", "warning");
+                 } else {
+                     fileInputRef.current?.click();
+                 }
+             }} 
+             disabled={isUploading}
+             className={`p-2 rounded-full transition-all ${isUploading ? 'animate-pulse text-brand-orange' : 'text-accent-1 hover:bg-accent-1/10'} ${(isFree && !currentUserProfile?.isOwner) ? 'opacity-50' : ''}`}
+          >
+             {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
+          </button>
           <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSend()} placeholder={geoData ? "Geo-Locked Message..." : "Type encrypted message..."} className="flex-1 bg-secondary-bg border border-border-color rounded-full px-4 py-3 text-primary-text focus:border-accent-1 outline-none" />
           <button onClick={handleSend} className="w-10 h-10 rounded-full bg-accent-1 flex items-center justify-center text-primary-bg"><Send className="w-5 h-5" /></button>
         </div>
@@ -319,15 +389,33 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, senderAvat
       <>
         {message.geoLock ? (
             <GeoGate targetLat={message.geoLock.lat} targetLng={message.geoLock.lng} radius={message.geoLock.radius}>
-                <motion.div initial={{ opacity: 0, filter: "blur(5px)" }} animate={{ opacity: 1, filter: "blur(0px)" }} className="text-sm relative z-10 flex items-start gap-2">
-                    {message.isBurner && <Flame className="w-3 h-3 text-brand-orange animate-pulse mt-1 shrink-0" />}
-                    <p>{displayDecryptedText || message.text}</p>
+                <motion.div initial={{ opacity: 0, filter: "blur(5px)" }} animate={{ opacity: 1, filter: "blur(0px)" }} className="text-sm relative z-10 flex flex-col gap-2">
+                    {message.mediaUrl && (
+                        message.mediaType === 'video' ? 
+                        <video src={message.mediaUrl} controls className="max-w-[200px] rounded-lg border border-white/20" /> :
+                        <img src={message.mediaUrl} alt="Secure Attachment" className="max-w-[200px] rounded-lg border border-white/20" />
+                    )}
+                    {(displayDecryptedText || message.text) && (
+                        <div className="flex items-start gap-2">
+                             {message.isBurner && <Flame className="w-3 h-3 text-brand-orange animate-pulse mt-1 shrink-0" />}
+                             <p>{displayDecryptedText || message.text}</p>
+                        </div>
+                    )}
                 </motion.div>
             </GeoGate>
         ) : (
-            <motion.div initial={{ opacity: 0, filter: "blur(5px)" }} animate={{ opacity: 1, filter: "blur(0px)" }} className="text-sm relative z-10 flex items-start gap-2">
-                {message.isBurner && <Flame className="w-3 h-3 text-brand-orange animate-pulse mt-1 shrink-0" />}
-                <p>{displayDecryptedText || message.text}</p>
+            <motion.div initial={{ opacity: 0, filter: "blur(5px)" }} animate={{ opacity: 1, filter: "blur(0px)" }} className="text-sm relative z-10 flex flex-col gap-2">
+                {message.mediaUrl && (
+                    message.mediaType === 'video' ? 
+                    <video src={message.mediaUrl} controls className="max-w-[200px] rounded-lg border border-white/20" /> :
+                    <img src={message.mediaUrl} alt="Secure Attachment" className="max-w-[200px] rounded-lg border border-white/20" />
+                )}
+                {(displayDecryptedText || message.text) && (
+                    <div className="flex items-start gap-2">
+                            {message.isBurner && <Flame className="w-3 h-3 text-brand-orange animate-pulse mt-1 shrink-0" />}
+                            <p>{displayDecryptedText || message.text}</p>
+                    </div>
+                )}
             </motion.div>
         )}
       </>
