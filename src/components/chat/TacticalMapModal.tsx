@@ -25,19 +25,30 @@ export function TacticalMapModal({ isOpen, onClose, onConfirm }: TacticalMapModa
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [radius, setRadius] = useState(50); // Default 50m
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [acquiring, setAcquiring] = useState(true);
 
   // Get current user location on mount
   useEffect(() => {
-    if (isOpen && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          setUserLocation(loc);
-          setPosition(loc); // Default pin to current location
-        },
-        (err) => console.error(err),
-        { enableHighAccuracy: true }
-      );
+    if (isOpen) {
+      setAcquiring(true);
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            setUserLocation(loc);
+            setPosition(loc); // Default pin to current location
+            setAcquiring(false);
+          },
+          (err) => {
+            console.error(err);
+            setAcquiring(false);
+            // Optional: Handle error state (e.g. show permission denied message)
+          },
+          { enableHighAccuracy: true }
+        );
+      } else {
+          setAcquiring(false);
+      }
     }
   }, [isOpen]);
 
@@ -62,11 +73,16 @@ export function TacticalMapModal({ isOpen, onClose, onConfirm }: TacticalMapModa
           </div>
 
           {/* Map Area */}
-          <div className="relative flex-1 bg-zinc-900 z-0">
-            {typeof window !== 'undefined' && (
+          <div className="relative flex-1 bg-zinc-900 z-0 flex items-center justify-center">
+            {acquiring ? (
+                <div className="flex flex-col items-center gap-4 animate-pulse">
+                    <Crosshair className="w-12 h-12 text-brand-cyan animate-spin" />
+                    <p className="font-mono text-xs text-brand-cyan tracking-widest">ACQUIRING SATELLITE LOCK...</p>
+                </div>
+            ) : userLocation && typeof window !== 'undefined' ? (
               <MapContainer 
-                center={userLocation || [20.5937, 78.9629]} // Default to India center if location fails
-                zoom={15} 
+                center={userLocation} 
+                zoom={18} // Zoomed in closer for accuracy
                 style={{ height: '100%', width: '100%', background: '#000' }}
                 zoomControl={false}
               >
@@ -89,6 +105,11 @@ export function TacticalMapModal({ isOpen, onClose, onConfirm }: TacticalMapModa
                   </>
                 )}
               </MapContainer>
+            ) : (
+                <div className="flex flex-col items-center gap-2 text-brand-orange">
+                    <AlertTriangle className="w-8 h-8" />
+                    <p className="font-mono text-xs tracking-widest">GPS SIGNAL LOST / DENIED</p>
+                </div>
             )}
 
             {/* Overlay Info */}
