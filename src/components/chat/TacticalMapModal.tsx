@@ -142,11 +142,6 @@ export function TacticalMapModal({ isOpen, onClose, onConfirm }: TacticalMapModa
                 </div>
             )}
 
-            {/* Overlay Info */}
-            <div className="absolute top-4 left-4 z-[400] bg-black/70 backdrop-blur border border-white/10 p-2 rounded text-xs font-mono text-brand-cyan">
-              <p>LAT: {position?.lat.toFixed(6) || '---'}</p>
-              <p>LNG: {position?.lng.toFixed(6) || '---'}</p>
-            </div>
           </div>
 
           {/* Controls */}
