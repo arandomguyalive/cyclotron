@@ -99,10 +99,11 @@ export function TacticalMapModal({ isOpen, onClose, onConfirm }: TacticalMapModa
                   style={{ height: '100%', width: '100%', background: '#000' }}
                   zoomControl={false}
                 >
-                  {/* High-Fidelity Cyber-Dark Tiles (Stadia Alidade Smooth Dark) */}
+                  {/* Standard OSM with CSS Filter for "Cyber Dark" Mode */}
                   <TileLayer
-                    attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-                    url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    className="map-tiles-dark"
                   />
                   
                   <MapEvents onLocationSelect={(lat, lng) => setPosition({ lat, lng })} />
