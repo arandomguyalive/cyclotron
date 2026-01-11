@@ -23,7 +23,7 @@ interface TacticalMapModalProps {
 
 export function TacticalMapModal({ isOpen, onClose, onConfirm }: TacticalMapModalProps) {
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
-  const [radius, setRadius] = useState(100); // Default increased to 100m
+  const [radius, setRadius] = useState(50); // Reverted to 50m precision
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [acquiring, setAcquiring] = useState(true);
 
@@ -96,13 +96,13 @@ export function TacticalMapModal({ isOpen, onClose, onConfirm }: TacticalMapModa
                 <MapContainer 
                   center={userLocation} 
                   zoom={18} 
-                  style={{ height: '100%', width: '100%', background: '#222' }}
+                  style={{ height: '100%', width: '100%', background: '#000' }}
                   zoomControl={false}
                 >
-                  {/* Standard OSM Tile Layer (Easier to read streets) */}
+                  {/* High-Fidelity Cyber-Dark Tiles (Stadia Alidade Smooth Dark) */}
                   <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+                    url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
                   />
                   
                   <MapEvents onLocationSelect={(lat, lng) => setPosition({ lat, lng })} />
@@ -119,16 +119,19 @@ export function TacticalMapModal({ isOpen, onClose, onConfirm }: TacticalMapModa
                   )}
                 </MapContainer>
                 
-                {/* Distance Warning Overlay */}
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[400] bg-black/80 backdrop-blur border border-white/20 px-3 py-1 rounded shadow-xl pointer-events-none text-center">
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wider">Distance from Device</p>
-                    <p className={`font-mono font-bold ${getDistanceFromUser() > 500 ? 'text-brand-orange animate-pulse' : 'text-brand-cyan'}`}>
-                        {Math.round(getDistanceFromUser())}m
+                {/* Tactical Distance HUD */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[400] bg-black/80 backdrop-blur-md border border-brand-cyan/30 px-4 py-2 rounded shadow-[0_0_15px_rgba(0,212,229,0.1)] pointer-events-none text-center min-w-[120px]">
+                    <div className="flex justify-between items-center text-[8px] text-gray-500 uppercase tracking-widest mb-1 border-b border-white/10 pb-1">
+                        <span>REL. DISTANCE</span>
+                        <span className="animate-pulse text-brand-cyan">●</span>
+                    </div>
+                    <p className={`font-mono text-lg font-bold tracking-tighter ${getDistanceFromUser() > 500 ? 'text-brand-orange animate-pulse' : 'text-brand-cyan'}`}>
+                        {Math.round(getDistanceFromUser())} <span className="text-xs font-normal opacity-50">M</span>
                     </p>
                 </div>
 
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] bg-brand-cyan/20 backdrop-blur-md border border-brand-cyan/50 px-3 py-1 rounded-full pointer-events-none">
-                    <p className="text-[10px] font-mono text-brand-cyan uppercase tracking-tighter">Click Map to Refine Pin Position</p>
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] bg-brand-cyan/10 backdrop-blur-md border border-brand-cyan/30 px-3 py-1 rounded-full pointer-events-none">
+                    <p className="text-[10px] font-mono text-brand-cyan uppercase tracking-tighter opacity-80">Tap Map to Re-align Satellite</p>
                 </div>
               </>
             ) : (
