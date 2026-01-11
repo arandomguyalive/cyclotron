@@ -41,6 +41,7 @@ const config: Config = {
       },
       padding: {
         'safe-area-bottom': 'env(safe-area-inset-bottom)',
+        'safe-area-top': 'env(safe-area-inset-top)',
       },
     },
   },

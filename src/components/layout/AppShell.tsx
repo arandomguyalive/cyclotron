@@ -58,7 +58,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <BackgroundMesh />
 
-      <main className={`min-h-[100dvh] pb-[calc(5rem+env(safe-area-inset-bottom))] relative transition-opacity duration-1000 ${showSplash ? 'opacity-0' : 'opacity-100'}`}>
+      <main className={`min-h-[100dvh] pt-[env(safe-area-inset-top)] pb-[calc(5rem+env(safe-area-inset-bottom))] relative transition-opacity duration-1000 ${showSplash ? 'opacity-0' : 'opacity-100'}`}>
         {children}
       </main>
       

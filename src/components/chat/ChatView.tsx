@@ -313,7 +313,7 @@ export function ChatView({ chatId }: ChatViewProps) {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-primary-bg">
-      <div className="px-4 py-3 border-b border-border-color flex items-center gap-3 bg-primary-bg/80 backdrop-blur-md sticky top-0 z-50 safe-area-top">
+      <div className="px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-3 border-b border-border-color flex items-center gap-3 bg-primary-bg/80 backdrop-blur-md sticky top-0 z-50">
         <button onClick={() => router.push("/chat")} className="p-2 -ml-2 text-secondary-text hover:text-primary-text transition-colors"><ChevronLeft className="w-6 h-6" /></button>
         <UserAvatar seed={chatPartner?.avatarSeed} url={chatPartner?.avatarUrl} size="md" showRing={!chatId.startsWith("faction-")} />
         <div className="flex-1">
@@ -368,7 +368,7 @@ export function ChatView({ chatId }: ChatViewProps) {
         )}
       </AnimatePresence>
 
-      <div className="p-4 bg-primary-bg border-t border-border-color sticky bottom-0 z-50 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <div className="px-4 pt-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] bg-primary-bg border-t border-border-color sticky bottom-0 z-50">
         <div className="flex items-center gap-2 relative">
           <input 
              type="file" 
