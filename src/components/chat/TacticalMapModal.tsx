@@ -80,31 +80,38 @@ export function TacticalMapModal({ isOpen, onClose, onConfirm }: TacticalMapModa
                     <p className="font-mono text-xs text-brand-cyan tracking-widest">ACQUIRING SATELLITE LOCK...</p>
                 </div>
             ) : userLocation && typeof window !== 'undefined' ? (
-              <MapContainer 
-                center={userLocation} 
-                zoom={18} // Zoomed in closer for accuracy
-                style={{ height: '100%', width: '100%', background: '#000' }}
-                zoomControl={false}
-              >
-                {/* Dark Matter Tile Layer */}
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                />
-                
-                <MapEvents onLocationSelect={(lat, lng) => setPosition({ lat, lng })} />
+              <>
+                <MapContainer 
+                  center={userLocation} 
+                  zoom={18} 
+                  style={{ height: '100%', width: '100%', background: '#000' }}
+                  zoomControl={false}
+                >
+                  {/* Dark Matter Tile Layer */}
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                  />
+                  
+                  <MapEvents onLocationSelect={(lat, lng) => setPosition({ lat, lng })} />
 
-                {position && (
-                  <>
-                    <Marker position={[position.lat, position.lng]} icon={icon} />
-                    <Circle 
-                      center={[position.lat, position.lng]} 
-                      radius={radius} 
-                      pathOptions={{ color: '#00D4E5', fillColor: '#00D4E5', fillOpacity: 0.2 }} 
-                    />
-                  </>
-                )}
-              </MapContainer>
+                  {position && (
+                    <>
+                      <Marker position={[position.lat, position.lng]} icon={icon} />
+                      <Circle 
+                        center={[position.lat, position.lng]} 
+                        radius={radius} 
+                        pathOptions={{ color: '#00D4E5', fillColor: '#00D4E5', fillOpacity: 0.2 }} 
+                      />
+                    </>
+                  )}
+                </MapContainer>
+                
+                {/* Manual Refinement Hint */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] bg-brand-cyan/20 backdrop-blur-md border border-brand-cyan/50 px-3 py-1 rounded-full pointer-events-none">
+                    <p className="text-[10px] font-mono text-brand-cyan uppercase tracking-tighter">Click Map to Refine Pin Position</p>
+                </div>
+              </>
             ) : (
                 <div className="flex flex-col items-center gap-2 text-brand-orange">
                     <AlertTriangle className="w-8 h-8" />
