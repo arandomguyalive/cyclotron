@@ -422,8 +422,8 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, senderAvat
   );
 
   useEffect(() => {
-      if (!isRevealed || isBurnt || message.isBurnt) return;
-      const burnDuration = message.isBurner ? 10000 : 30000; 
+      if (!isRevealed || isBurnt || message.isBurnt || !message.isBurner) return; // Only burn if explicitly marked as burner
+      const burnDuration = 10000; 
       const interval = 100;
       const step = (100 * interval) / burnDuration;
       const timer = setInterval(() => {
