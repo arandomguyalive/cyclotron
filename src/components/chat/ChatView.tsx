@@ -368,7 +368,7 @@ export function ChatView({ chatId }: ChatViewProps) {
         )}
       </AnimatePresence>
 
-      <div className="p-4 bg-primary-bg border-t border-border-color sticky bottom-0 z-50 pb-safe-area-inset-bottom">
+      <div className="p-4 bg-primary-bg border-t border-border-color sticky bottom-0 z-50 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <div className="flex items-center gap-2 relative">
           <input 
              type="file" 

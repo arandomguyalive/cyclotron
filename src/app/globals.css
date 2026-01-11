@@ -70,6 +70,14 @@
   }
 }
 
+html, body {
+  height: 100dvh;
+  width: 100vw;
+  overflow-x: hidden;
+  overscroll-behavior-y: none; /* Prevent rubber-banding on pull-to-refresh */
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Remove old body styles, now handled by Tailwind classes and theme variables */
 /* body {
   background: var(--background);
