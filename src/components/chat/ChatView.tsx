@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Lock, ChevronLeft, Loader2, AlertTriangle, Paperclip, Flame, MapPin } from "lucide-react";
+import { Send, Lock, ChevronLeft, Loader2, AlertTriangle, Paperclip, Flame, MapPin, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AES from "crypto-js/aes";
 import encUtf8 from "crypto-js/enc-utf8";
@@ -65,6 +65,7 @@ export function ChatView({ chatId }: ChatViewProps) {
   const [showMap, setShowMap] = useState(false);
   const [geoData, setGeoData] = useState<{ lat: number; lng: number; radius: number } | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState<{ url: string, type: 'image' | 'video' } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -326,10 +327,46 @@ export function ChatView({ chatId }: ChatViewProps) {
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} isMine={msg.senderId === firebaseUser.uid} senderHandle={msg.senderHandle} senderAvatar={msg.senderAvatar} senderAvatarUrl={msg.senderAvatarUrl} isGroup={chatId.startsWith("faction-")} />
+          <MessageBubble 
+            key={msg.id} 
+            message={msg} 
+            isMine={msg.senderId === firebaseUser.uid} 
+            senderHandle={msg.senderHandle} 
+            senderAvatar={msg.senderAvatar} 
+            senderAvatarUrl={msg.senderAvatarUrl} 
+            isGroup={chatId.startsWith("faction-")} 
+            onMediaClick={(url, type) => setSelectedMedia({ url, type })}
+          />
         ))}
         <div ref={bottomRef} />
       </div>
+
+      <AnimatePresence>
+        {selectedMedia && (
+            <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
+                onClick={() => setSelectedMedia(null)}
+            >
+                <button 
+                    onClick={() => setSelectedMedia(null)}
+                    className="absolute top-4 right-4 p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors z-[110]"
+                >
+                    <X className="w-6 h-6" />
+                </button>
+                
+                <div onClick={(e) => e.stopPropagation()} className="relative w-full max-w-4xl max-h-[90vh] flex items-center justify-center">
+                    {selectedMedia.type === 'video' ? (
+                        <video src={selectedMedia.url} controls autoPlay className="max-w-full max-h-[90vh] rounded-lg shadow-2xl" />
+                    ) : (
+                        <img src={selectedMedia.url} alt="Full View" className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
+                    )}
+                </div>
+            </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="p-4 bg-primary-bg border-t border-border-color sticky bottom-0 z-50 pb-safe-area-inset-bottom">
         <div className="flex items-center gap-2 relative">
@@ -370,7 +407,7 @@ export function ChatView({ chatId }: ChatViewProps) {
   );
 }
 
-function MessageBubble({ message, isMine, senderHandle, senderAvatar, senderAvatarUrl, isGroup = false }: { message: ChatMessage, isMine: boolean, senderHandle: string, senderAvatar: string, senderAvatarUrl?: string, isGroup?: boolean }) {
+function MessageBubble({ message, isMine, senderHandle, senderAvatar, senderAvatarUrl, isGroup = false, onMediaClick }: { message: ChatMessage, isMine: boolean, senderHandle: string, senderAvatar: string, senderAvatarUrl?: string, isGroup?: boolean, onMediaClick?: (url: string, type: 'image' | 'video') => void }) {
   const [isRevealed, setIsRevealed] = useState(isMine);
   const [isBurnt, setIsBurnt] = useState(message.isBurnt || false); 
   const [scratchProgress, setScratchProgress] = useState(0);
@@ -392,8 +429,8 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, senderAvat
                 <motion.div initial={{ opacity: 0, filter: "blur(5px)" }} animate={{ opacity: 1, filter: "blur(0px)" }} className="text-sm relative z-10 flex flex-col gap-2">
                     {message.mediaUrl && (
                         message.mediaType === 'video' ? 
-                        <video src={message.mediaUrl} controls className="max-w-[200px] rounded-lg border border-white/20" /> :
-                        <img src={message.mediaUrl} alt="Secure Attachment" className="max-w-[200px] rounded-lg border border-white/20" />
+                        <video src={message.mediaUrl} className="max-w-[200px] rounded-lg border border-white/20 cursor-pointer" onClick={() => onMediaClick?.(message.mediaUrl!, 'video')} /> :
+                        <img src={message.mediaUrl} alt="Secure Attachment" className="max-w-[200px] rounded-lg border border-white/20 cursor-pointer" onClick={() => onMediaClick?.(message.mediaUrl!, 'image')} />
                     )}
                     {(displayDecryptedText || message.text) && (
                         <div className="flex items-start gap-2">
@@ -407,8 +444,8 @@ function MessageBubble({ message, isMine, senderHandle, senderAvatar, senderAvat
             <motion.div initial={{ opacity: 0, filter: "blur(5px)" }} animate={{ opacity: 1, filter: "blur(0px)" }} className="text-sm relative z-10 flex flex-col gap-2">
                 {message.mediaUrl && (
                     message.mediaType === 'video' ? 
-                    <video src={message.mediaUrl} controls className="max-w-[200px] rounded-lg border border-white/20" /> :
-                    <img src={message.mediaUrl} alt="Secure Attachment" className="max-w-[200px] rounded-lg border border-white/20" />
+                    <video src={message.mediaUrl} className="max-w-[200px] rounded-lg border border-white/20 cursor-pointer" onClick={() => onMediaClick?.(message.mediaUrl!, 'video')} /> :
+                    <img src={message.mediaUrl} alt="Secure Attachment" className="max-w-[200px] rounded-lg border border-white/20 cursor-pointer" onClick={() => onMediaClick?.(message.mediaUrl!, 'image')} />
                 )}
                 {(displayDecryptedText || message.text) && (
                     <div className="flex items-start gap-2">
