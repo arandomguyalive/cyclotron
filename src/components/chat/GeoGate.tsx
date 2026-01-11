@@ -58,7 +58,9 @@ export function GeoGate({ targetLat, targetLng, radius, children }: GeoGateProps
         } else {
           // Failure
           setTimeout(() => {
-             setError(`TARGET MISMATCH: ${Math.round(dist)}m AWAY`);
+             // DEBUG: Show exact coordinates to diagnose the 11000km offset
+             const debugInfo = `T:[${targetLat.toFixed(2)},${targetLng.toFixed(2)}] vs Y:[${pos.coords.latitude.toFixed(2)},${pos.coords.longitude.toFixed(2)}]`;
+             setError(`TARGET MISMATCH: ${Math.round(dist/1000)}km AWAY\n${debugInfo}`);
              setChecking(false);
              toast("ACCESS DENIED: OUTSIDE PERIMETER", "error");
           }, 1500);
