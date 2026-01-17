@@ -7,6 +7,7 @@ import { storage, db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
 import { useLocation } from "@/lib/LocationContext";
+import { useToast } from "@/lib/ToastContext";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
   const { user, firebaseUser, updateUser } = useUser();
   const { playClick } = useSonic();
   const { location } = useLocation();
+  const { toast } = useToast();
   
   const [step, setStep] = useState<"select" | "create">(missionMode ? "create" : "select");
   const [mode, setMode] = useState<"post" | "reel" | "story" | "signal">("post");
@@ -87,7 +89,18 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
   };
 
   const handleSubmit = async () => {
-    if (!firebaseUser || (!file && mode !== 'signal') || !user) return;
+    if (!firebaseUser) {
+        toast("Authentication failed. Please login.", "error");
+        return;
+    }
+    if (!user) {
+        toast("Profile data missing. Please refresh.", "error");
+        return;
+    }
+    if (!file && mode !== 'signal') {
+        toast("No media selected.", "error");
+        return;
+    }
 
     setIsUploading(true);
     playClick(600, 0.1, 'sine');
@@ -153,8 +166,9 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
         handleClose();
       }, 1500);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Upload failed", error);
+      toast(`Upload failed: ${error.message}`, "error");
     } finally {
       setIsUploading(false);
     }

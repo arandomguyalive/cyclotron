@@ -1,6 +1,12 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    
+    // Helper function
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
     // Match avatar images: avatars/{userId}_{timestamp}
     match /avatars/{imageId} {
       allow read: if true;
@@ -19,14 +25,25 @@ service firebase.storage {
                    && request.resource.contentType.matches('image/.*');
     }
 
+    // General Uploads (Posts/Reels): uploads/{userId}/{fileName}
+    match /uploads/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isOwner(userId)
+                   && request.resource.size < 100 * 1024 * 1024; // Max 100MB (High Res Video)
+    }
+
+    // Stories: stories/{userId}/{fileName}
+    match /stories/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isOwner(userId)
+                   && request.resource.size < 100 * 1024 * 1024; // Max 100MB
+    }
+
     // Match chat attachments: chats/{chatId}/{fileName}
     match /chats/{chatId}/{fileName} {
-      // Allow read if authenticated (in a real app, we'd check if user is in the chat)
       allow read: if request.auth != null;
-      
-      // Allow write if authenticated
       allow write: if request.auth != null
-                   && request.resource.size < 50 * 1024 * 1024; // Max 50MB (Videos)
+                   && request.resource.size < 50 * 1024 * 1024; // Max 50MB
     }
     
     // Default deny for other paths
