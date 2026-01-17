@@ -229,14 +229,24 @@
     *   **Geo-Gate Logic:** Developed the `GeoGate` component which utilizes `navigator.geolocation` and the Haversine formula to strictly enforce physical presence within a set radius (default: 50m).
     *   **UI Integration:** Updated `ChatView` to support `geoLock` metadata payloads and render a "Locked" state that only unlocks upon successful coordinate triangulation.
     *   **Secure Uplink:** Implemented fully functional file attachments (Images/Videos) with Firebase Storage encryption, allowing users to combine Geo-Locks with media payloads.
+    *   **Media Lightbox:** Added a full-screen media viewer for chat attachments, enhancing the visual experience for encrypted images and videos.
+    *   **Adaptive UI Refinement:** Overhauled the mobile layout to respect Safe Area Insets (Notch/Home Indicator), moved Toasts to the bottom for better reachability, and implemented dynamic viewport height (`100dvh`) for a truly "native" app feel.
+
+### Phase 26: Sector Control & Geo-Targeting (Jan 17, 2026)
+*   **Goal:** Expand Geo-Fencing from peer-to-peer chats to the public broadcast layer (Vortex/Feed).
+*   **Key Actions:**
+    *   **Location Intelligence Layer:** Implemented `LocationContext` to perform granular IP-based geolocation (City, Region, Country) on startup.
+    *   **Targeting Computer:** Upgraded `CreatePostModal` with a "Sector Control" interface, allowing users to define "Allow" or "Deny" zones for their content.
+    *   **One-Click Lock:** Added "Lock to My Sector" functionality for instant local-only broadcasting.
+    *   **Signal Jamming:** Implemented the "Restricted Sector" overlay in `VortexItem`, physically blocking content rendering for users outside the permitted zones.
 
 ---
 
-## 3. Current System Status (As of Jan 11, 2026)
+## 3. Current System Status (As of Jan 17, 2026)
 
 *   ✅ **Performance:** Vortex engine optimized for "Velocity" (Active-Only rendering).
-*   ✅ **Security:** Geo-Fence Protocol active for location-restricted messaging.
-*   ✅ **Compliance:** Legal pages deployed.
+*   ✅ **Security:** Geo-Fence Protocol active for location-restricted messaging; Sector Control active for public feed gating.
+*   ✅ **UX:** "Infinite" layout with Safe Area adaptation and bottom-aligned Toasts.
 *   ✅ **Authentication:** Robust Multi-Factor Setup.
 *   ✅ **Architect Core:** God-Mode console enabled.
 

@@ -1,11 +1,12 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Upload, Send, Image as ImageIcon, Film, Mic, Loader2, CheckCircle2, Globe, MapPin, Terminal, Lock, Cpu } from "lucide-react";
+import { X, Upload, Send, Image as ImageIcon, Film, Mic, Loader2, CheckCircle2, Globe, MapPin, Terminal, Lock, Cpu, Radar, Trash2 } from "lucide-react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { storage, db } from "@/lib/firebase";
 import { useUser } from "@/lib/UserContext";
 import { useSonic } from "@/lib/SonicContext";
+import { useLocation } from "@/lib/LocationContext";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -13,9 +14,15 @@ interface CreatePostModalProps {
   missionMode?: boolean;
 }
 
+interface GeoRule {
+  type: 'country' | 'region' | 'city' | 'postal';
+  value: string;
+}
+
 export function CreatePostModal({ isOpen, onClose, missionMode = false }: CreatePostModalProps) {
   const { user, firebaseUser, updateUser } = useUser();
   const { playClick } = useSonic();
+  const { location } = useLocation();
   
   const [step, setStep] = useState<"select" | "create">(missionMode ? "create" : "select");
   const [mode, setMode] = useState<"post" | "reel" | "story" | "signal">("post");
@@ -23,11 +30,15 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
   const [caption, setCaption] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [region, setRegion] = useState("global");
   
   // Sovereign Controls
   const [selectedTier, setSelectedTier] = useState<"public" | "shield" | "professional" | "ultra_elite">("public");
-  const [blockedRegions, setBlockedRegions] = useState("");
+  
+  // Geo-Targeting
+  const [geoMode, setGeoMode] = useState<'global' | 'allow' | 'deny'>('global');
+  const [geoRules, setGeoRules] = useState<GeoRule[]>([]);
+  const [newRuleValue, setNewRuleValue] = useState("");
+  const [newRuleType, setNewRuleType] = useState<GeoRule['type']>('country');
 
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -51,6 +62,28 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
       setPreviewUrl(URL.createObjectURL(selectedFile));
       playClick(500, 0.05, 'square');
     }
+  };
+
+  const addGeoRule = () => {
+      if (!newRuleValue.trim()) return;
+      setGeoRules([...geoRules, { type: newRuleType, value: newRuleValue.trim().toUpperCase() }]);
+      setNewRuleValue("");
+      playClick(800, 0.05, 'sine');
+  };
+
+  const removeGeoRule = (index: number) => {
+      setGeoRules(geoRules.filter((_, i) => i !== index));
+      playClick(400, 0.05, 'sawtooth');
+  };
+
+  const lockToMySector = () => {
+      if (!location) return;
+      setGeoMode('allow');
+      setGeoRules([
+          { type: 'city', value: location.city.toUpperCase() },
+          { type: 'country', value: location.country.toUpperCase() }
+      ]);
+      playClick(1000, 0.1, 'triangle');
   };
 
   const handleSubmit = async () => {
@@ -93,9 +126,12 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
         userTier: user?.tier || "lobby",
         userIsBlacklist: user?.isBlacklist || false,
         userIsOwner: user?.isOwner || false,
-        region: region,
+        
+        // Geo-Targeting Data
+        geoMode: geoMode,
+        geoRules: geoRules,
+        
         allowedTiers: allowedTiers, 
-        blockedRegions: blockedRegions.split(',').map(r => r.trim().toUpperCase()).filter(r => r.length > 0),
         likes: 0,
         createdAt: serverTimestamp(),
         expiresAt: mode === "story" ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
@@ -129,7 +165,9 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
     setFile(null);
     setPreviewUrl(null);
     setIsSuccess(false);
-    setStep(missionMode ? "create" : "select"); // Reset to correct initial step
+    setGeoRules([]);
+    setGeoMode('global');
+    setStep(missionMode ? "create" : "select"); 
     onClose();
   };
 
@@ -211,10 +249,9 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                ) : (
                    <div className="flex flex-col gap-6 h-full">
                        
-                       {/* Sovereign Controls & Region (All Tiers for region) */}
+                       {/* Sovereign Controls & Targeting Computer */}
                        <div className="p-4 rounded-xl bg-black/20 border border-white/10 space-y-4">
                            {user?.tier !== 'lobby' && (
-                               <>
                                <div className="flex items-center justify-between">
                                    <span className="text-xs font-bold text-secondary-text uppercase tracking-wider">Visibility</span>
                                    <div className="flex gap-2">
@@ -229,32 +266,77 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                                        ))}
                                    </div>
                                </div>
-                               <div>
-                                   <span className="text-xs font-bold text-secondary-text uppercase tracking-wider block mb-2">Geo-Block (Country Codes)</span>
-                                   <input 
-                                        type="text" 
-                                        value={blockedRegions}
-                                        onChange={(e) => setBlockedRegions(e.target.value)}
-                                        placeholder="e.g. US, CN, RU (Comma separated)"
-                                        className="w-full bg-transparent border-b border-white/10 py-1 text-sm text-white placeholder:text-secondary-text/30 focus:border-accent-1 focus:outline-none font-mono"
-                                   />
-                               </div>
-                               </>
                            )}
                            
-                           <div className="flex items-center justify-between">
-                               <span className="text-xs font-bold text-secondary-text uppercase tracking-wider">Transmission Sector</span>
-                               <div className="flex gap-2">
-                                   {['global', 'na', 'eu', 'asia', 'hidden'].map(s => (
-                                       <button 
-                                            key={s}
-                                            onClick={() => setRegion(s)}
-                                            className={`px-3 py-1 rounded text-[10px] font-bold uppercase transition-colors ${region === s ? 'bg-brand-orange text-white' : 'bg-white/5 text-secondary-text hover:bg-white/10'}`}
-                                       >
-                                           {s}
-                                       </button>
-                                   ))}
+                           {/* Targeting Computer */}
+                           <div className="space-y-3 pt-2 border-t border-white/10">
+                               <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2 text-brand-cyan">
+                                        <Radar className="w-4 h-4" />
+                                        <span className="text-xs font-bold uppercase tracking-wider">Targeting Computer</span>
+                                    </div>
+                                    <div className="flex bg-white/5 rounded-lg p-0.5">
+                                        {(['global', 'allow', 'deny'] as const).map(m => (
+                                            <button
+                                                key={m}
+                                                onClick={() => setGeoMode(m)}
+                                                className={`px-2 py-1 text-[10px] font-bold uppercase rounded transition-colors ${geoMode === m ? (m === 'global' ? 'bg-brand-blue text-white' : m === 'allow' ? 'bg-green-500 text-black' : 'bg-red-500 text-white') : 'text-secondary-text hover:text-white'}`}
+                                            >
+                                                {m}
+                                            </button>
+                                        ))}
+                                    </div>
                                </div>
+
+                               {geoMode !== 'global' && (
+                                   <div className="animate-in fade-in slide-in-from-top-2 duration-200 space-y-2">
+                                       <div className="flex gap-2">
+                                           <select 
+                                                value={newRuleType}
+                                                onChange={(e) => setNewRuleType(e.target.value as GeoRule['type'])}
+                                                className="bg-black/40 border border-white/10 rounded text-xs text-secondary-text px-2 py-1 outline-none focus:border-brand-cyan"
+                                           >
+                                               <option value="country">Country</option>
+                                               <option value="region">State/Region</option>
+                                               <option value="city">City</option>
+                                               <option value="postal">Zip Code</option>
+                                           </select>
+                                           <input 
+                                                type="text" 
+                                                value={newRuleValue}
+                                                onChange={(e) => setNewRuleValue(e.target.value)}
+                                                placeholder={`Enter ${newRuleType}...`}
+                                                className="flex-1 bg-black/40 border border-white/10 rounded text-xs text-white px-2 py-1 outline-none focus:border-brand-cyan font-mono"
+                                                onKeyDown={(e) => e.key === 'Enter' && addGeoRule()}
+                                           />
+                                           <button onClick={addGeoRule} className="p-1.5 bg-brand-cyan/20 text-brand-cyan rounded hover:bg-brand-cyan/40">
+                                               <Send className="w-3 h-3" />
+                                           </button>
+                                       </div>
+
+                                       {geoRules.length > 0 && (
+                                           <div className="flex flex-wrap gap-2">
+                                               {geoRules.map((rule, idx) => (
+                                                   <span key={idx} className="flex items-center gap-1 text-[10px] font-mono bg-white/5 border border-white/10 px-2 py-0.5 rounded text-secondary-text">
+                                                       <span className="opacity-50 uppercase">{rule.type}:</span>
+                                                       <span className="text-white">{rule.value}</span>
+                                                       <button onClick={() => removeGeoRule(idx)} className="hover:text-red-500"><X className="w-3 h-3" /></button>
+                                                   </span>
+                                               ))}
+                                           </div>
+                                       )}
+                                       
+                                       <div className="flex justify-end">
+                                            <button 
+                                                onClick={lockToMySector}
+                                                className="flex items-center gap-1 text-[10px] text-brand-cyan hover:underline decoration-dashed"
+                                            >
+                                                <MapPin className="w-3 h-3" />
+                                                <span>LOCK TO MY SECTOR</span>
+                                            </button>
+                                       </div>
+                                   </div>
+                               )}
                            </div>
                        </div>
 

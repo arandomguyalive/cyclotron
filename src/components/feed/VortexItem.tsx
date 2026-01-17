@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, Disc, Music, Plus, Play, AlertTriangle, ShieldCheck, Cpu } from "lucide-react";
+import { Heart, MessageCircle, Disc, Music, Plus, Play, AlertTriangle, ShieldCheck, Cpu, Ban, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SecurePlayer } from "./SecurePlayer";
 import { Timestamp, collection, addDoc, serverTimestamp, doc, updateDoc, increment, setDoc, deleteDoc, getCountFromServer, writeBatch, onSnapshot } from "firebase/firestore";
@@ -11,6 +11,7 @@ import { db } from "@/lib/firebase";
 import { useScreenshot } from "@/lib/useScreenshot";
 import { useUser } from "@/lib/UserContext";
 import { useToast } from "@/lib/ToastContext";
+import { useLocation } from "@/lib/LocationContext";
 import { CommentModal } from "./CommentModal";
 import { UserAvatar } from "../ui/UserAvatar";
 import { IdentityBadges } from "../ui/IdentityBadges";
@@ -30,6 +31,11 @@ export interface Post {
   userFaction?: string;
   userIsBlacklist?: boolean;
   userIsOwner?: boolean;
+  
+  // Geo-Targeting
+  geoMode?: 'global' | 'allow' | 'deny';
+  geoRules?: { type: 'country' | 'region' | 'city' | 'postal'; value: string }[];
+  
   likes: number;
   shares?: number;
   createdAt: Timestamp | Date;
@@ -59,8 +65,43 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby',
   const [shares, setShares] = useState(post.shares || 0);
   const [commentsCount, setCommentsCount] = useState(0);
   const [isCommentOpen, setIsCommentOpen] = useState(false);
+  
   const { firebaseUser, user: currentUserProfile } = useUser();
+  const { location, loading: locationLoading } = useLocation();
   const { toast } = useToast();
+
+  // Geo-Restriction Logic
+  const isRestricted = useMemo(() => {
+      if (!post.geoMode || post.geoMode === 'global') return false;
+      if (currentUserProfile?.isOwner) return false; // Override for Owner
+
+      // If loading location, treat as restricted until verified (or render loading state)
+      if (!location) return true; 
+
+      const rules = post.geoRules || [];
+      const userGeo = {
+          country: location.country.toUpperCase(),
+          region: location.region.toUpperCase(),
+          city: location.city.toUpperCase(),
+          postal: location.postal.toUpperCase()
+      };
+
+      const hasMatch = rules.some(rule => {
+          const ruleVal = rule.value.toUpperCase();
+          switch (rule.type) {
+              case 'country': return userGeo.country === ruleVal;
+              case 'region': return userGeo.region === ruleVal;
+              case 'city': return userGeo.city === ruleVal;
+              case 'postal': return userGeo.postal === ruleVal;
+              default: return false;
+          }
+      });
+
+      if (post.geoMode === 'allow') return !hasMatch; // Block if NO match
+      if (post.geoMode === 'deny') return hasMatch;   // Block if MATCH
+
+      return false;
+  }, [post.geoMode, post.geoRules, location, currentUserProfile?.isOwner]);
 
   useEffect(() => {
       // Optimization: Update local state from prop if it changes
@@ -199,6 +240,41 @@ export function VortexItem({ post, index, watermarkText, isFree, tier = 'lobby',
   const showForensic = isForensicTier && !currentUserProfile?.visualOverride;
   const showShield = isShieldTier && !currentUserProfile?.visualOverride;
   const showGlitched = isFree && !currentUserProfile?.visualOverride;
+
+  // Render Restricted Overlay
+  if (isRestricted) {
+      return (
+        <div className={cn("relative h-full w-full overflow-hidden bg-cyber-black rounded-xl border border-white/10 shadow-lg flex items-center justify-center")}>
+             <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-screen" />
+             <div className="absolute inset-0 bg-red-900/10 animate-pulse" />
+             
+             <div className="z-10 flex flex-col items-center gap-4 text-center px-6">
+                 {locationLoading ? (
+                     <>
+                        <div className="w-12 h-12 border-2 border-brand-cyan border-t-transparent rounded-full animate-spin" />
+                        <h3 className="text-xl font-bold text-brand-cyan font-mono tracking-widest">TRIANGULATING...</h3>
+                        <p className="text-sm text-secondary-text">Acquiring signal coordinates.</p>
+                     </>
+                 ) : (
+                     <>
+                        <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center border border-red-500/50 mb-2">
+                             <Ban className="w-8 h-8 text-red-500" />
+                        </div>
+                        <h3 className="text-xl font-bold text-red-500 font-mono tracking-widest">SIGNAL JAMMED</h3>
+                        <p className="text-sm text-secondary-text">Restricted Sector: Your location does not match the encryption keys for this transmission.</p>
+                        
+                        <div className="mt-4 p-3 bg-black/40 rounded border border-white/5 w-full">
+                            <div className="flex items-center gap-2 justify-center text-xs text-white/50 font-mono">
+                                <MapPin className="w-3 h-3" />
+                                <span>{location?.city || 'UNKNOWN'}, {location?.country || 'UNK'}</span>
+                            </div>
+                        </div>
+                     </>
+                 )}
+             </div>
+        </div>
+      );
+  }
 
   return (
     <div className={cn("relative h-full w-full overflow-hidden bg-cyber-black rounded-xl border border-white/10 shadow-lg translate-z-0 backface-hidden")}>

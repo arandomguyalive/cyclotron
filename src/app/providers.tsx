@@ -4,6 +4,7 @@ import { SonicProvider } from "@/lib/SonicContext";
 import { UserProvider } from "@/lib/UserContext";
 import { ThemeProvider } from "@/lib/ThemeContext";
 import { ToastProvider } from "@/lib/ToastContext";
+import { LocationProvider } from "@/lib/LocationContext";
 import { NativeHandler } from "@/components/layout/NativeHandler";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -11,11 +12,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <SonicProvider>
       <NativeHandler />
       <ToastProvider>
-        <UserProvider>
-          <ThemeProvider>
-            {children}
-          </ThemeProvider>
-        </UserProvider>
+        <LocationProvider>
+          <UserProvider>
+            <ThemeProvider>
+              {children}
+            </ThemeProvider>
+          </UserProvider>
+        </LocationProvider>
       </ToastProvider>
     </SonicProvider>
   );
