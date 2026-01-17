@@ -268,12 +268,12 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                                </div>
                            )}
                            
-                           {/* Targeting Computer */}
+                           {/* Targeted Region */}
                            <div className="space-y-3 pt-2 border-t border-white/10">
                                <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-brand-cyan">
                                         <Radar className="w-4 h-4" />
-                                        <span className="text-xs font-bold uppercase tracking-wider">Targeting Computer</span>
+                                        <span className="text-xs font-bold uppercase tracking-wider">Targeted Region</span>
                                     </div>
                                     <div className="flex bg-white/5 rounded-lg p-0.5">
                                         {(['global', 'allow', 'deny'] as const).map(m => (
@@ -294,12 +294,12 @@ export function CreatePostModal({ isOpen, onClose, missionMode = false }: Create
                                            <select 
                                                 value={newRuleType}
                                                 onChange={(e) => setNewRuleType(e.target.value as GeoRule['type'])}
-                                                className="bg-black/40 border border-white/10 rounded text-xs text-secondary-text px-2 py-1 outline-none focus:border-brand-cyan"
+                                                className="bg-black border border-white/20 rounded text-xs text-white px-2 py-1 outline-none focus:border-brand-cyan cursor-pointer"
                                            >
-                                               <option value="country">Country</option>
-                                               <option value="region">State/Region</option>
-                                               <option value="city">City</option>
-                                               <option value="postal">Zip Code</option>
+                                               <option value="country" className="bg-black text-white">Country</option>
+                                               <option value="region" className="bg-black text-white">State/Region</option>
+                                               <option value="city" className="bg-black text-white">City</option>
+                                               <option value="postal" className="bg-black text-white">Zip Code</option>
                                            </select>
                                            <input 
                                                 type="text" 
