@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Moon, Shield, Database, LogOut, ChevronRight, ChevronLeft, User, EyeOff, Clock, Fingerprint, CameraOff, Lock, Crown, Cpu } from "lucide-react";
+import { X, Moon, Shield, Database, LogOut, ChevronRight, ChevronLeft, User, EyeOff, Clock, Fingerprint, CameraOff, Lock, Crown, Cpu, Waves } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useSonic } from "@/lib/SonicContext";
@@ -9,6 +9,7 @@ import { EditProfileModal } from "./EditProfileModal";
 import { ThemeSelectorModal } from "./ThemeSelectorModal";
 import { useUser, UserProfile } from "@/lib/UserContext";
 import { useRouter } from "next/navigation";
+import { useZenMode } from "@/lib/ZenModeContext";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ type SettingsView = 'main' | 'privacy' | 'appearance';
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { playClick, playHaptic } = useSonic();
   const { user, updateUser, logout } = useUser();
+  const { isZenMode, toggleZenMode } = useZenMode();
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
   const [currentView, setCurrentView] = useState<SettingsView>('main');
@@ -461,6 +463,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     handleButtonClick();
                                     setIsThemeSelectorOpen(true);
                                 }} 
+                            />
+                             <SettingItem 
+                                icon={Waves} 
+                                label="Zen Mode" 
+                                toggle 
+                                isEnabled={isZenMode}
+                                onClick={toggleZenMode} 
                             />
                             <SettingItem 
                                 icon={Database} 

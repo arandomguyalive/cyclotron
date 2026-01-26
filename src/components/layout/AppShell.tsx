@@ -7,12 +7,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BackgroundMesh } from "@/components/ui/BackgroundMesh";
 import { useScreenshot } from "@/lib/useScreenshot";
 import { useToast } from "@/lib/ToastContext";
+import { useZenMode } from "@/lib/ZenModeContext";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { firebaseUser, user, loading } = useUser();
   const { toast } = useToast();
+  const { isZenMode } = useZenMode();
   const [showSplash, setShowSplash] = useState(true);
 
   // Global Screenshot Detection
@@ -46,9 +48,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const timer = setTimeout(() => {
       setShowSplash(false);
     }, 4500); // Increased duration for cinematic sequence
+    
+    // Add class to body to prevent scroll during splash
+    if (showSplash) {
+        document.body.classList.add('overflow-hidden');
+    } else {
+        document.body.classList.remove('overflow-hidden');
+    }
 
-    return () => clearTimeout(timer);
-  }, []);
+    return () => {
+        clearTimeout(timer);
+        document.body.classList.remove('overflow-hidden');
+    };
+  }, [showSplash]);
+
+  const showNav = !showSplash && firebaseUser && !isZenMode;
 
   return (
     <>
@@ -56,17 +70,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {showSplash && <SplashScreen key="splash" />}
       </AnimatePresence>
 
-      <BackgroundMesh />
+      {!isZenMode && <BackgroundMesh />}
 
-      <main className={`min-h-[100dvh] pt-[env(safe-area-inset-top)] pb-[calc(5rem+env(safe-area-inset-bottom))] relative transition-opacity duration-1000 ${showSplash ? 'opacity-0' : 'opacity-100'}`}>
+      <main className={`min-h-[100dvh] pt-[env(safe-area-inset-top)] ${showNav ? 'pb-[calc(5rem+env(safe-area-inset-bottom))]' : 'pb-[env(safe-area-inset-bottom)]'} relative transition-all duration-300 ${showSplash ? 'opacity-0' : 'opacity-100'}`}>
         {children}
       </main>
       
-      {/* Only show BottomNav if logged in AND splash is done */}
-      {!showSplash && firebaseUser && <BottomNav />}
+      {/* Only show BottomNav if logged in AND splash is done AND not in Zen Mode */}
+      <AnimatePresence>
+        {showNav && (
+            <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+                <BottomNav />
+            </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
+
 
 function SplashScreen() {
     return (

@@ -232,14 +232,16 @@
     *   **Media Lightbox:** Added a full-screen media viewer for chat attachments, enhancing the visual experience for encrypted images and videos.
     *   **Adaptive UI Refinement:** Overhauled the mobile layout to respect Safe Area Insets (Notch/Home Indicator), moved Toasts to the bottom for better reachability, and implemented dynamic viewport height (`100dvh`) for a truly "native" app feel.
 
-### Phase 27: Forced Blacklist Enrollment (Jan 26, 2026)
-*   **Goal:** Restrict all public access to a mandatory blacklist enrollment page while maintaining a private entry for administrators.
+### Phase 28: Zen Mode / Focus Protocol (Jan 26, 2026)
+*   **Goal:** Implement a distraction-free "Zen Mode" to enhance user focus.
 *   **Key Actions:**
-    *   **Root Redirection:** Modified `/` (root path) to unconditionally redirect all traffic to `/blacklist`.
-    *   **Architect Key Bypass:** Implemented a conditional check on the root page. If the URL contains `?access=architect`, the user is redirected to `/login` instead of the blacklist page. This provides a private entry point for owners.
-    *   **Blacklist Page Update:** Altered `src/app/blacklist/page.tsx` to remove previous login/upgrade logic.
-    *   **External Enrollment:** Integrated a direct button link to `https://forms.gle/6e8TiexepPepwFbD8` on the blacklist page for enrollment.
-    *   **UI Simplification:** Replaced dynamic "joined count" with a static "Enrollment Pending" message to reflect the new user action.
+    *   **Context Creation:** Created `src/lib/ZenModeContext.tsx` to manage `isZenMode` state and `toggleZenMode` function.
+    *   **Provider Integration:** Wrapped the application with `ZenModeProvider` in `src/app/providers.tsx`.
+    *   **UI Toggle:** Added a "Zen Mode" toggle to the `Appearance` section of `src/components/profile/SettingsModal.tsx`.
+    *   **Global UI Hiding:** Modified `src/components/layout/AppShell.tsx` to conditionally hide `BottomNav` and `BackgroundMesh` when Zen Mode is active.
+    *   **Audio/Haptic Muting:** Modified `src/lib/SonicContext.tsx` to disable `playClick` and `playHaptic` functions in Zen Mode.
+    *   **Content Focus (Vortex):** Modified `src/components/feed/VortexItem.tsx` to hide non-essential UI elements (user info, interaction buttons, gradients) by default in Zen Mode, revealing them only on hover.
+    *   **Content Focus (Signal Grid):** Modified `src/components/home/SignalGrid.tsx` to hide non-essential UI elements and advertisements in Zen Mode.
 
 ---
 

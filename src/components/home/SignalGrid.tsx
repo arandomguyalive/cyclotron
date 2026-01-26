@@ -12,6 +12,7 @@ import { CommentModal } from "@/components/feed/CommentModal";
 import { IconShareNeural } from "../ui/IconShareNeural";
 import { UserAvatar } from "../ui/UserAvatar";
 import { IdentityBadges } from "../ui/IdentityBadges";
+import { useZenMode } from "@/lib/ZenModeContext";
 
 interface Post {
     id: string;
@@ -57,6 +58,7 @@ const mockAd: MockAd = {
 
 export function SignalGrid() {
     const { user, firebaseUser } = useUser();
+    const { isZenMode } = useZenMode();
     const [posts, setPosts] = useState<(Post | MockAd)[]>([]); 
     const [loading, setLoading] = useState(true);
     const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
@@ -109,15 +111,17 @@ export function SignalGrid() {
 
     return (
         <div className="space-y-4 pb-20">
-            <div className="flex items-center justify-between px-4">
-                <h3 className="text-xl font-bold text-primary-text tracking-tight">Latest Signals</h3>
-                {isFree && <span className="text-[10px] bg-secondary-bg/10 text-secondary-text px-2 py-0.5 rounded border border-border-color">PUBLIC CHANNEL</span>}
-            </div>
+            {!isZenMode && (
+                <div className="flex items-center justify-between px-4">
+                    <h3 className="text-xl font-bold text-primary-text tracking-tight">Latest Signals</h3>
+                    {isFree && <span className="text-[10px] bg-secondary-bg/10 text-secondary-text px-2 py-0.5 rounded border border-border-color">PUBLIC CHANNEL</span>}
+                </div>
+            )}
 
             <div className="flex flex-col gap-8">
                 {posts.map((item) => (
                     item.type === "ad" ? (
-                        <AdItem key={item.id} ad={item as MockAd} />
+                        <AdItem key={item.id} ad={item as MockAd} isZenMode={isZenMode} />
                     ) : (
                         <SignalItem 
                             key={item.id} 
@@ -128,6 +132,7 @@ export function SignalGrid() {
                             savedPosts={savedPosts}
                             followingSet={followingSet}
                             onComment={() => setActiveCommentPost(item as Post)}
+                            isZenMode={isZenMode}
                         />
                     )
                 ))}
@@ -145,7 +150,7 @@ export function SignalGrid() {
     );
 }
 
-function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followingSet, onComment }: any) {
+function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followingSet, onComment, isZenMode }: any) {
     const { user, firebaseUser, updateUser } = useUser();
     const { toast } = useToast();
     const [commentsCount, setCommentsCount] = useState(0);
@@ -325,22 +330,24 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
     const showGlitched = isFree && !user?.visualOverride;
 
     return (
-        <div className="w-full border-b border-white/5 pb-6 font-sans">
-            <div className="px-4 flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                    <UserAvatar seed={post.userHandle} url={post.userAvatarUrl} size="sm" isBlacklist={post.userIsBlacklist} isOwner={post.userIsOwner} showRing={false} />
-                    <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                            <span className={`text-sm font-bold ${showGlitched ? 'text-secondary-text' : 'text-primary-text'}`}>@{post.userHandle}</span>
-                            <IdentityBadges tier={post.userTier} faction={post.userFaction} isBlacklist={post.userIsBlacklist} isOwner={post.userIsOwner} size="sm" />
-                            {firebaseUser && post.userId !== firebaseUser.uid && (
-                                <button onClick={handleFollow} className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${followingSet.has(post.userId) ? 'border-accent-1 text-accent-1 bg-accent-1/10' : 'border-secondary-text text-secondary-text'}`}>{followingSet.has(post.userId) ? 'Linked' : 'Link+'}</button>
-                            )}
+        <div className="w-full border-b border-white/5 pb-6 font-sans group">
+            {!isZenMode && (
+                <div className="px-4 flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                        <UserAvatar seed={post.userHandle} url={post.userAvatarUrl} size="sm" isBlacklist={post.userIsBlacklist} isOwner={post.userIsOwner} showRing={false} />
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                                <span className={`text-sm font-bold ${showGlitched ? 'text-secondary-text' : 'text-primary-text'}`}>@{post.userHandle}</span>
+                                <IdentityBadges tier={post.userTier} faction={post.userFaction} isBlacklist={post.userIsBlacklist} isOwner={post.userIsOwner} size="sm" />
+                                {firebaseUser && post.userId !== firebaseUser.uid && (
+                                    <button onClick={handleFollow} className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${followingSet.has(post.userId) ? 'border-accent-1 text-accent-1 bg-accent-1/10' : 'border-secondary-text text-secondary-text'}`}>{followingSet.has(post.userId) ? 'Linked' : 'Link+'}</button>
+                                )}
+                            </div>
                         </div>
                     </div>
+                    <MoreHorizontal className="w-5 h-5 text-secondary-text" />
                 </div>
-                <MoreHorizontal className="w-5 h-5 text-secondary-text" />
-            </div>
+            )}
 
             {post.type === 'text' ? (
                 <div className="relative w-full aspect-[4/5] bg-black border-y border-green-900/30 p-8 flex flex-col justify-center overflow-hidden font-mono">
@@ -375,50 +382,53 @@ function SignalItem({ post, viewerTier, isFree, likedPosts, savedPosts, followin
                 </div>
             )}
 
-            <div className="px-4 mt-3 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1.5">
-                        <Heart onClick={handleLike} className={`w-6 h-6 transition-colors cursor-pointer ${likedPosts.has(post.id) ? 'text-brand-hot-pink fill-brand-hot-pink' : 'text-primary-text'}`} />
-                        {likesCount > 0 && <span className="text-xs font-bold text-primary-text font-mono">{likesCount}</span>}
+            {!isZenMode && (
+                <div className="px-4 mt-3 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                            <Heart onClick={handleLike} className={`w-6 h-6 transition-colors cursor-pointer ${likedPosts.has(post.id) ? 'text-brand-hot-pink fill-brand-hot-pink' : 'text-primary-text'}`} />
+                            {likesCount > 0 && <span className="text-xs font-bold text-primary-text font-mono">{likesCount}</span>}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <MessageCircle onClick={onComment} className="w-6 h-6 text-primary-text cursor-pointer" />
+                            {commentsCount > 0 && <span className="text-xs font-bold text-accent-1 font-mono">{commentsCount}</span>}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <IconShareNeural onClick={async () => {
+                                if (isFree && !user?.isOwner) { toast("UPGRADE REQUIRED: Secure sharing restricted.", "error"); return; }
+                                try {
+                                    await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });
+                                    navigator.clipboard.writeText(`${window.location.origin}/profile?view=${post.userId}`);
+                                    toast("Link Copied", "info");
+                                } catch (e) {}
+                            }} className="w-6 h-6 text-primary-text cursor-pointer" />
+                            {sharesCount > 0 && <span className="text-xs font-bold text-secondary-text font-mono">{sharesCount}</span>}
+                        </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                        <MessageCircle onClick={onComment} className="w-6 h-6 text-primary-text cursor-pointer" />
-                        {commentsCount > 0 && <span className="text-xs font-bold text-accent-1 font-mono">{commentsCount}</span>}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                        <IconShareNeural onClick={async () => {
-                            if (isFree && !user?.isOwner) { toast("UPGRADE REQUIRED: Secure sharing restricted.", "error"); return; }
-                            try {
-                                await updateDoc(doc(db, "posts", post.id), { shares: increment(1) });
-                                navigator.clipboard.writeText(`${window.location.origin}/profile?view=${post.userId}`);
-                                toast("Link Copied", "info");
-                            } catch (e) {}
-                        }} className="w-6 h-6 text-primary-text cursor-pointer" />
-                        {sharesCount > 0 && <span className="text-xs font-bold text-secondary-text font-mono">{sharesCount}</span>}
-                    </div>
+                    <Bookmark onClick={handleSave} className={`w-6 h-6 transition-colors cursor-pointer ${savedPosts.has(post.id) ? 'text-accent-1 fill-accent-1' : 'text-primary-text'}`} />
                 </div>
-                <Bookmark onClick={handleSave} className={`w-6 h-6 transition-colors cursor-pointer ${savedPosts.has(post.id) ? 'text-accent-1 fill-accent-1' : 'text-primary-text'}`} />
-            </div>
+            )}
 
-            <div className="px-4 mt-2 space-y-1">
-                {post.type !== 'text' && (
+            {!isZenMode && post.type !== 'text' && (
+                <div className="px-4 mt-2 space-y-1">
                     <p className="text-sm text-secondary-text line-clamp-2">
                         <span className="font-bold text-primary-text mr-2">@{post.userHandle}</span>{post.caption}
                     </p>
-                )}
-                <p className="text-[10px] text-secondary-text/50 uppercase tracking-wide mt-1">
-                    {(() => {
-                        const ts = post.createdAt;
-                        const date = ts instanceof Date ? ts : ts?.toDate ? ts.toDate() : new Date();
-                        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'});
-                    })()} • Encrypted
-                </p>
-            </div>
+                    <p className="text-[10px] text-secondary-text/50 uppercase tracking-wide mt-1">
+                        {(() => {
+                            const ts = post.createdAt;
+                            const date = ts instanceof Date ? ts : ts?.toDate ? ts.toDate() : new Date();
+                            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'});
+                        })()} • Encrypted
+                    </p>
+                </div>
+            )}
         </div>
     );
 }
 
-function AdItem({ ad }: { ad: MockAd }) {
+function AdItem({ ad, isZenMode }: { ad: MockAd, isZenMode: boolean }) {
+    if (isZenMode) return null; // Hide ads in Zen Mode
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`relative mx-4 rounded-2xl border border-${ad.color}/20 bg-${ad.color}/5 p-6 backdrop-blur-md text-center`}>
             <img src={ad.imageUrl} alt={ad.title} className="w-full h-48 object-cover rounded-xl mb-4" />

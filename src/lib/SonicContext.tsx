@@ -4,6 +4,7 @@ import React, { createContext, useContext, useRef, useEffect, useState, useCallb
 
 import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { useZenMode } from './ZenModeContext';
 
 export { ImpactStyle };
 
@@ -19,6 +20,7 @@ export const SonicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const audioContextRef = useRef<AudioContext | null>(null);
   const humOscillatorRef = useRef<OscillatorNode | null>(null);
   const humGainRef = useRef<GainNode | null>(null);
+  const { isZenMode } = useZenMode();
 
   const [initialized, setInitialized] = useState(false);
 
@@ -48,6 +50,7 @@ export const SonicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [initializeAudio]);
 
   const playClick = useCallback((frequency = 440, duration = 0.05, type: OscillatorType = 'sine') => {
+    if (isZenMode) return;
     if (!audioContextRef.current || audioContextRef.current.state === 'suspended') {
       initializeAudio(); // Attempt to resume/initialize
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
@@ -69,9 +72,19 @@ export const SonicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       oscillator.start();
       oscillator.stop(audioContextRef.current.currentTime + duration);
     }
-  }, [initializeAudio]);
+  }, [initializeAudio, isZenMode]);
 
   const playHum = useCallback((state: 'start' | 'stop' | 'adjust', frequency = 80, gain = 0.1) => {
+    if (isZenMode) {
+        if (humOscillatorRef.current) {
+            humOscillatorRef.current.stop();
+            humOscillatorRef.current.disconnect();
+            humGainRef.current?.disconnect();
+            humOscillatorRef.current = null;
+            humGainRef.current = null;
+        }
+        return;
+    }
     if (!audioContextRef.current || audioContextRef.current.state === 'suspended') {
         initializeAudio();
         if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
@@ -108,9 +121,10 @@ export const SonicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         humGainRef.current.gain.linearRampToValueAtTime(gain, audioContextRef.current.currentTime + 0.1);
         console.log(`Hum adjusted: Freq=${frequency}, Gain=${gain}`);
     }
-  }, [initializeAudio]);
+  }, [initializeAudio, isZenMode]);
 
   const playHaptic = useCallback(async (style: ImpactStyle | 'selection' | 'vibrate' = ImpactStyle.Light) => {
+    if (isZenMode) return;
     if (Capacitor.isNativePlatform()) {
       try {
         if (style === 'selection') {
@@ -127,7 +141,7 @@ export const SonicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Fallback for web
       navigator.vibrate(style === ImpactStyle.Heavy ? 50 : 20);
     }
-  }, []);
+  }, [isZenMode]);
 
   return (
     <SonicContext.Provider value={{ playClick, playHum, playHaptic }}>

@@ -5,6 +5,7 @@ import { UserProvider } from "@/lib/UserContext";
 import { ThemeProvider } from "@/lib/ThemeContext";
 import { ToastProvider } from "@/lib/ToastContext";
 import { LocationProvider } from "@/lib/LocationContext";
+import { ZenModeProvider } from "@/lib/ZenModeContext";
 import { NativeHandler } from "@/components/layout/NativeHandler";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -14,9 +15,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ToastProvider>
         <LocationProvider>
           <UserProvider>
-            <ThemeProvider>
-              {children}
-            </ThemeProvider>
+            <ZenModeProvider>
+              <ThemeProvider>
+                {children}
+              </ThemeProvider>
+            </ZenModeProvider>
           </UserProvider>
         </LocationProvider>
       </ToastProvider>
