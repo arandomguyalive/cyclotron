@@ -1,17 +1,23 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { useUser } from "@/lib/UserContext";
 
 export default function IntroPage() {
-  const { firebaseUser, loading } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    router.push("/blacklist");
-  }, [router]);
+    const accessKey = searchParams.get("access");
+    if (accessKey === "architect") {
+      // If access key is present, go to Login
+      router.push("/login");
+    } else {
+      // Otherwise, go to the Blacklist page
+      router.push("/blacklist");
+    }
+  }, [router, searchParams]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-black relative overflow-hidden">
@@ -35,7 +41,7 @@ export default function IntroPage() {
             transition={{ delay: 0.2 }}
             className="text-amber-500/80 text-sm font-mono tracking-widest uppercase animate-pulse"
         >
-            Redirecting to Blacklist Enrollment...
+            Verifying Access Level...
         </motion.p>
       </div>
       

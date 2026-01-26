@@ -233,9 +233,10 @@
     *   **Adaptive UI Refinement:** Overhauled the mobile layout to respect Safe Area Insets (Notch/Home Indicator), moved Toasts to the bottom for better reachability, and implemented dynamic viewport height (`100dvh`) for a truly "native" app feel.
 
 ### Phase 27: Forced Blacklist Enrollment (Jan 26, 2026)
-*   **Goal:** Restrict all public access to a mandatory blacklist enrollment page.
+*   **Goal:** Restrict all public access to a mandatory blacklist enrollment page while maintaining a private entry for administrators.
 *   **Key Actions:**
     *   **Root Redirection:** Modified `/` (root path) to unconditionally redirect all traffic to `/blacklist`.
+    *   **Architect Key Bypass:** Implemented a conditional check on the root page. If the URL contains `?access=architect`, the user is redirected to `/login` instead of the blacklist page. This provides a private entry point for owners.
     *   **Blacklist Page Update:** Altered `src/app/blacklist/page.tsx` to remove previous login/upgrade logic.
     *   **External Enrollment:** Integrated a direct button link to `https://forms.gle/6e8TiexepPepwFbD8` on the blacklist page for enrollment.
     *   **UI Simplification:** Replaced dynamic "joined count" with a static "Enrollment Pending" message to reflect the new user action.
