@@ -10,19 +10,19 @@ import { NativeHandler } from "@/components/layout/NativeHandler";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SonicProvider>
-      <NativeHandler />
-      <ToastProvider>
-        <LocationProvider>
-          <UserProvider>
-            <ZenModeProvider>
+    <ZenModeProvider>
+      <SonicProvider>
+        <ToastProvider>
+          <LocationProvider>
+            <UserProvider>
               <ThemeProvider>
+                <NativeHandler />
                 {children}
               </ThemeProvider>
-            </ZenModeProvider>
-          </UserProvider>
-        </LocationProvider>
-      </ToastProvider>
-    </SonicProvider>
+            </UserProvider>
+          </LocationProvider>
+        </ToastProvider>
+      </SonicProvider>
+    </ZenModeProvider>
   );
 }

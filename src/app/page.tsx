@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 
-export default function IntroPage() {
+function IntroPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -49,5 +49,13 @@ export default function IntroPage() {
         SECURE CONNECTION // ENCRYPTED
       </div>
     </main>
+  );
+}
+
+export default function IntroPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <IntroPageContent />
+    </Suspense>
   );
 }
