@@ -12,28 +12,8 @@ export default function BlacklistLandingPage() {
   const [joinedCount, setJoinedCount] = useState<number>(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  useEffect(() => {
-    // Generate a consistent random number for this session
-    const stored = sessionStorage.getItem("blacklist_simulated_count");
-    if (stored) {
-      setJoinedCount(parseInt(stored, 10));
-    } else {
-      // Random between 412 and 489
-      const random = Math.floor(Math.random() * (489 - 412 + 1)) + 412;
-      sessionStorage.setItem("blacklist_simulated_count", random.toString());
-      setJoinedCount(random);
-    }
-  }, []);
-
-  const handleJoin = () => {
-    const targetUrl = "/upgrade?mode=blacklist";
-    if (!loading) {
-      if (firebaseUser) {
-        router.push(targetUrl);
-      } else {
-        router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
-      }
-    }
+  const handleEnroll = () => {
+    window.location.href = "https://forms.gle/6e8TiexepPepwFbD8";
   };
 
   return (
@@ -68,7 +48,7 @@ export default function BlacklistLandingPage() {
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
                 <span className="text-xs font-bold text-amber-500 uppercase tracking-widest">Live Registry</span>
                 <div className="h-4 w-px bg-amber-500/20" />
-                <span className="text-xs font-mono text-amber-200">{joinedCount} / 500 JOINED</span>
+                <span className="text-xs font-mono text-amber-200">Enrollment Pending</span>
             </div>
         </motion.div>
 
@@ -98,12 +78,12 @@ export default function BlacklistLandingPage() {
             whileTap={{ scale: 0.95 }}
             onHoverStart={() => setIsHovered(true)}
             onHoverEnd={() => setIsHovered(false)}
-            onClick={handleJoin}
+            onClick={handleEnroll}
             className="group relative px-12 py-6 bg-amber-500 hover:bg-amber-400 text-black font-black text-xl uppercase tracking-widest rounded-none skew-x-[-10deg] transition-all shadow-[0_0_40px_rgba(245,158,11,0.4)]"
         >
             <div className="absolute inset-0 border-2 border-white/20 skew-x-[10deg] pointer-events-none" />
             <span className="relative z-10 flex items-center gap-3 skew-x-[10deg]">
-                Secure Your Spot <ArrowRight className={`w-6 h-6 transition-transform ${isHovered ? 'translate-x-1' : ''}`} />
+                Enroll in Blacklist <ArrowRight className={`w-6 h-6 transition-transform ${isHovered ? 'translate-x-1' : ''}`} />
             </span>
         </motion.button>
 

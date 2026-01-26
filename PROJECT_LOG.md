@@ -232,17 +232,17 @@
     *   **Media Lightbox:** Added a full-screen media viewer for chat attachments, enhancing the visual experience for encrypted images and videos.
     *   **Adaptive UI Refinement:** Overhauled the mobile layout to respect Safe Area Insets (Notch/Home Indicator), moved Toasts to the bottom for better reachability, and implemented dynamic viewport height (`100dvh`) for a truly "native" app feel.
 
-### Phase 26: Sector Control & Geo-Targeting (Jan 17, 2026)
-*   **Goal:** Expand Geo-Fencing from peer-to-peer chats to the public broadcast layer (Vortex/Feed).
+### Phase 27: Forced Blacklist Enrollment (Jan 26, 2026)
+*   **Goal:** Restrict all public access to a mandatory blacklist enrollment page.
 *   **Key Actions:**
-    *   **Location Intelligence Layer:** Implemented `LocationContext` to perform granular IP-based geolocation (City, Region, Country) on startup.
-    *   **Targeting Computer:** Upgraded `CreatePostModal` with a "Sector Control" interface, allowing users to define "Allow" or "Deny" zones for their content.
-    *   **One-Click Lock:** Added "Lock to My Sector" functionality for instant local-only broadcasting.
-    *   **Signal Jamming:** Implemented the "Restricted Sector" overlay in `VortexItem`, physically blocking content rendering for users outside the permitted zones.
+    *   **Root Redirection:** Modified `/` (root path) to unconditionally redirect all traffic to `/blacklist`.
+    *   **Blacklist Page Update:** Altered `src/app/blacklist/page.tsx` to remove previous login/upgrade logic.
+    *   **External Enrollment:** Integrated a direct button link to `https://forms.gle/6e8TiexepPepwFbD8` on the blacklist page for enrollment.
+    *   **UI Simplification:** Replaced dynamic "joined count" with a static "Enrollment Pending" message to reflect the new user action.
 
 ---
 
-## 3. Current System Status (As of Jan 17, 2026)
+## 3. Current System Status (As of Jan 26, 2026)
 
 *   ✅ **Performance:** Vortex engine optimized for "Velocity" (Active-Only rendering).
 *   ✅ **Security:** Geo-Fence Protocol active for location-restricted messaging; Sector Control active for public feed gating.
